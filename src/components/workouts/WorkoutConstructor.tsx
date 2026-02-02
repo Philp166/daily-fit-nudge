@@ -1,8 +1,94 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { X, Plus, Minus, Search, GripVertical, Trash2, Clock, Flame, Star, Dumbbell, Activity, Heart, Zap, Target } from 'lucide-react';
 import { exercises, exerciseCategories, getExerciseById, calculateCalories, getExerciseIconComponent, Exercise } from '@/data/exercises';
 import { useUser } from '@/contexts/UserContext';
+
+interface NumberInputProps {
+  value: number;
+  onChange: (value: number) => void;
+  min: number;
+  max: number;
+  step?: number;
+  label: string;
+}
+
+const NumberInput: React.FC<NumberInputProps> = ({ value, onChange, min, max, step = 1, label }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(value.toString());
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  useEffect(() => {
+    setInputValue(value.toString());
+  }, [value]);
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    const parsed = parseInt(inputValue, 10);
+    if (!isNaN(parsed)) {
+      onChange(Math.max(min, Math.min(max, parsed)));
+    } else {
+      setInputValue(value.toString());
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleBlur();
+    }
+  };
+
+  return (
+    <div className="glass rounded-2xl p-4">
+      <p className="text-caption text-muted-foreground mb-3 text-center">{label}</p>
+      <div className="flex items-center justify-between">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onChange(Math.max(min, value - step))}
+          className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+        >
+          <Minus size={24} />
+        </motion.button>
+        
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="number"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            className="w-20 text-center text-display-sm text-extralight bg-transparent outline-none border-b-2 border-primary"
+            min={min}
+            max={max}
+          />
+        ) : (
+          <span
+            onClick={() => setIsEditing(true)}
+            className="text-display-sm text-extralight cursor-pointer hover:text-primary transition-colors"
+          >
+            {value}
+          </span>
+        )}
+        
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onChange(Math.min(max, value + step))}
+          className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+        >
+          <Plus size={24} />
+        </motion.button>
+      </div>
+    </div>
+  );
+};
 
 interface WorkoutExercise {
   id: string;
@@ -38,13 +124,14 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
   onStartWorkout,
   editWorkout = null,
 }) => {
-  const { profile, addCustomWorkout, customWorkouts } = useUser();
+  const { profile, addCustomWorkout, customWorkouts, toggleFavorite } = useUser();
   const [selectedExercises, setSelectedExercises] = useState<WorkoutExercise[]>([]);
   const [workoutName, setWorkoutName] = useState('Моя тренировка');
   const [showExerciseList, setShowExerciseList] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Все');
   const [editingExercise, setEditingExercise] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   // Load workout for editing
   useEffect(() => {
@@ -54,11 +141,15 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
         ...e,
         id: e.id || crypto.randomUUID(),
       })));
+      // Check if this workout is already a favorite
+      const existing = customWorkouts.find(w => w.name === editWorkout.name);
+      setIsFavorite(existing?.isFavorite || false);
     } else if (isOpen && !editWorkout) {
       setSelectedExercises([]);
       setWorkoutName('Моя тренировка');
+      setIsFavorite(false);
     }
-  }, [editWorkout, isOpen]);
+  }, [editWorkout, isOpen, customWorkouts]);
 
   const filteredExercises = exercises.filter(ex => {
     const matchesSearch = ex.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -107,7 +198,7 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
   const handleStartWorkout = () => {
     if (selectedExercises.length === 0) return;
 
-    // Save to custom workouts history (last 3)
+    // Save to custom workouts history
     const existingIndex = customWorkouts.findIndex(w => w.name === workoutName);
     if (existingIndex === -1) {
       addCustomWorkout({
@@ -118,8 +209,10 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
           workTime: e.workTime,
           restTime: e.restTime,
         })),
-        isFavorite: false,
+        isFavorite: isFavorite,
       });
+    } else if (isFavorite !== customWorkouts[existingIndex].isFavorite) {
+      toggleFavorite(customWorkouts[existingIndex].id);
     }
 
     onStartWorkout(selectedExercises, workoutName);
@@ -155,14 +248,24 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-safe-top pb-4">
-              <div className="flex-1">
+              <div className="flex-1 flex items-center gap-2">
                 <input
                   type="text"
                   value={workoutName}
                   onChange={(e) => setWorkoutName(e.target.value)}
-                  className="text-title text-foreground bg-transparent outline-none w-full"
+                  className="text-title text-foreground bg-transparent outline-none flex-1"
                   placeholder="Название тренировки"
                 />
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setIsFavorite(!isFavorite)}
+                  className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+                >
+                  <Star 
+                    size={20} 
+                    className={isFavorite ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'} 
+                  />
+                </motion.button>
               </div>
               <motion.button
                 whileTap={{ scale: 0.9 }}
@@ -260,71 +363,29 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                                 exit={{ height: 0, opacity: 0 }}
                                 className="space-y-4 pt-3 border-t border-border/50"
                               >
-                                {/* Sets */}
-                                <div className="glass rounded-2xl p-4">
-                                  <p className="text-caption text-muted-foreground mb-3 text-center">Подходы</p>
-                                  <div className="flex items-center justify-between">
-                                    <motion.button
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => updateExercise(item.id, 'sets', Math.max(1, item.sets - 1))}
-                                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                                    >
-                                      <Minus size={24} />
-                                    </motion.button>
-                                    <span className="text-display-sm text-extralight">{item.sets}</span>
-                                    <motion.button
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => updateExercise(item.id, 'sets', Math.min(20, item.sets + 1))}
-                                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                                    >
-                                      <Plus size={24} />
-                                    </motion.button>
-                                  </div>
-                                </div>
-
-                                {/* Work Time */}
-                                <div className="glass rounded-2xl p-4">
-                                  <p className="text-caption text-muted-foreground mb-3 text-center">Время работы (сек)</p>
-                                  <div className="flex items-center justify-between">
-                                    <motion.button
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => updateExercise(item.id, 'workTime', Math.max(5, item.workTime - 5))}
-                                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                                    >
-                                      <Minus size={24} />
-                                    </motion.button>
-                                    <span className="text-display-sm text-extralight">{item.workTime}</span>
-                                    <motion.button
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => updateExercise(item.id, 'workTime', Math.min(300, item.workTime + 5))}
-                                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                                    >
-                                      <Plus size={24} />
-                                    </motion.button>
-                                  </div>
-                                </div>
-
-                                {/* Rest Time */}
-                                <div className="glass rounded-2xl p-4">
-                                  <p className="text-caption text-muted-foreground mb-3 text-center">Время отдыха (сек)</p>
-                                  <div className="flex items-center justify-between">
-                                    <motion.button
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => updateExercise(item.id, 'restTime', Math.max(0, item.restTime - 5))}
-                                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                                    >
-                                      <Minus size={24} />
-                                    </motion.button>
-                                    <span className="text-display-sm text-extralight">{item.restTime}</span>
-                                    <motion.button
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => updateExercise(item.id, 'restTime', Math.min(180, item.restTime + 5))}
-                                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                                    >
-                                      <Plus size={24} />
-                                    </motion.button>
-                                  </div>
-                                </div>
+                                <NumberInput
+                                  label="Подходы"
+                                  value={item.sets}
+                                  onChange={(val) => updateExercise(item.id, 'sets', val)}
+                                  min={1}
+                                  max={20}
+                                />
+                                <NumberInput
+                                  label="Время работы (сек)"
+                                  value={item.workTime}
+                                  onChange={(val) => updateExercise(item.id, 'workTime', val)}
+                                  min={5}
+                                  max={300}
+                                  step={5}
+                                />
+                                <NumberInput
+                                  label="Время отдыха (сек)"
+                                  value={item.restTime}
+                                  onChange={(val) => updateExercise(item.id, 'restTime', val)}
+                                  min={0}
+                                  max={180}
+                                  step={5}
+                                />
                               </motion.div>
                             ) : (
                               <div className="flex gap-2 pt-2">

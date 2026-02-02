@@ -9,7 +9,7 @@ import WorkoutConstructor from '@/components/workouts/WorkoutConstructor';
 import WorkoutTimer from '@/components/timer/WorkoutTimer';
 import SimpleTimer from '@/components/timer/SimpleTimer';
 import { Workout } from '@/data/workouts';
-import { Timer } from 'lucide-react';
+
 
 type Tab = 'home' | 'timer' | 'profile';
 
@@ -107,10 +107,6 @@ const AppContent: React.FC = () => {
     setShowConstructor(true);
   };
 
-  const handleTimerTab = () => {
-    setShowSimpleTimer(true);
-  };
-
   return (
     <div className="min-h-screen bg-background">
       {activeTab === 'home' && (
@@ -125,29 +121,7 @@ const AppContent: React.FC = () => {
       )}
 
       {activeTab === 'timer' && (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
-          <div className="w-20 h-20 rounded-3xl glass flex items-center justify-center mb-6">
-            <Timer size={40} className="text-primary" />
-          </div>
-          <h2 className="text-title text-foreground mb-2">Таймер тренировок</h2>
-          <p className="text-body text-muted-foreground text-center mb-8">
-            Настрой интервалы и начни тренировку
-          </p>
-          <div className="flex gap-3 w-full">
-            <button
-              onClick={handleTimerTab}
-              className="flex-1 py-4 px-6 rounded-2xl bg-primary text-primary-foreground text-body"
-            >
-              Простой таймер
-            </button>
-            <button
-              onClick={() => setShowWorkouts(true)}
-              className="flex-1 py-4 px-6 rounded-2xl glass text-foreground text-body"
-            >
-              Выбрать тренировку
-            </button>
-          </div>
-        </div>
+        <SimpleTimer isOpen={true} onClose={() => setActiveTab('home')} />
       )}
 
       {activeTab === 'profile' && <ProfileView />}
