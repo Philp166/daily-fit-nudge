@@ -62,6 +62,22 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     ? getExerciseById(exercises[currentExerciseIndex + 1].exerciseId)
     : undefined;
 
+  // Reset all state when timer closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentExerciseIndex(0);
+      setCurrentSet(1);
+      setPhase('work');
+      setTimeLeft(0);
+      setIsRunning(false);
+      setIsPaused(false);
+      setTotalCaloriesBurned(0);
+      setWorkoutStartTime(null);
+      setIsComplete(false);
+      setTotalSetsCompleted(0);
+    }
+  }, [isOpen]);
+
   // Initialize timer
   useEffect(() => {
     if (isOpen && exercises.length > 0) {
@@ -74,11 +90,12 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
         setTotalCaloriesBurned(initialState.totalCalories);
         setIsRunning(true);
         setIsPaused(false);
+        setIsComplete(false);
         if (!workoutStartTime) {
           setWorkoutStartTime(new Date());
         }
-      } else if (!isRunning) {
-        // Fresh start
+      } else {
+        // Fresh start - always reset completely
         setCurrentExerciseIndex(0);
         setCurrentSet(1);
         setPhase('work');

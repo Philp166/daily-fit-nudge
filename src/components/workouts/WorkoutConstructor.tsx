@@ -219,9 +219,8 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
   const handleStartWorkout = () => {
     if (selectedExercises.length === 0) return;
 
-    // Save to custom workouts history
-    const existingIndex = customWorkouts.findIndex(w => w.name === workoutName);
-    if (existingIndex === -1) {
+    // Always save/update if marked as favorite
+    if (isFavorite) {
       addCustomWorkout({
         name: workoutName,
         exercises: selectedExercises.map(e => ({
@@ -230,10 +229,8 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
           workTime: e.workTime,
           restTime: e.restTime,
         })),
-        isFavorite: isFavorite,
+        isFavorite: true,
       });
-    } else if (isFavorite !== customWorkouts[existingIndex].isFavorite) {
-      toggleFavorite(customWorkouts[existingIndex].id);
     }
 
     onStartWorkout(selectedExercises, workoutName);
