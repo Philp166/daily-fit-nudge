@@ -1,7 +1,93 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Pause, Play, RotateCcw, Plus, Minus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+
+interface NumberInputProps {
+  value: number;
+  onChange: (value: number) => void;
+  min: number;
+  max: number;
+  step?: number;
+  label: string;
+}
+
+const NumberInput: React.FC<NumberInputProps> = ({ value, onChange, min, max, step = 1, label }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(value.toString());
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  useEffect(() => {
+    setInputValue(value.toString());
+  }, [value]);
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    const parsed = parseInt(inputValue, 10);
+    if (!isNaN(parsed)) {
+      onChange(Math.max(min, Math.min(max, parsed)));
+    } else {
+      setInputValue(value.toString());
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleBlur();
+    }
+  };
+
+  return (
+    <div className="glass rounded-3xl p-6">
+      <p className="text-caption text-foreground/60 mb-4 text-center">{label}</p>
+      <div className="flex items-center justify-between">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onChange(Math.max(min, value - step))}
+          className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+        >
+          <Minus size={24} />
+        </motion.button>
+        
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="number"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            className="w-24 text-center text-display text-extralight bg-transparent outline-none border-b-2 border-primary text-foreground"
+            min={min}
+            max={max}
+          />
+        ) : (
+          <span
+            onClick={() => setIsEditing(true)}
+            className="text-display text-extralight text-foreground cursor-pointer hover:text-primary transition-colors"
+          >
+            {value}
+          </span>
+        )}
+        
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onChange(Math.min(max, value + step))}
+          className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+        >
+          <Plus size={24} />
+        </motion.button>
+      </div>
+    </div>
+  );
+};
 
 interface SimpleTimerProps {
   isOpen: boolean;
@@ -143,15 +229,6 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const adjustValue = (
-    setter: React.Dispatch<React.SetStateAction<number>>,
-    delta: number,
-    min: number,
-    max: number
-  ) => {
-    setter(prev => Math.max(min, Math.min(max, prev + delta)));
-  };
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -225,71 +302,29 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
               /* Settings Mode */
               <div className="flex-1 flex flex-col px-5">
                 <div className="flex-1 space-y-4 mt-4">
-                  {/* Sets */}
-                  <div className="glass rounded-3xl p-6">
-                    <p className="text-caption text-foreground/60 mb-4 text-center">Подходы</p>
-                    <div className="flex items-center justify-between">
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => adjustValue(setSets, -1, 1, 20)}
-                        className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                      >
-                        <Minus size={24} />
-                      </motion.button>
-                      <span className="text-display text-extralight text-foreground">{sets}</span>
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => adjustValue(setSets, 1, 1, 20)}
-                        className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                      >
-                        <Plus size={24} />
-                      </motion.button>
-                    </div>
-                  </div>
-
-                  {/* Work Time */}
-                  <div className="glass rounded-3xl p-6">
-                    <p className="text-caption text-foreground/60 mb-4 text-center">Время работы (сек)</p>
-                    <div className="flex items-center justify-between">
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => adjustValue(setWorkTime, -5, 5, 300)}
-                        className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                      >
-                        <Minus size={24} />
-                      </motion.button>
-                      <span className="text-display text-extralight text-foreground">{workTime}</span>
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => adjustValue(setWorkTime, 5, 5, 300)}
-                        className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                      >
-                        <Plus size={24} />
-                      </motion.button>
-                    </div>
-                  </div>
-
-                  {/* Rest Time */}
-                  <div className="glass rounded-3xl p-6">
-                    <p className="text-caption text-foreground/60 mb-4 text-center">Время отдыха (сек)</p>
-                    <div className="flex items-center justify-between">
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => adjustValue(setRestTime, -5, 0, 180)}
-                        className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                      >
-                        <Minus size={24} />
-                      </motion.button>
-                      <span className="text-display text-extralight text-foreground">{restTime}</span>
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => adjustValue(setRestTime, 5, 0, 180)}
-                        className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                      >
-                        <Plus size={24} />
-                      </motion.button>
-                    </div>
-                  </div>
+                  <NumberInput
+                    label="Подходы"
+                    value={sets}
+                    onChange={setSets}
+                    min={1}
+                    max={20}
+                  />
+                  <NumberInput
+                    label="Время работы (сек)"
+                    value={workTime}
+                    onChange={setWorkTime}
+                    min={5}
+                    max={300}
+                    step={5}
+                  />
+                  <NumberInput
+                    label="Время отдыха (сек)"
+                    value={restTime}
+                    onChange={setRestTime}
+                    min={0}
+                    max={180}
+                    step={5}
+                  />
                 </div>
 
                 {/* Start Button */}

@@ -188,7 +188,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       s => new Date(s.completedAt) >= startOfWeek
     );
 
-    const weeklyGoal = (profile?.dailyCalorieGoal || 500) * 7 * 0.3; // 30% of weekly calorie intake
+    // Weekly goal = daily burn goal × 7 days
+    const weeklyGoal = (profile?.dailyCalorieGoal || 300) * 7;
     const current = weekSessions.reduce((sum, s) => sum + s.caloriesBurned, 0);
 
     return {
