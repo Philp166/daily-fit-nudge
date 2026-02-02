@@ -245,7 +245,7 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="h-full flex flex-col"
+            className="h-full flex flex-col overflow-y-auto pb-20"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-safe-top pb-4">
@@ -328,7 +328,7 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Start Button */}
-                <div className="pb-safe-bottom mb-8 pt-4">
+                <div className="pb-8 pt-4">
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={startTimer}

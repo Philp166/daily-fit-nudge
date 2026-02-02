@@ -78,6 +78,12 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Manrope', sans-serif;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  body::-webkit-scrollbar {
+    display: none;
   }
 
   html {
