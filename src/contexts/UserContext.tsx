@@ -1,0 +1,244 @@
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+export interface UserProfile {
+  name: string;
+  age: number;
+  height: number; // cm
+  weight: number; // kg
+  goal: 'lose' | 'maintain' | 'gain';
+  dailyCalorieGoal: number;
+}
+
+export interface WorkoutSession {
+  id: string;
+  name: string;
+  duration: number; // minutes
+  caloriesBurned: number;
+  exercisesCount: number;
+  setsCount: number;
+  completedAt: Date;
+}
+
+export interface CustomWorkout {
+  id: string;
+  name: string;
+  exercises: {
+    exerciseId: string;
+    sets: number;
+    workTime: number;
+    restTime: number;
+  }[];
+  isFavorite: boolean;
+  createdAt: Date;
+}
+
+interface UserContextType {
+  profile: UserProfile | null;
+  setProfile: (profile: UserProfile) => void;
+  isOnboarded: boolean;
+  todayCalories: number;
+  addCalories: (calories: number) => void;
+  workoutSessions: WorkoutSession[];
+  addWorkoutSession: (session: Omit<WorkoutSession, 'id' | 'completedAt'>) => void;
+  customWorkouts: CustomWorkout[];
+  addCustomWorkout: (workout: Omit<CustomWorkout, 'id' | 'createdAt'>) => void;
+  toggleFavorite: (workoutId: string) => void;
+  deleteCustomWorkout: (workoutId: string) => void;
+  getTodaySessions: () => WorkoutSession[];
+  getWeekProgress: () => { current: number; goal: number };
+  logout: () => void;
+}
+
+const UserContext = createContext<UserContextType | undefined>(undefined);
+
+// Calculate BMR using Mifflin-St Jeor Equation
+const calculateBMR = (weight: number, height: number, age: number): number => {
+  // Using male formula as default, simplified
+  return 10 * weight + 6.25 * height - 5 * age + 5;
+};
+
+// Calculate daily calorie goal based on goal
+const calculateDailyGoal = (bmr: number, goal: 'lose' | 'maintain' | 'gain'): number => {
+  const activityMultiplier = 1.4; // Lightly active
+  const tdee = bmr * activityMultiplier;
+  
+  switch (goal) {
+    case 'lose':
+      return Math.round(tdee * 0.85); // 15% deficit
+    case 'gain':
+      return Math.round(tdee * 1.15); // 15% surplus
+    default:
+      return Math.round(tdee);
+  }
+};
+
+export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [profile, setProfileState] = useState<UserProfile | null>(null);
+  const [todayCalories, setTodayCalories] = useState(0);
+  const [workoutSessions, setWorkoutSessions] = useState<WorkoutSession[]>([]);
+  const [customWorkouts, setCustomWorkouts] = useState<CustomWorkout[]>([]);
+
+  // Load data from localStorage on mount
+  useEffect(() => {
+    const savedProfile = localStorage.getItem('interfit_profile');
+    const savedCalories = localStorage.getItem('interfit_today_calories');
+    const savedDate = localStorage.getItem('interfit_calories_date');
+    const savedSessions = localStorage.getItem('interfit_sessions');
+    const savedCustomWorkouts = localStorage.getItem('interfit_custom_workouts');
+
+    if (savedProfile) {
+      setProfileState(JSON.parse(savedProfile));
+    }
+
+    // Reset calories if it's a new day
+    const today = new Date().toDateString();
+    if (savedCalories && savedDate === today) {
+      setTodayCalories(parseInt(savedCalories, 10));
+    } else {
+      setTodayCalories(0);
+      localStorage.setItem('interfit_calories_date', today);
+    }
+
+    if (savedSessions) {
+      setWorkoutSessions(JSON.parse(savedSessions).map((s: WorkoutSession) => ({
+        ...s,
+        completedAt: new Date(s.completedAt),
+      })));
+    }
+
+    if (savedCustomWorkouts) {
+      setCustomWorkouts(JSON.parse(savedCustomWorkouts).map((w: CustomWorkout) => ({
+        ...w,
+        createdAt: new Date(w.createdAt),
+      })));
+    }
+  }, []);
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    if (profile) {
+      localStorage.setItem('interfit_profile', JSON.stringify(profile));
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    localStorage.setItem('interfit_today_calories', todayCalories.toString());
+  }, [todayCalories]);
+
+  useEffect(() => {
+    localStorage.setItem('interfit_sessions', JSON.stringify(workoutSessions));
+  }, [workoutSessions]);
+
+  useEffect(() => {
+    localStorage.setItem('interfit_custom_workouts', JSON.stringify(customWorkouts));
+  }, [customWorkouts]);
+
+  const setProfile = (newProfile: UserProfile) => {
+    const bmr = calculateBMR(newProfile.weight, newProfile.height, newProfile.age);
+    const dailyCalorieGoal = calculateDailyGoal(bmr, newProfile.goal);
+    setProfileState({ ...newProfile, dailyCalorieGoal });
+  };
+
+  const addCalories = (calories: number) => {
+    setTodayCalories(prev => prev + calories);
+  };
+
+  const addWorkoutSession = (session: Omit<WorkoutSession, 'id' | 'completedAt'>) => {
+    const newSession: WorkoutSession = {
+      ...session,
+      id: crypto.randomUUID(),
+      completedAt: new Date(),
+    };
+    setWorkoutSessions(prev => [newSession, ...prev]);
+    addCalories(session.caloriesBurned);
+  };
+
+  const addCustomWorkout = (workout: Omit<CustomWorkout, 'id' | 'createdAt'>) => {
+    const newWorkout: CustomWorkout = {
+      ...workout,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+    };
+    setCustomWorkouts(prev => [newWorkout, ...prev]);
+  };
+
+  const toggleFavorite = (workoutId: string) => {
+    setCustomWorkouts(prev =>
+      prev.map(w =>
+        w.id === workoutId ? { ...w, isFavorite: !w.isFavorite } : w
+      )
+    );
+  };
+
+  const deleteCustomWorkout = (workoutId: string) => {
+    setCustomWorkouts(prev => prev.filter(w => w.id !== workoutId));
+  };
+
+  const getTodaySessions = (): WorkoutSession[] => {
+    const today = new Date().toDateString();
+    return workoutSessions.filter(
+      s => new Date(s.completedAt).toDateString() === today
+    );
+  };
+
+  const getWeekProgress = () => {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const weekSessions = workoutSessions.filter(
+      s => new Date(s.completedAt) >= startOfWeek
+    );
+
+    const weeklyGoal = (profile?.dailyCalorieGoal || 500) * 7 * 0.3; // 30% of weekly calorie intake
+    const current = weekSessions.reduce((sum, s) => sum + s.caloriesBurned, 0);
+
+    return {
+      current,
+      goal: Math.round(weeklyGoal),
+    };
+  };
+
+  const logout = () => {
+    setProfileState(null);
+    setTodayCalories(0);
+    setWorkoutSessions([]);
+    setCustomWorkouts([]);
+    localStorage.removeItem('interfit_profile');
+    localStorage.removeItem('interfit_today_calories');
+    localStorage.removeItem('interfit_sessions');
+    localStorage.removeItem('interfit_custom_workouts');
+  };
+
+  return (
+    <UserContext.Provider
+      value={{
+        profile,
+        setProfile,
+        isOnboarded: !!profile,
+        todayCalories,
+        addCalories,
+        workoutSessions,
+        addWorkoutSession,
+        customWorkouts,
+        addCustomWorkout,
+        toggleFavorite,
+        deleteCustomWorkout,
+        getTodaySessions,
+        getWeekProgress,
+        logout,
+      }}
+    >
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+export const useUser = (): UserContextType => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUser must be used within a UserProvider');
+  }
+  return context;
+};
