@@ -160,12 +160,11 @@ const AppContent: React.FC = () => {
   );
 };
 
-const Index: React.FC = () => {
-  return (
-    <UserProvider>
-      <AppContent />
-    </UserProvider>
-  );
-};
+const Index: React.FC = () => (
+  <UserProvider>
+    <AppContent />
+  </UserProvider>
+);
+
 
 export default Index;
