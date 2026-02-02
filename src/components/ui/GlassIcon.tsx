@@ -15,7 +15,8 @@ import {
   Calendar,
   Clock,
   Star,
-  Medal
+  Medal,
+  Hand
 } from 'lucide-react';
 
 export type IconName = 
@@ -35,7 +36,8 @@ export type IconName =
   | 'clock'
   | 'star'
   | 'medal'
-  | 'wave';
+  | 'wave'
+  | 'hand';
 
 interface GlassIconProps {
   name: IconName;
@@ -61,6 +63,7 @@ const iconMap = {
   star: Star,
   medal: Medal,
   wave: Activity,
+  hand: Hand,
 };
 
 const sizeClasses = {

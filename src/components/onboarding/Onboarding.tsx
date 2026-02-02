@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Scale, Dumbbell, Minus, Plus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import GlassIcon from '@/components/ui/GlassIcon';
 
 interface NumberInputProps {
   value: number;
@@ -150,9 +151,7 @@ const Onboarding: React.FC = () => {
         {step === 0 && (
           <>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center">
-                <span className="text-2xl">👋</span>
-              </div>
+              <GlassIcon name="hand" size="lg" />
               <h1 className="text-display-sm text-extralight text-foreground">
                 Привет!
               </h1>
