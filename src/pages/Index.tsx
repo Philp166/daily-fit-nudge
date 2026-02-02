@@ -157,8 +157,9 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {activeTab === 'home' && (
+    <div className="h-screen bg-background overflow-hidden flex flex-col">
+      <div className="flex-1 overflow-y-auto">
+        {activeTab === 'home' && (
         <DashboardView
           onOpenConstructor={() => {
             setEditWorkout(null);
@@ -173,7 +174,8 @@ const AppContent: React.FC = () => {
         <SimpleTimer isOpen={true} onClose={() => setActiveTab('home')} />
       )}
 
-      {activeTab === 'profile' && <ProfileView />}
+        {activeTab === 'profile' && <ProfileView />}
+      </div>
 
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
 
