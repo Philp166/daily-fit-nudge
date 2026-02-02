@@ -1,7 +1,91 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Scale, Dumbbell, Minus, Plus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+
+interface NumberInputProps {
+  value: number;
+  onChange: (value: number) => void;
+  min: number;
+  max: number;
+  label: string;
+}
+
+const NumberInput: React.FC<NumberInputProps> = ({ value, onChange, min, max, label }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(value.toString());
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleStartEdit = () => {
+    setInputValue(value.toString());
+    setIsEditing(true);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    const parsed = parseInt(inputValue, 10);
+    if (!isNaN(parsed)) {
+      onChange(Math.max(min, Math.min(max, parsed)));
+    } else {
+      setInputValue(value.toString());
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      inputRef.current?.blur();
+    }
+  };
+
+  return (
+    <div className="glass rounded-3xl p-5">
+      <label className="text-caption text-muted-foreground block mb-4 text-center">
+        {label}
+      </label>
+      <div className="flex items-center justify-between">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onChange(Math.max(min, value - 1))}
+          className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+        >
+          <Minus size={24} />
+        </motion.button>
+        
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="number"
+            inputMode="numeric"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            className="w-24 text-center text-display-sm text-extralight bg-transparent border-b-2 border-primary outline-none"
+            min={min}
+            max={max}
+          />
+        ) : (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleStartEdit}
+            className="text-display-sm text-extralight px-4 py-2 rounded-xl hover:bg-card/50 transition-colors"
+          >
+            {value}
+          </motion.button>
+        )}
+        
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onChange(Math.min(max, value + 1))}
+          className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+        >
+          <Plus size={24} />
+        </motion.button>
+      </div>
+    </div>
+  );
+};
 
 const Onboarding: React.FC = () => {
   const { setProfile } = useUser();
@@ -97,74 +181,29 @@ const Onboarding: React.FC = () => {
             </p>
 
             <div className="space-y-4">
-              <div className="glass rounded-3xl p-5">
-                <label className="text-caption text-muted-foreground block mb-4 text-center">
-                  Возраст
-                </label>
-                <div className="flex items-center justify-between">
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setFormData({ ...formData, age: Math.max(14, formData.age - 1) })}
-                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                  >
-                    <Minus size={24} />
-                  </motion.button>
-                  <span className="text-display-sm text-extralight">{formData.age}</span>
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setFormData({ ...formData, age: Math.min(100, formData.age + 1) })}
-                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                  >
-                    <Plus size={24} />
-                  </motion.button>
-                </div>
-              </div>
+              <NumberInput
+                label="Возраст"
+                value={formData.age}
+                onChange={(age) => setFormData({ ...formData, age })}
+                min={14}
+                max={100}
+              />
 
-              <div className="glass rounded-3xl p-5">
-                <label className="text-caption text-muted-foreground block mb-4 text-center">
-                  Рост (см)
-                </label>
-                <div className="flex items-center justify-between">
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setFormData({ ...formData, height: Math.max(140, formData.height - 1) })}
-                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                  >
-                    <Minus size={24} />
-                  </motion.button>
-                  <span className="text-display-sm text-extralight">{formData.height}</span>
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setFormData({ ...formData, height: Math.min(220, formData.height + 1) })}
-                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                  >
-                    <Plus size={24} />
-                  </motion.button>
-                </div>
-              </div>
+              <NumberInput
+                label="Рост (см)"
+                value={formData.height}
+                onChange={(height) => setFormData({ ...formData, height })}
+                min={140}
+                max={220}
+              />
 
-              <div className="glass rounded-3xl p-5">
-                <label className="text-caption text-muted-foreground block mb-4 text-center">
-                  Вес (кг)
-                </label>
-                <div className="flex items-center justify-between">
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setFormData({ ...formData, weight: Math.max(40, formData.weight - 1) })}
-                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                  >
-                    <Minus size={24} />
-                  </motion.button>
-                  <span className="text-display-sm text-extralight">{formData.weight}</span>
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setFormData({ ...formData, weight: Math.min(150, formData.weight + 1) })}
-                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-                  >
-                    <Plus size={24} />
-                  </motion.button>
-                </div>
-              </div>
+              <NumberInput
+                label="Вес (кг)"
+                value={formData.weight}
+                onChange={(weight) => setFormData({ ...formData, weight })}
+                min={40}
+                max={200}
+              />
             </div>
           </>
         )}
