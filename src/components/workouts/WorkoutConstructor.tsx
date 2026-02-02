@@ -219,10 +219,26 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
   const handleStartWorkout = () => {
     if (selectedExercises.length === 0) return;
 
-    // Always save/update if marked as favorite
+    // Save to favorites if marked
     if (isFavorite) {
+      // Check if we're editing an existing custom workout by checking if editWorkout has an id
+      const existingWorkout = editWorkout?.id 
+        ? customWorkouts.find(w => w.id === editWorkout.id)
+        : null;
+      
+      // Generate unique name if needed (when creating new workout with default name)
+      let finalName = workoutName;
+      if (!existingWorkout && workoutName === 'Моя тренировка') {
+        const existingCount = customWorkouts.filter(w => 
+          w.name.startsWith('Моя тренировка')
+        ).length;
+        if (existingCount > 0) {
+          finalName = `Моя тренировка ${existingCount + 1}`;
+        }
+      }
+      
       addCustomWorkout({
-        name: workoutName,
+        name: existingWorkout ? workoutName : finalName,
         exercises: selectedExercises.map(e => ({
           exerciseId: e.exerciseId,
           sets: e.sets,
@@ -231,6 +247,11 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
         })),
         isFavorite: true,
       });
+      
+      // Update local name for timer
+      if (!existingWorkout) {
+        setWorkoutName(finalName);
+      }
     }
 
     onStartWorkout(selectedExercises, workoutName);
