@@ -151,7 +151,7 @@ const Onboarding: React.FC = () => {
         {step === 0 && (
           <>
             <div className="flex items-center gap-3 mb-2">
-              <GlassIcon name="hand" size="lg" />
+              <GlassIcon name="sparkles" size="lg" />
               <h1 className="text-display-sm text-extralight text-foreground">
                 Привет!
               </h1>
