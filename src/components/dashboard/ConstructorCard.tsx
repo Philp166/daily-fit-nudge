@@ -1,7 +1,7 @@
 import React from 'react';
 import WidgetCard from './WidgetCard';
 import Badge from './Badge';
-import { Dumbbell, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 interface ConstructorCardProps {
   onOpenConstructor: () => void;
@@ -13,10 +13,7 @@ const ConstructorCard: React.FC<ConstructorCardProps> = ({
   return (
     <WidgetCard gradient="constructor" delay={0.4} onClick={onOpenConstructor}>
       <div className="flex justify-between items-start mb-4">
-        <Badge>
-          <Dumbbell size={12} className="mr-1.5" />
-          Конструктор
-        </Badge>
+        <Badge>Конструктор</Badge>
         <ChevronRight size={20} className="text-foreground/50" />
       </div>
 

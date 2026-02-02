@@ -2,7 +2,6 @@ import React from 'react';
 import WidgetCard from './WidgetCard';
 import Badge from './Badge';
 import CircularProgress from './CircularProgress';
-import { TrendingUp } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
 const AnalysisCard: React.FC = () => {
@@ -14,10 +13,7 @@ const AnalysisCard: React.FC = () => {
     <WidgetCard gradient="analysis" delay={0.7}>
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <Badge className="mb-4">
-            <TrendingUp size={12} className="mr-1.5" />
-            Анализ недели
-          </Badge>
+          <Badge className="mb-4">Анализ недели</Badge>
 
           <div className="mt-6">
             <div className="text-title text-foreground mb-1">

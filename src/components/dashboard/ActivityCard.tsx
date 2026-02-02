@@ -1,7 +1,6 @@
 import React from 'react';
 import WidgetCard from './WidgetCard';
 import Badge from './Badge';
-import { Clock } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
 const ActivityCard: React.FC = () => {
@@ -24,10 +23,7 @@ const ActivityCard: React.FC = () => {
 
   return (
     <WidgetCard gradient="activity" className="flex-1" delay={0.5}>
-      <Badge className="mb-4">
-        <Clock size={12} className="mr-1.5" />
-        Активность
-      </Badge>
+      <Badge className="mb-4">Активность</Badge>
 
       <div className="mb-2">
         <span className="text-display-sm text-extralight text-foreground">

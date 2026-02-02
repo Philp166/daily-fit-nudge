@@ -1,7 +1,6 @@
 import React from 'react';
 import WidgetCard from './WidgetCard';
 import Badge from './Badge';
-import { ListVideo, Star } from 'lucide-react';
 import { presetWorkouts } from '@/data/workouts';
 import { useUser } from '@/contexts/UserContext';
 
@@ -16,10 +15,7 @@ const WorkoutsCard: React.FC<WorkoutsCardProps> = ({ onOpenWorkouts }) => {
 
   return (
     <WidgetCard gradient="workouts" className="flex-1" delay={0.6} onClick={onOpenWorkouts}>
-      <Badge className="mb-4">
-        <ListVideo size={12} className="mr-1.5" />
-        Тренировки
-      </Badge>
+      <Badge className="mb-4">Тренировки</Badge>
 
       <div className="mb-2">
         <span className="text-display-sm text-extralight text-foreground">
@@ -32,10 +28,9 @@ const WorkoutsCard: React.FC<WorkoutsCardProps> = ({ onOpenWorkouts }) => {
       </p>
 
       {favoriteWorkouts.length > 0 && (
-        <div className="mt-2 flex items-center gap-1">
-          <Star size={12} className="text-yellow-400 fill-yellow-400" />
-          <span className="text-badge text-muted-white">{favoriteWorkouts.length} избранных</span>
-        </div>
+        <p className="mt-2 text-badge text-muted-white">
+          {favoriteWorkouts.length} избранных
+        </p>
       )}
     </WidgetCard>
   );
