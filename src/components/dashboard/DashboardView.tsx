@@ -20,25 +20,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenWorkouts,
   onSelectWorkout,
 }) => {
-  const { profile, customWorkouts } = useUser();
+  const { profile } = useUser();
 
-  const handleRepeatWorkout = (workoutId: string) => {
-    const workout = customWorkouts.find(w => w.id === workoutId);
-    if (workout) {
-      const workoutData: Workout = {
-        id: workout.id,
-        name: workout.name,
-        category: 'Пользовательская',
-        difficulty: 'Средняя',
-        exercises: workout.exercises,
-        totalDuration: Math.round(
-          workout.exercises.reduce((acc, ex) => acc + (ex.workTime + ex.restTime) * ex.sets, 0) / 60
-        ),
-        estimatedCalories: 0,
-      };
-      onSelectWorkout(workoutData);
-    }
-  };
 
   return (
     <motion.div
@@ -70,10 +53,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Cards Grid */}
       <div className="space-y-4">
         {/* Constructor Card */}
-        <ConstructorCard
-          onOpenConstructor={onOpenConstructor}
-          onRepeatWorkout={handleRepeatWorkout}
-        />
+        <ConstructorCard onOpenConstructor={onOpenConstructor} />
 
         {/* Two small cards */}
         <div className="flex gap-4">

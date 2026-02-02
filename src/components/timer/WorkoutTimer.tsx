@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Pause, Play, SkipForward, Square, ChevronRight, Flame, Dumbbell, Activity, Heart, Zap, Target, Trophy } from 'lucide-react';
+import { X, Pause, Play, SkipForward, Square, ChevronRight, Flame, Dumbbell, Activity, Target, Trophy, Minimize2 } from 'lucide-react';
 import { Exercise, getExerciseById, calculateCalories, getExerciseIconComponent } from '@/data/exercises';
 import { useUser } from '@/contexts/UserContext';
 
@@ -12,11 +12,22 @@ interface WorkoutExercise {
   restTime: number;
 }
 
+interface TimerState {
+  currentExerciseIndex: number;
+  currentSet: number;
+  timeLeft: number;
+  totalCalories: number;
+  phase: 'work' | 'rest';
+}
+
 interface WorkoutTimerProps {
   isOpen: boolean;
   onClose: () => void;
   exercises: WorkoutExercise[];
   workoutName: string;
+  onMinimize?: (state: TimerState) => void;
+  onStateUpdate?: (state: TimerState) => void;
+  initialState?: TimerState;
 }
 
 type Phase = 'work' | 'rest';
@@ -26,15 +37,18 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   onClose,
   exercises,
   workoutName,
+  onMinimize,
+  onStateUpdate,
+  initialState,
 }) => {
   const { profile, addWorkoutSession } = useUser();
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [currentSet, setCurrentSet] = useState(1);
-  const [phase, setPhase] = useState<Phase>('work');
-  const [timeLeft, setTimeLeft] = useState(0);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(initialState?.currentExerciseIndex ?? 0);
+  const [currentSet, setCurrentSet] = useState(initialState?.currentSet ?? 1);
+  const [phase, setPhase] = useState<Phase>(initialState?.phase ?? 'work');
+  const [timeLeft, setTimeLeft] = useState(initialState?.timeLeft ?? 0);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [totalCaloriesBurned, setTotalCaloriesBurned] = useState(0);
+  const [totalCaloriesBurned, setTotalCaloriesBurned] = useState(initialState?.totalCalories ?? 0);
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [totalSetsCompleted, setTotalSetsCompleted] = useState(0);
@@ -50,19 +64,34 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
 
   // Initialize timer
   useEffect(() => {
-    if (isOpen && exercises.length > 0 && !isRunning) {
-      setCurrentExerciseIndex(0);
-      setCurrentSet(1);
-      setPhase('work');
-      setTimeLeft(exercises[0].workTime);
-      setIsRunning(true);
-      setIsPaused(false);
-      setTotalCaloriesBurned(0);
-      setWorkoutStartTime(new Date());
-      setIsComplete(false);
-      setTotalSetsCompleted(0);
+    if (isOpen && exercises.length > 0) {
+      if (initialState) {
+        // Restore from minimized state
+        setCurrentExerciseIndex(initialState.currentExerciseIndex);
+        setCurrentSet(initialState.currentSet);
+        setPhase(initialState.phase);
+        setTimeLeft(initialState.timeLeft);
+        setTotalCaloriesBurned(initialState.totalCalories);
+        setIsRunning(true);
+        setIsPaused(false);
+        if (!workoutStartTime) {
+          setWorkoutStartTime(new Date());
+        }
+      } else if (!isRunning) {
+        // Fresh start
+        setCurrentExerciseIndex(0);
+        setCurrentSet(1);
+        setPhase('work');
+        setTimeLeft(exercises[0].workTime);
+        setIsRunning(true);
+        setIsPaused(false);
+        setTotalCaloriesBurned(0);
+        setWorkoutStartTime(new Date());
+        setIsComplete(false);
+        setTotalSetsCompleted(0);
+      }
     }
-  }, [isOpen, exercises]);
+  }, [isOpen, exercises, initialState]);
 
   // Calculate calories per second during work
   const calculateCaloriesPerSecond = useCallback(() => {
@@ -166,6 +195,18 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     }
   };
 
+  const handleMinimize = () => {
+    if (onMinimize) {
+      onMinimize({
+        currentExerciseIndex,
+        currentSet,
+        timeLeft,
+        totalCalories: totalCaloriesBurned,
+        phase,
+      });
+    }
+  };
+
   const stopWorkout = () => {
     if (workoutStartTime && totalCaloriesBurned > 0) {
       const duration = Math.round(
@@ -219,13 +260,24 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                 </p>
                 <h1 className="text-title text-foreground">{workoutName}</h1>
               </div>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={stopWorkout}
-                className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
-              >
-                <X size={20} />
-              </motion.button>
+              <div className="flex gap-2">
+                {onMinimize && (
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleMinimize}
+                    className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+                  >
+                    <Minimize2 size={20} />
+                  </motion.button>
+                )}
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={stopWorkout}
+                  className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+                >
+                  <X size={20} />
+                </motion.button>
+              </div>
             </div>
 
             {/* Main Content */}
