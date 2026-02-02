@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Ruler, Weight, Calendar, Target, LogOut, ChevronRight, Edit2, Check } from 'lucide-react';
+import { User, Ruler, Weight, Calendar, Target, LogOut, ChevronRight, Edit2, Check, Flame, Scale, Dumbbell, Clock, Activity } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
 const ProfileView: React.FC = () => {
@@ -28,10 +28,10 @@ const ProfileView: React.FC = () => {
     setIsEditing(false);
   };
 
-  const goals = {
-    lose: { label: 'Похудеть', icon: '🔥' },
-    maintain: { label: 'Поддержать форму', icon: '⚖️' },
-    gain: { label: 'Набрать массу', icon: '💪' },
+  const goalInfo = {
+    lose: { label: 'Похудеть', icon: <Flame size={20} className="text-primary" /> },
+    maintain: { label: 'Поддержать форму', icon: <Scale size={20} className="text-primary" /> },
+    gain: { label: 'Набрать массу', icon: <Dumbbell size={20} className="text-primary" /> },
   };
 
   return (
@@ -46,7 +46,7 @@ const ProfileView: React.FC = () => {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-          className="w-10 h-10 rounded-full glass flex items-center justify-center"
+          className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
         >
           {isEditing ? <Check size={20} /> : <Edit2 size={18} />}
         </motion.button>
@@ -54,7 +54,7 @@ const ProfileView: React.FC = () => {
 
       {/* Avatar & Name */}
       <div className="text-center mb-8">
-        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent mx-auto mb-4 flex items-center justify-center">
+        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary to-accent mx-auto mb-4 flex items-center justify-center">
           <User size={40} className="text-primary-foreground" />
         </div>
         {isEditing ? (
@@ -71,21 +71,30 @@ const ProfileView: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-8">
-        <div className="bg-card rounded-2xl p-4 text-center">
-          <p className="text-display-sm text-extralight text-foreground mb-1">
+        <div className="glass rounded-3xl p-4 text-center">
+          <div className="w-10 h-10 rounded-2xl glass mx-auto mb-2 flex items-center justify-center">
+            <Activity size={18} className="text-primary" />
+          </div>
+          <p className="text-title text-foreground mb-1">
             {totalWorkouts}
           </p>
           <p className="text-badge text-muted-foreground">Тренировок</p>
         </div>
-        <div className="bg-card rounded-2xl p-4 text-center">
-          <p className="text-display-sm text-extralight text-foreground mb-1">
-            {Math.round(totalCalories / 1000)}k
+        <div className="glass rounded-3xl p-4 text-center">
+          <div className="w-10 h-10 rounded-2xl glass mx-auto mb-2 flex items-center justify-center">
+            <Flame size={18} className="text-primary" />
+          </div>
+          <p className="text-title text-foreground mb-1">
+            {totalCalories >= 1000 ? `${Math.round(totalCalories / 1000)}k` : totalCalories}
           </p>
           <p className="text-badge text-muted-foreground">Калорий</p>
         </div>
-        <div className="bg-card rounded-2xl p-4 text-center">
-          <p className="text-display-sm text-extralight text-foreground mb-1">
-            {Math.round(totalMinutes / 60)}ч
+        <div className="glass rounded-3xl p-4 text-center">
+          <div className="w-10 h-10 rounded-2xl glass mx-auto mb-2 flex items-center justify-center">
+            <Clock size={18} className="text-primary" />
+          </div>
+          <p className="text-title text-foreground mb-1">
+            {totalMinutes >= 60 ? `${Math.round(totalMinutes / 60)}ч` : `${totalMinutes}м`}
           </p>
           <p className="text-badge text-muted-foreground">Времени</p>
         </div>
@@ -93,10 +102,10 @@ const ProfileView: React.FC = () => {
 
       {/* Profile Data */}
       <div className="space-y-3 mb-8">
-        <div className="bg-card rounded-2xl p-4">
+        <div className="glass rounded-3xl p-4">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-              <Calendar size={20} className="text-muted-foreground" />
+            <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center">
+              <Calendar size={20} className="text-primary" />
             </div>
             <div className="flex-1">
               <p className="text-caption text-muted-foreground">Возраст</p>
@@ -114,10 +123,10 @@ const ProfileView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-card rounded-2xl p-4">
+        <div className="glass rounded-3xl p-4">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-              <Ruler size={20} className="text-muted-foreground" />
+            <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center">
+              <Ruler size={20} className="text-primary" />
             </div>
             <div className="flex-1">
               <p className="text-caption text-muted-foreground">Рост</p>
@@ -135,10 +144,10 @@ const ProfileView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-card rounded-2xl p-4">
+        <div className="glass rounded-3xl p-4">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-              <Weight size={20} className="text-muted-foreground" />
+            <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center">
+              <Weight size={20} className="text-primary" />
             </div>
             <div className="flex-1">
               <p className="text-caption text-muted-foreground">Вес</p>
@@ -156,16 +165,17 @@ const ProfileView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-card rounded-2xl p-4">
+        <div className="glass rounded-3xl p-4">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-              <Target size={20} className="text-muted-foreground" />
+            <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center">
+              <Target size={20} className="text-primary" />
             </div>
             <div className="flex-1">
               <p className="text-caption text-muted-foreground">Цель</p>
-              <p className="text-body text-foreground">
-                {goals[profile.goal].icon} {goals[profile.goal].label}
-              </p>
+              <div className="flex items-center gap-2">
+                {goalInfo[profile.goal].icon}
+                <p className="text-body text-foreground">{goalInfo[profile.goal].label}</p>
+              </div>
             </div>
             <p className="text-caption text-primary">{profile.dailyCalorieGoal} ккал/день</p>
           </div>
@@ -176,9 +186,9 @@ const ProfileView: React.FC = () => {
       <motion.button
         whileTap={{ scale: 0.98 }}
         onClick={logout}
-        className="w-full bg-destructive/10 rounded-2xl p-4 flex items-center gap-4 text-destructive"
+        className="w-full bg-destructive/10 rounded-3xl p-4 flex items-center gap-4 text-destructive"
       >
-        <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl bg-destructive/20 flex items-center justify-center">
           <LogOut size={20} />
         </div>
         <span className="text-body flex-1 text-left">Выйти из аккаунта</span>

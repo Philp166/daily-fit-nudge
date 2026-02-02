@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Share2 } from 'lucide-react';
+import { Share2, Clock, Flame, ListChecks, Dumbbell } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import CaloriesWidget from '@/components/dashboard/CaloriesWidget';
 import ConstructorCard from '@/components/dashboard/ConstructorCard';
@@ -9,7 +9,6 @@ import WorkoutsCard from '@/components/dashboard/WorkoutsCard';
 import AnalysisCard from '@/components/dashboard/AnalysisCard';
 import WidgetCard from '@/components/dashboard/WidgetCard';
 import Badge from '@/components/dashboard/Badge';
-import { Clock, Flame, ListChecks, ChevronRight } from 'lucide-react';
 import { presetWorkouts, Workout } from '@/data/workouts';
 
 interface DashboardViewProps {
@@ -23,10 +22,28 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenWorkouts,
   onSelectWorkout,
 }) => {
-  const { profile } = useUser();
+  const { profile, customWorkouts } = useUser();
 
   // Pick a random featured workout
   const featuredWorkout = presetWorkouts[0];
+
+  const handleRepeatWorkout = (workoutId: string) => {
+    const workout = customWorkouts.find(w => w.id === workoutId);
+    if (workout) {
+      const workoutData: Workout = {
+        id: workout.id,
+        name: workout.name,
+        category: 'Пользовательская',
+        difficulty: 'Средняя',
+        exercises: workout.exercises,
+        totalDuration: Math.round(
+          workout.exercises.reduce((acc, ex) => acc + (ex.workTime + ex.restTime) * ex.sets, 0) / 60
+        ),
+        estimatedCalories: 0,
+      };
+      onSelectWorkout(workoutData);
+    }
+  };
 
   return (
     <motion.div
@@ -46,7 +63,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </h1>
         <motion.button
           whileTap={{ scale: 0.9 }}
-          className="w-10 h-10 rounded-full glass flex items-center justify-center"
+          className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
         >
           <Share2 size={18} className="text-foreground/70" />
         </motion.button>
@@ -89,9 +106,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Constructor Card */}
         <ConstructorCard
           onOpenConstructor={onOpenConstructor}
-          onRepeatWorkout={(id) => {
-            // Handle repeat workout
-          }}
+          onRepeatWorkout={handleRepeatWorkout}
         />
 
         {/* Two small cards */}

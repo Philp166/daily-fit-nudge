@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import WidgetCard from './WidgetCard';
 import Badge from './Badge';
-import { Dumbbell, Clock, Flame, ChevronRight } from 'lucide-react';
+import { Dumbbell, Clock, Star, ChevronRight } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
 interface ConstructorCardProps {
@@ -14,8 +14,9 @@ const ConstructorCard: React.FC<ConstructorCardProps> = ({
   onOpenConstructor,
   onRepeatWorkout,
 }) => {
-  const { customWorkouts } = useUser();
+  const { customWorkouts, toggleFavorite } = useUser();
   
+  // Get last 3 workouts
   const recentWorkouts = customWorkouts.slice(0, 3);
   const favorites = customWorkouts.filter(w => w.isFavorite);
 
@@ -46,8 +47,9 @@ const ConstructorCard: React.FC<ConstructorCardProps> = ({
                   e.stopPropagation();
                   onRepeatWorkout(workout.id);
                 }}
-                className="px-3 py-1.5 text-caption bg-foreground/10 rounded-full hover:bg-foreground/20 transition-colors"
+                className="px-3 py-2 text-caption glass rounded-2xl hover:bg-foreground/20 transition-colors flex items-center gap-2"
               >
+                {workout.isFavorite && <Star size={12} className="text-yellow-400 fill-yellow-400" />}
                 {workout.name}
               </motion.button>
             ))}
@@ -57,9 +59,14 @@ const ConstructorCard: React.FC<ConstructorCardProps> = ({
 
       {favorites.length > 0 && (
         <div className="mt-3 pt-3 border-t border-foreground/10">
-          <p className="text-badge text-muted-white uppercase tracking-wide mb-2">
-            ⭐ Избранное: {favorites.length}
-          </p>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg glass flex items-center justify-center">
+              <Star size={12} className="text-yellow-400" />
+            </div>
+            <p className="text-badge text-muted-white">
+              Избранное: {favorites.length}
+            </p>
+          </div>
         </div>
       )}
     </WidgetCard>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Flame, Scale, Dumbbell, Minus, Plus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
 const Onboarding: React.FC = () => {
@@ -21,13 +22,28 @@ const Onboarding: React.FC = () => {
   };
 
   const goals = [
-    { value: 'lose', label: 'Похудеть', icon: '🔥', desc: 'Сжигать больше калорий' },
-    { value: 'maintain', label: 'Поддержать форму', icon: '⚖️', desc: 'Оставаться в тонусе' },
-    { value: 'gain', label: 'Набрать массу', icon: '💪', desc: 'Наращивать мышцы' },
+    { 
+      value: 'lose', 
+      label: 'Похудеть', 
+      icon: <Flame size={24} className="text-primary" />, 
+      desc: 'Сжигать больше калорий' 
+    },
+    { 
+      value: 'maintain', 
+      label: 'Поддержать форму', 
+      icon: <Scale size={24} className="text-primary" />, 
+      desc: 'Оставаться в тонусе' 
+    },
+    { 
+      value: 'gain', 
+      label: 'Набрать массу', 
+      icon: <Dumbbell size={24} className="text-primary" />, 
+      desc: 'Наращивать мышцы' 
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col px-6 pt-safe-top pb-safe-bottom">
+    <div className="min-h-screen bg-background flex flex-col px-5 pt-safe-top pb-safe-bottom">
       {/* Progress dots */}
       <div className="flex justify-center gap-2 py-6">
         {[0, 1, 2].map((i) => (
@@ -49,9 +65,14 @@ const Onboarding: React.FC = () => {
       >
         {step === 0 && (
           <>
-            <h1 className="text-display-sm text-extralight text-foreground mb-2">
-              Привет! 👋
-            </h1>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center">
+                <span className="text-2xl">👋</span>
+              </div>
+              <h1 className="text-display-sm text-extralight text-foreground">
+                Привет!
+              </h1>
+            </div>
             <p className="text-body text-muted-foreground mb-8">
               Как тебя зовут?
             </p>
@@ -61,7 +82,7 @@ const Onboarding: React.FC = () => {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Введи имя"
-              className="w-full py-4 px-5 bg-card rounded-2xl text-foreground text-title outline-none border border-border focus:border-primary transition-colors"
+              className="w-full py-4 px-5 bg-card rounded-3xl text-foreground text-title outline-none border border-border focus:border-primary transition-colors"
             />
           </>
         )}
@@ -76,58 +97,72 @@ const Onboarding: React.FC = () => {
             </p>
 
             <div className="space-y-4">
-              <div className="bg-card rounded-2xl p-5">
-                <label className="text-caption text-muted-foreground block mb-3">
+              <div className="glass rounded-3xl p-5">
+                <label className="text-caption text-muted-foreground block mb-4 text-center">
                   Возраст
                 </label>
                 <div className="flex items-center justify-between">
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => setFormData({ ...formData, age: Math.max(14, formData.age - 1) })}
-                    className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-xl"
+                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
                   >
-                    −
-                  </button>
+                    <Minus size={24} />
+                  </motion.button>
                   <span className="text-display-sm text-extralight">{formData.age}</span>
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => setFormData({ ...formData, age: Math.min(100, formData.age + 1) })}
-                    className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-xl"
+                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
                   >
-                    +
-                  </button>
+                    <Plus size={24} />
+                  </motion.button>
                 </div>
               </div>
 
-              <div className="bg-card rounded-2xl p-5">
-                <label className="text-caption text-muted-foreground block mb-3">
+              <div className="glass rounded-3xl p-5">
+                <label className="text-caption text-muted-foreground block mb-4 text-center">
                   Рост (см)
                 </label>
-                <input
-                  type="range"
-                  min="140"
-                  max="220"
-                  value={formData.height}
-                  onChange={(e) => setFormData({ ...formData, height: parseInt(e.target.value) })}
-                  className="w-full accent-primary"
-                />
-                <div className="text-center mt-2 text-title text-foreground">
-                  {formData.height} см
+                <div className="flex items-center justify-between">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setFormData({ ...formData, height: Math.max(140, formData.height - 1) })}
+                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+                  >
+                    <Minus size={24} />
+                  </motion.button>
+                  <span className="text-display-sm text-extralight">{formData.height}</span>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setFormData({ ...formData, height: Math.min(220, formData.height + 1) })}
+                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+                  >
+                    <Plus size={24} />
+                  </motion.button>
                 </div>
               </div>
 
-              <div className="bg-card rounded-2xl p-5">
-                <label className="text-caption text-muted-foreground block mb-3">
+              <div className="glass rounded-3xl p-5">
+                <label className="text-caption text-muted-foreground block mb-4 text-center">
                   Вес (кг)
                 </label>
-                <input
-                  type="range"
-                  min="40"
-                  max="150"
-                  value={formData.weight}
-                  onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
-                  className="w-full accent-primary"
-                />
-                <div className="text-center mt-2 text-title text-foreground">
-                  {formData.weight} кг
+                <div className="flex items-center justify-between">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setFormData({ ...formData, weight: Math.max(40, formData.weight - 1) })}
+                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+                  >
+                    <Minus size={24} />
+                  </motion.button>
+                  <span className="text-display-sm text-extralight">{formData.weight}</span>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setFormData({ ...formData, weight: Math.min(150, formData.weight + 1) })}
+                    className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+                  >
+                    <Plus size={24} />
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -149,14 +184,16 @@ const Onboarding: React.FC = () => {
                   key={goal.value}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setFormData({ ...formData, goal: goal.value as typeof formData.goal })}
-                  className={`w-full p-5 rounded-2xl text-left transition-colors ${
+                  className={`w-full p-5 rounded-3xl text-left transition-colors ${
                     formData.goal === goal.value
                       ? 'bg-primary/20 border-2 border-primary'
-                      : 'bg-card border-2 border-transparent'
+                      : 'glass border-2 border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <span className="text-3xl">{goal.icon}</span>
+                    <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center">
+                      {goal.icon}
+                    </div>
                     <div>
                       <p className="text-body text-foreground">{goal.label}</p>
                       <p className="text-caption text-muted-foreground">{goal.desc}</p>
