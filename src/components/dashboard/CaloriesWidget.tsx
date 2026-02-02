@@ -35,7 +35,7 @@ const CaloriesWidget: React.FC = () => {
       transition={{ duration: 0.6, delay: 0.2 }}
       className="text-center py-6"
     >
-      <p className="text-caption text-muted-white uppercase tracking-wider mb-2">Ккал</p>
+      <p className="text-caption text-muted-white uppercase tracking-wider mb-2">Сожжено сегодня</p>
       
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -47,7 +47,7 @@ const CaloriesWidget: React.FC = () => {
       </motion.div>
       
       <p className="text-caption text-muted-white mb-6">
-        {todayCalories} из {goal} ккал
+        Цель: {goal} ккал
       </p>
 
       {/* Progress bar */}
