@@ -51,24 +51,22 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Calculate BMR using Mifflin-St Jeor Equation
-const calculateBMR = (weight: number, height: number, age: number): number => {
-  // Using male formula as default, simplified
-  return 10 * weight + 6.25 * height - 5 * age + 5;
-};
-
-// Calculate daily calorie goal based on goal
-const calculateDailyGoal = (bmr: number, goal: 'lose' | 'maintain' | 'gain'): number => {
-  const activityMultiplier = 1.4; // Lightly active
-  const tdee = bmr * activityMultiplier;
+// Calculate daily BURN goal (calories to burn through exercise)
+// Based on weight and fitness goal - realistic exercise targets
+const calculateDailyBurnGoal = (weight: number, goal: 'lose' | 'maintain' | 'gain'): number => {
+  // Base burn goal scaled by weight (heavier people burn more)
+  const baseGoal = weight * 4; // ~4 kcal per kg as baseline
   
   switch (goal) {
     case 'lose':
-      return Math.round(tdee * 0.85); // 15% deficit
+      // Higher burn goal for weight loss: 400-600 kcal/day
+      return Math.round(Math.max(400, Math.min(600, baseGoal * 1.5)));
     case 'gain':
-      return Math.round(tdee * 1.15); // 15% surplus
+      // Lower burn goal for muscle gain: 200-350 kcal/day
+      return Math.round(Math.max(200, Math.min(350, baseGoal * 0.8)));
     default:
-      return Math.round(tdee);
+      // Maintain: moderate burn: 300-450 kcal/day
+      return Math.round(Math.max(300, Math.min(450, baseGoal)));
   }
 };
 
@@ -134,8 +132,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [customWorkouts]);
 
   const setProfile = (newProfile: UserProfile) => {
-    const bmr = calculateBMR(newProfile.weight, newProfile.height, newProfile.age);
-    const dailyCalorieGoal = calculateDailyGoal(bmr, newProfile.goal);
+    const dailyCalorieGoal = calculateDailyBurnGoal(newProfile.weight, newProfile.goal);
     setProfileState({ ...newProfile, dailyCalorieGoal });
   };
 
