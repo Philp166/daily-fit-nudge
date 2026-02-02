@@ -151,12 +151,25 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const addCustomWorkout = (workout: Omit<CustomWorkout, 'id' | 'createdAt'>) => {
-    const newWorkout: CustomWorkout = {
-      ...workout,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-    };
-    setCustomWorkouts(prev => [newWorkout, ...prev]);
+    // Check if a workout with the same name already exists
+    const existingIndex = customWorkouts.findIndex(w => w.name === workout.name);
+    
+    if (existingIndex !== -1) {
+      // Update existing workout but preserve its favorite status and id
+      setCustomWorkouts(prev => prev.map((w, idx) => 
+        idx === existingIndex 
+          ? { ...w, exercises: workout.exercises, isFavorite: workout.isFavorite }
+          : w
+      ));
+    } else {
+      // Add new workout
+      const newWorkout: CustomWorkout = {
+        ...workout,
+        id: crypto.randomUUID(),
+        createdAt: new Date(),
+      };
+      setCustomWorkouts(prev => [newWorkout, ...prev]);
+    }
   };
 
   const toggleFavorite = (workoutId: string) => {
