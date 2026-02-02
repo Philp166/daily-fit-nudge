@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { X, Plus, Minus, Search, GripVertical, Trash2, Clock, Flame, Star, Dumbbell, Activity, Heart, Zap, Target } from 'lucide-react';
+import { X, Plus, Minus, Search, GripVertical, Trash2, Clock, Flame, Star, Dumbbell, Activity, Heart, Zap, Pencil } from 'lucide-react';
 import { exercises, exerciseCategories, getExerciseById, calculateCalories, getExerciseIconComponent, Exercise } from '@/data/exercises';
 import { useUser } from '@/contexts/UserContext';
 
@@ -343,7 +343,7 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                               onClick={() => setEditingExercise(isEditing ? null : item.id)}
                               className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
                             >
-                              <Target size={18} className={isEditing ? 'text-primary' : 'text-muted-foreground'} />
+                              <Pencil size={18} className={isEditing ? 'text-primary' : 'text-muted-foreground'} />
                             </motion.button>
                             <motion.button
                               whileTap={{ scale: 0.9 }}
