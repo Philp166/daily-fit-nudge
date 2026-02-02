@@ -58,18 +58,6 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
         />
       </svg>
 
-      {/* Glowing dot at the end */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: delay + 1.5 }}
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rounded-full glow-pulse"
-        style={{
-          transformOrigin: `0 ${size / 2}px`,
-          transform: `rotate(${(animatedValue / 100) * 360}deg) translateX(-50%)`,
-        }}
-      />
-
       {/* Center value */}
       {showValue && (
         <div className="absolute inset-0 flex items-center justify-center">
