@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Pause, Play, SkipForward, Square, ChevronRight } from 'lucide-react';
-import { Exercise, getExerciseById, calculateCalories } from '@/data/exercises';
+import { X, Pause, Play, SkipForward, Square, ChevronRight, Flame, Dumbbell, Activity, Heart, Zap, Target, Trophy } from 'lucide-react';
+import { Exercise, getExerciseById, calculateCalories, getExerciseIconComponent } from '@/data/exercises';
 import { useUser } from '@/contexts/UserContext';
 
 interface WorkoutExercise {
@@ -64,11 +64,12 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     }
   }, [isOpen, exercises]);
 
-  // Calculate calories in real-time
-  const calculateCurrentCalories = useCallback(() => {
+  // Calculate calories per second during work
+  const calculateCaloriesPerSecond = useCallback(() => {
     if (!currentExercise || !profile || phase !== 'work') return 0;
-    // Calories per second
-    return calculateCalories(currentExercise.met, profile.weight, 1 / 60);
+    // Calories = MET × weight(kg) × time(hours)
+    // Per second = MET × weight × (1/3600)
+    return (currentExercise.met * profile.weight) / 3600;
   }, [currentExercise, profile, phase]);
 
   // Timer logic
@@ -76,20 +77,15 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     if (!isRunning || isPaused || isComplete) return;
 
     const interval = setInterval(() => {
+      // Add calories in real-time during work phase
+      if (phase === 'work') {
+        setTotalCaloriesBurned(prev => prev + calculateCaloriesPerSecond());
+      }
+
       setTimeLeft((prev) => {
         if (prev <= 1) {
           // Time's up - move to next phase
           if (phase === 'work') {
-            // Add calories for completed work phase
-            if (currentExercise && profile) {
-              const calories = calculateCalories(
-                currentExercise.met,
-                profile.weight,
-                currentWorkoutExercise.workTime / 60
-              );
-              setTotalCaloriesBurned((prev) => prev + calories);
-            }
-
             // Check if there's a rest phase
             if (currentWorkoutExercise.restTime > 0) {
               setPhase('rest');
@@ -105,15 +101,10 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
         }
         return prev - 1;
       });
-
-      // Track calories in real-time during work phase
-      if (phase === 'work') {
-        setTotalCaloriesBurned((prev) => prev + calculateCurrentCalories());
-      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning, isPaused, phase, currentExerciseIndex, currentSet, isComplete]);
+  }, [isRunning, isPaused, phase, currentExerciseIndex, currentSet, isComplete, calculateCaloriesPerSecond]);
 
   const handleNextSetOrExercise = (): number => {
     if (currentSet < currentWorkoutExercise.sets) {
@@ -148,7 +139,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
 
       addWorkoutSession({
         name: workoutName,
-        duration,
+        duration: Math.max(1, duration),
         caloriesBurned: Math.round(totalCaloriesBurned),
         exercisesCount: exercises.length,
         setsCount: totalSetsCompleted,
@@ -198,6 +189,10 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Get exercise icon component
+  const ExerciseIcon = currentExercise ? getExerciseIconComponent(currentExercise.iconType) : Dumbbell;
+  const NextExerciseIcon = nextExercise ? getExerciseIconComponent(nextExercise.iconType) : Dumbbell;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -227,7 +222,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={stopWorkout}
-                className="w-10 h-10 rounded-full glass flex items-center justify-center"
+                className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
               >
                 <X size={20} />
               </motion.button>
@@ -239,27 +234,42 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="text-6xl mb-6"
+                  className="w-20 h-20 rounded-3xl glass flex items-center justify-center mb-6"
                 >
-                  🎉
+                  <Trophy size={40} className="text-primary" />
                 </motion.div>
                 <h2 className="text-display-sm text-extralight text-foreground mb-2">
                   Отлично!
                 </h2>
                 <p className="text-body text-foreground/70 mb-8">Тренировка завершена</p>
 
-                <div className="w-full space-y-4 mb-8">
-                  <div className="bg-foreground/10 rounded-2xl p-4 flex justify-between">
-                    <span className="text-body text-foreground/70">Калорий сожжено</span>
-                    <span className="text-body text-foreground">{Math.round(totalCaloriesBurned)} ккал</span>
+                <div className="w-full space-y-3 mb-8">
+                  <div className="glass rounded-3xl p-4 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl glass flex items-center justify-center">
+                        <Flame size={20} className="text-primary" />
+                      </div>
+                      <span className="text-body text-foreground/70">Калорий сожжено</span>
+                    </div>
+                    <span className="text-title text-foreground">{Math.round(totalCaloriesBurned)} ккал</span>
                   </div>
-                  <div className="bg-foreground/10 rounded-2xl p-4 flex justify-between">
-                    <span className="text-body text-foreground/70">Упражнений</span>
-                    <span className="text-body text-foreground">{exercises.length}</span>
+                  <div className="glass rounded-3xl p-4 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl glass flex items-center justify-center">
+                        <Activity size={20} className="text-primary" />
+                      </div>
+                      <span className="text-body text-foreground/70">Упражнений</span>
+                    </div>
+                    <span className="text-title text-foreground">{exercises.length}</span>
                   </div>
-                  <div className="bg-foreground/10 rounded-2xl p-4 flex justify-between">
-                    <span className="text-body text-foreground/70">Подходов</span>
-                    <span className="text-body text-foreground">{totalSetsCompleted}</span>
+                  <div className="glass rounded-3xl p-4 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl glass flex items-center justify-center">
+                        <Target size={20} className="text-primary" />
+                      </div>
+                      <span className="text-body text-foreground/70">Подходов</span>
+                    </div>
+                    <span className="text-title text-foreground">{totalSetsCompleted}</span>
                   </div>
                 </div>
 
@@ -277,7 +287,9 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                 <div className="flex-1 flex flex-col items-center justify-center">
                   {currentExercise && (
                     <div className="text-center mb-8">
-                      <span className="text-6xl mb-4 block">{currentExercise.icon}</span>
+                      <div className="w-20 h-20 rounded-3xl glass mx-auto mb-4 flex items-center justify-center">
+                        <ExerciseIcon size={40} className="text-primary" strokeWidth={1.5} />
+                      </div>
                       <h2 className="text-title text-foreground mb-2">
                         {currentExercise.name}
                       </h2>
@@ -292,23 +304,28 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                     initial={{ scale: 1.1 }}
                     animate={{ scale: 1 }}
                     className="text-display text-extralight text-foreground mb-8"
+                    style={{ fontSize: '5rem' }}
                   >
                     {formatTime(timeLeft)}
                   </motion.div>
 
-                  <div className="text-center">
-                    <p className="text-caption text-foreground/50 mb-1">Калории</p>
-                    <p className="text-title text-foreground">
-                      {Math.round(totalCaloriesBurned)} ккал
-                    </p>
+                  <div className="glass rounded-2xl px-6 py-3">
+                    <div className="flex items-center gap-2">
+                      <Flame size={20} className="text-primary" />
+                      <span className="text-title text-foreground">
+                        {Math.round(totalCaloriesBurned)} ккал
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Next Exercise Preview */}
                 {nextExercise && currentSet === currentWorkoutExercise.sets && (
                   <div className="px-5 mb-4">
-                    <div className="bg-foreground/10 rounded-2xl p-4 flex items-center gap-3">
-                      <span className="text-2xl">{nextExercise.icon}</span>
+                    <div className="glass rounded-3xl p-4 flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center">
+                        <NextExerciseIcon size={24} className="text-foreground/70" strokeWidth={1.5} />
+                      </div>
                       <div className="flex-1">
                         <p className="text-badge text-foreground/50">Следующее</p>
                         <p className="text-body text-foreground">{nextExercise.name}</p>
@@ -324,7 +341,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={stopWorkout}
-                      className="w-14 h-14 rounded-full glass flex items-center justify-center"
+                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
                     >
                       <Square size={24} />
                     </motion.button>
@@ -332,7 +349,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={togglePause}
-                      className="w-20 h-20 rounded-full bg-foreground flex items-center justify-center"
+                      className="w-20 h-20 rounded-3xl bg-foreground flex items-center justify-center"
                     >
                       {isPaused ? (
                         <Play size={32} className="text-background ml-1" />
@@ -344,7 +361,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={skipPhase}
-                      className="w-14 h-14 rounded-full glass flex items-center justify-center"
+                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
                     >
                       <SkipForward size={24} />
                     </motion.button>
