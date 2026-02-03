@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Share2 } from 'lucide-react';
+
 import { useUser } from '@/contexts/UserContext';
 import CaloriesWidget from '@/components/dashboard/CaloriesWidget';
 import ConstructorCard from '@/components/dashboard/ConstructorCard';
@@ -34,17 +34,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex items-center justify-between mb-2"
+        className="mb-2"
       >
         <h1 className="text-title text-foreground">
           Привет, {profile?.name || 'Атлет'}!
         </h1>
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
-        >
-          <Share2 size={18} className="text-foreground/70" />
-        </motion.button>
       </motion.div>
 
       {/* Calories Widget */}
