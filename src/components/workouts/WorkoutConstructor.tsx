@@ -14,6 +14,47 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+// Editable name input with local state to prevent re-renders
+interface NameInputProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const NameInput: React.FC<NameInputProps> = ({ value, onChange }) => {
+  const [localValue, setLocalValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleBlur = () => {
+    onChange(localValue);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      inputRef.current?.blur();
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 mb-4 group">
+      <input
+        ref={inputRef}
+        type="text"
+        value={localValue}
+        onChange={(e) => setLocalValue(e.target.value)}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className="text-title text-foreground bg-transparent outline-none flex-1 border-b border-dashed border-foreground/20 focus:border-primary pb-1 transition-colors"
+        placeholder="Название тренировки"
+      />
+      <Pencil size={16} className="text-muted-foreground group-focus-within:text-primary transition-colors shrink-0" />
+    </div>
+  );
+};
+
 interface NumberInputProps {
   value: number;
   onChange: (value: number) => void;
@@ -319,16 +360,7 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
       <div className="flex-1 overflow-y-auto px-5 hide-scrollbar">
         <div className="glass rounded-3xl p-5 mb-6">
           {/* Workout Name */}
-          <div className="flex items-center gap-2 mb-4 group">
-            <input
-              type="text"
-              value={workoutName}
-              onChange={(e) => setWorkoutName(e.target.value)}
-              className="text-title text-foreground bg-transparent outline-none flex-1 border-b border-dashed border-foreground/20 focus:border-primary pb-1 transition-colors"
-              placeholder="Название тренировки"
-            />
-            <Pencil size={16} className="text-muted-foreground group-focus-within:text-primary transition-colors shrink-0" />
-          </div>
+          <NameInput value={workoutName} onChange={setWorkoutName} />
 
           {/* Stats */}
           <div className="flex gap-3 mb-4">
