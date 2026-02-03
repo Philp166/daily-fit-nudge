@@ -9,7 +9,9 @@ import { useUser } from '@/contexts/UserContext';
 const AnalysisCard: React.FC = () => {
   const { getWeekProgress, workoutSessions, profile } = useUser();
   const { current, goal } = getWeekProgress();
-  const percentage = Math.min(Math.round((current / goal) * 100), 100);
+  const percentage = goal > 0 
+    ? Math.min(Math.round((current / goal) * 100), 100) 
+    : 0;
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // Calculate week stats
@@ -52,7 +54,7 @@ const AnalysisCard: React.FC = () => {
           </div>
 
           <div className="ml-4">
-            <CircularProgress value={percentage} size={90} delay={0.8} />
+            <CircularProgress value={percentage} size={90} strokeWidth={8} delay={0.3} />
           </div>
         </div>
       </WidgetCard>
