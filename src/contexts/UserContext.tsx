@@ -12,7 +12,8 @@ export interface UserProfile {
 export interface WorkoutSession {
   id: string;
   name: string;
-  duration: number; // minutes
+  duration: number; // minutes (actual workout time)
+  actualWorkTime: number; // seconds of actual work performed
   caloriesBurned: number;
   exercisesCount: number;
   setsCount: number;

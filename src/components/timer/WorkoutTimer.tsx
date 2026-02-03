@@ -49,6 +49,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [totalCaloriesBurned, setTotalCaloriesBurned] = useState(initialState?.totalCalories ?? 0);
+  const [actualWorkSeconds, setActualWorkSeconds] = useState(0);
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [totalSetsCompleted, setTotalSetsCompleted] = useState(0);
@@ -72,6 +73,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       setIsRunning(false);
       setIsPaused(false);
       setTotalCaloriesBurned(0);
+      setActualWorkSeconds(0);
       setWorkoutStartTime(null);
       setIsComplete(false);
       setTotalSetsCompleted(0);
@@ -103,6 +105,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
         setIsRunning(true);
         setIsPaused(false);
         setTotalCaloriesBurned(0);
+        setActualWorkSeconds(0);
         setWorkoutStartTime(new Date());
         setIsComplete(false);
         setTotalSetsCompleted(0);
@@ -123,9 +126,10 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     if (!isRunning || isPaused || isComplete) return;
 
     const interval = setInterval(() => {
-      // Add calories in real-time during work phase
+      // Add calories and track actual work time during work phase
       if (phase === 'work') {
         setTotalCaloriesBurned(prev => prev + calculateCaloriesPerSecond());
+        setActualWorkSeconds(prev => prev + 1);
       }
 
       setTimeLeft((prev) => {
@@ -186,6 +190,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       addWorkoutSession({
         name: workoutName,
         duration: Math.max(1, duration),
+        actualWorkTime: actualWorkSeconds,
         caloriesBurned: Math.round(totalCaloriesBurned),
         exercisesCount: exercises.length,
         setsCount: totalSetsCompleted,
@@ -233,6 +238,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       addWorkoutSession({
         name: workoutName,
         duration: Math.max(1, duration),
+        actualWorkTime: actualWorkSeconds,
         caloriesBurned: Math.round(totalCaloriesBurned),
         exercisesCount: currentExerciseIndex + 1,
         setsCount: totalSetsCompleted,
@@ -242,8 +248,12 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   };
 
   const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 

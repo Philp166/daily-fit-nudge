@@ -3,6 +3,7 @@ import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { X, Plus, Minus, Search, GripVertical, Trash2, Clock, Flame, Star, Dumbbell, Pencil } from 'lucide-react';
 import { exercises, exerciseCategories, getExerciseById, calculateCalories, getExerciseIconComponent, Exercise } from '@/data/exercises';
 import { useUser } from '@/contexts/UserContext';
+import TimeInput, { formatTimeCompact } from '@/components/ui/TimeInput';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -392,9 +393,9 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                   </div>
                   <div className="flex-1">
                     <p className="text-body text-foreground">{exercise.name}</p>
-                    <p className="text-badge text-muted-foreground">
-                      {item.sets} подх. × {item.workTime}с
-                    </p>
+                                    <p className="text-badge text-muted-foreground">
+                                      {item.sets} подх. × {formatTimeCompact(item.workTime)}
+                                    </p>
                   </div>
                 </div>
               );
@@ -560,21 +561,19 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                                         min={1}
                                         max={20}
                                       />
-                                      <NumberInput
-                                        label="Время работы (сек)"
+                                      <TimeInput
+                                        label="Время работы"
                                         value={item.workTime}
                                         onChange={(val) => updateExercise(item.id, 'workTime', val)}
-                                        min={5}
-                                        max={300}
-                                        step={5}
+                                        minSeconds={5}
+                                        maxSeconds={3600}
                                       />
-                                      <NumberInput
-                                        label="Время отдыха (сек)"
+                                      <TimeInput
+                                        label="Время отдыха"
                                         value={item.restTime}
                                         onChange={(val) => updateExercise(item.id, 'restTime', val)}
-                                        min={0}
-                                        max={180}
-                                        step={5}
+                                        minSeconds={0}
+                                        maxSeconds={3600}
                                       />
                                     </motion.div>
                                   ) : (
@@ -583,10 +582,10 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                                         <span className="text-badge text-muted-foreground">{item.sets} подх.</span>
                                       </div>
                                       <div className="glass rounded-xl px-3 py-1.5 flex items-center gap-1">
-                                        <span className="text-badge text-muted-foreground">{item.workTime}с</span>
+                                        <span className="text-badge text-muted-foreground">{formatTimeCompact(item.workTime)}</span>
                                       </div>
                                       <div className="glass rounded-xl px-3 py-1.5 flex items-center gap-1">
-                                        <span className="text-badge text-muted-foreground">{item.restTime}с отдых</span>
+                                        <span className="text-badge text-muted-foreground">{formatTimeCompact(item.restTime)} отдых</span>
                                       </div>
                                     </div>
                                   )}
