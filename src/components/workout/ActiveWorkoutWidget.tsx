@@ -74,7 +74,7 @@ const ActiveWorkoutWidget: React.FC<ActiveWorkoutWidgetProps> = ({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-24 left-4 right-4 z-40"
+            className="fixed bottom-20 left-4 right-4 z-40"
           >
             <motion.div
               onClick={onExpand}

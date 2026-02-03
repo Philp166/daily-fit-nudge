@@ -27,7 +27,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-background px-5 pt-safe-top pb-32"
+      className="min-h-screen bg-background px-5 pt-safe-top pb-40"
     >
       {/* Header */}
       <motion.div
