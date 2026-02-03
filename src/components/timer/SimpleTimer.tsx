@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Pause, Play, RotateCcw, Plus, Minus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import TimeInput from '@/components/ui/TimeInput';
 
 interface NumberInputProps {
   value: number;
@@ -110,6 +111,7 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [totalCaloriesBurned, setTotalCaloriesBurned] = useState(0);
+  const [actualWorkSeconds, setActualWorkSeconds] = useState(0);
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -124,6 +126,7 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
       setCurrentSet(1);
       setTimeLeft(0);
       setTotalCaloriesBurned(0);
+      setActualWorkSeconds(0);
       setWorkoutStartTime(null);
       setIsComplete(false);
     }
@@ -142,9 +145,10 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
     if (!isRunning || phase === 'idle' || isComplete) return;
 
     const interval = setInterval(() => {
-      // Add calories during work phase
+      // Add calories and track actual work time during work phase
       if (phase === 'work') {
         setTotalCaloriesBurned(prev => prev + calculateCaloriesPerSecond());
+        setActualWorkSeconds(prev => prev + 1);
       }
 
       setTimeLeft(prev => {
@@ -192,6 +196,7 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
       addWorkoutSession({
         name: 'Интервальная тренировка',
         duration: Math.max(1, duration),
+        actualWorkTime: actualWorkSeconds,
         caloriesBurned: Math.round(totalCaloriesBurned),
         exercisesCount: 1,
         setsCount: sets,
@@ -205,6 +210,7 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
     setIsRunning(true);
     setCurrentSet(1);
     setTotalCaloriesBurned(0);
+    setActualWorkSeconds(0);
     setWorkoutStartTime(new Date());
     setIsComplete(false);
   };
@@ -224,8 +230,12 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
   };
 
   const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -251,7 +261,7 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
             <div className="flex items-center justify-between px-5 pt-safe-top pb-4">
               <div>
                 <p className="text-caption text-foreground/60 uppercase tracking-wide">
-                  {phase === 'work' ? 'Работа' : phase === 'rest' ? 'Отдых' : 'Настройка'}
+                  {phase === 'work' ? 'Работа' : phase === 'rest' ? 'Отдых' : ''}
                 </p>
                 <h1 className="text-title text-foreground">Таймер</h1>
               </div>
@@ -309,21 +319,19 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
                     min={1}
                     max={20}
                   />
-                  <NumberInput
-                    label="Время работы (сек)"
+                  <TimeInput
+                    label="Время работы"
                     value={workTime}
                     onChange={setWorkTime}
-                    min={5}
-                    max={300}
-                    step={5}
+                    minSeconds={5}
+                    maxSeconds={3600}
                   />
-                  <NumberInput
-                    label="Время отдыха (сек)"
+                  <TimeInput
+                    label="Время отдыха"
                     value={restTime}
                     onChange={setRestTime}
-                    min={0}
-                    max={180}
-                    step={5}
+                    minSeconds={0}
+                    maxSeconds={3600}
                   />
                 </div>
 

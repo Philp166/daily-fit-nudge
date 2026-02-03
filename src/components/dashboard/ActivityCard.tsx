@@ -7,7 +7,8 @@ const ActivityCard: React.FC = () => {
   const { getTodaySessions } = useUser();
   const todaySessions = getTodaySessions();
   
-  const totalMinutes = todaySessions.reduce((sum, s) => sum + s.duration, 0);
+  // Calculate actual work time in minutes (from actualWorkTime in seconds)
+  const totalMinutes = Math.round(todaySessions.reduce((sum, s) => sum + (s.actualWorkTime || 0), 0) / 60);
   const goalMinutes = 60;
 
   return (
