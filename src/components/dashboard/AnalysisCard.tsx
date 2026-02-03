@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Flame, Clock, Dumbbell, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import WidgetCard from './WidgetCard';
@@ -21,6 +21,18 @@ const AnalysisCard: React.FC = () => {
     ? Math.min(Math.round((current / goal) * 100), 100) 
     : 0;
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isDetailOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isDetailOpen]);
 
   // Calculate stats for last 4 weeks
   const weeksData = useMemo(() => {
