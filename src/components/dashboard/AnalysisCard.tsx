@@ -183,8 +183,8 @@ const AnalysisCard: React.FC = () => {
                 <div className="relative">
                   <CircularProgress value={percentage} size={120} strokeWidth={10} delay={0} showValue={false} />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-display-sm text-extralight text-foreground">{percentage}%</span>
-                    <span className="text-caption text-muted-foreground">выполнено</span>
+                    <span className="text-2xl font-extralight text-foreground">{percentage}%</span>
+                    <span className="text-badge text-muted-foreground">выполнено</span>
                   </div>
                 </div>
               </div>
