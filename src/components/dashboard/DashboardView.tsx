@@ -36,7 +36,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         transition={{ duration: 0.5 }}
         className="flex items-center justify-between mb-2"
       >
-        <h1 className="text-display-sm text-extralight text-foreground">
+        <h1 className="text-title text-foreground">
           Привет, {profile?.name || 'Атлет'}!
         </h1>
         <motion.button
