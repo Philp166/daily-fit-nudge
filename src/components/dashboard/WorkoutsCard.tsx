@@ -14,7 +14,7 @@ const WorkoutsCard: React.FC<WorkoutsCardProps> = ({ onOpenWorkouts }) => {
   const totalWorkouts = presetWorkouts.length + favoriteWorkouts.length;
 
   return (
-    <WidgetCard gradient="workouts" className="flex-1" delay={0.6} onClick={onOpenWorkouts}>
+    <WidgetCard className="flex-1" delay={0.6} onClick={onOpenWorkouts}>
       <Badge className="mb-4">Тренировки</Badge>
 
       <div className="mb-2">

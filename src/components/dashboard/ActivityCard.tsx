@@ -11,7 +11,7 @@ const ActivityCard: React.FC = () => {
   const goalMinutes = 60;
 
   return (
-    <WidgetCard gradient="activity" className="flex-1" delay={0.5}>
+    <WidgetCard className="flex-1" delay={0.5}>
       <Badge className="mb-3">Активность</Badge>
 
       <div>

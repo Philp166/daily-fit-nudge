@@ -33,7 +33,7 @@ const CaloriesWidget: React.FC = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className="text-center py-6"
+      className="glass rounded-3xl p-5 text-center mb-4"
     >
       <p className="text-caption text-muted-white uppercase tracking-wider mb-2">Сожжено сегодня</p>
       

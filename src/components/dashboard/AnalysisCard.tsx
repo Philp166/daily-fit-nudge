@@ -33,7 +33,6 @@ const AnalysisCard: React.FC = () => {
   return (
     <>
       <WidgetCard 
-        gradient="analysis" 
         delay={0.7} 
         onClick={() => setIsDetailOpen(true)}
         className="cursor-pointer active:scale-[0.98] transition-transform"
