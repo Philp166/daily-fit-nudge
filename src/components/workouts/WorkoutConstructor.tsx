@@ -319,13 +319,16 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
       <div className="flex-1 overflow-y-auto px-5 hide-scrollbar">
         <div className="glass rounded-3xl p-5 mb-6">
           {/* Workout Name */}
-          <input
-            type="text"
-            value={workoutName}
-            onChange={(e) => setWorkoutName(e.target.value)}
-            className="text-title text-foreground bg-transparent outline-none w-full mb-4"
-            placeholder="Название тренировки"
-          />
+          <div className="flex items-center gap-2 mb-4 group">
+            <input
+              type="text"
+              value={workoutName}
+              onChange={(e) => setWorkoutName(e.target.value)}
+              className="text-title text-foreground bg-transparent outline-none flex-1 border-b border-dashed border-foreground/20 focus:border-primary pb-1 transition-colors"
+              placeholder="Название тренировки"
+            />
+            <Pencil size={16} className="text-muted-foreground group-focus-within:text-primary transition-colors shrink-0" />
+          </div>
 
           {/* Stats */}
           <div className="flex gap-3 mb-4">
