@@ -93,7 +93,7 @@ const AnalysisCard: React.FC = () => {
               {/* Progress Ring */}
               <div className="flex items-center justify-center mb-8">
                 <div className="relative">
-                  <CircularProgress value={percentage} size={140} strokeWidth={10} delay={0} />
+                  <CircularProgress value={percentage} size={140} strokeWidth={10} delay={0} showValue={false} />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-display-sm text-extralight text-foreground">{percentage}%</span>
                     <span className="text-caption text-muted-foreground">выполнено</span>
@@ -146,7 +146,9 @@ const AnalysisCard: React.FC = () => {
 
               {weekSessions.length === 0 && (
                 <div className="text-center py-4">
-                  <p className="text-body text-muted-foreground">Начни тренировку, чтобы увидеть статистику</p>
+                  <p className="text-body text-muted-foreground leading-relaxed">
+                    Начни тренировку,<br />чтобы увидеть статистику
+                  </p>
                 </div>
               )}
             </motion.div>
