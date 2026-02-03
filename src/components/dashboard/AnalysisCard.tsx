@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Flame, Clock, Dumbbell, TrendingUp } from 'lucide-react';
+import { X, Flame, Clock, Dumbbell, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import WidgetCard from './WidgetCard';
 import Badge from './Badge';
 import CircularProgress from './CircularProgress';
 import { useUser } from '@/contexts/UserContext';
+
+interface WeekData {
+  weekStart: Date;
+  calories: number;
+  duration: number;
+  workouts: number;
+  label: string;
+}
 
 const AnalysisCard: React.FC = () => {
   const { getWeekProgress, workoutSessions, profile } = useUser();
@@ -14,21 +22,101 @@ const AnalysisCard: React.FC = () => {
     : 0;
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  // Calculate week stats
-  const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay());
-  startOfWeek.setHours(0, 0, 0, 0);
+  // Calculate stats for last 4 weeks
+  const weeksData = useMemo(() => {
+    const weeks: WeekData[] = [];
+    const now = new Date();
+    
+    for (let i = 0; i < 4; i++) {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay() - (i * 7));
+      weekStart.setHours(0, 0, 0, 0);
+      
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 7);
+      
+      const weekSessions = workoutSessions.filter(s => {
+        const date = new Date(s.completedAt);
+        return date >= weekStart && date < weekEnd;
+      });
+      
+      const calories = weekSessions.reduce((sum, s) => sum + s.caloriesBurned, 0);
+      const duration = weekSessions.reduce((sum, s) => sum + s.duration, 0);
+      
+      // Week label
+      let label = '';
+      if (i === 0) label = 'Эта';
+      else if (i === 1) label = 'Прош.';
+      else label = `${i + 1} нед.`;
+      
+      weeks.push({
+        weekStart,
+        calories,
+        duration,
+        workouts: weekSessions.length,
+        label,
+      });
+    }
+    
+    return weeks.reverse(); // Oldest first for chart
+  }, [workoutSessions]);
 
-  const weekSessions = workoutSessions.filter(
-    s => new Date(s.completedAt) >= startOfWeek
-  );
+  // Current and previous week for comparison
+  const currentWeek = weeksData[3]; // Last item is current week
+  const previousWeek = weeksData[2]; // Second to last is previous week
 
-  const totalDuration = weekSessions.reduce((sum, s) => sum + s.duration, 0);
-  const totalExercises = weekSessions.reduce((sum, s) => sum + s.exercisesCount, 0);
-  const avgCaloriesPerWorkout = weekSessions.length > 0 
-    ? Math.round(current / weekSessions.length) 
-    : 0;
+  // Calculate comparison percentages
+  const caloriesDiff = previousWeek.calories > 0 
+    ? Math.round(((currentWeek.calories - previousWeek.calories) / previousWeek.calories) * 100)
+    : currentWeek.calories > 0 ? 100 : 0;
+  
+  const durationDiff = previousWeek.duration > 0
+    ? Math.round(((currentWeek.duration - previousWeek.duration) / previousWeek.duration) * 100)
+    : currentWeek.duration > 0 ? 100 : 0;
+
+  const workoutsDiff = previousWeek.workouts > 0
+    ? Math.round(((currentWeek.workouts - previousWeek.workouts) / previousWeek.workouts) * 100)
+    : currentWeek.workouts > 0 ? 100 : 0;
+
+  // Max value for chart scaling
+  const maxCalories = Math.max(...weeksData.map(w => w.calories), goal);
+
+  // Trend icon component
+  const TrendIndicator = ({ diff, inverted = false }: { diff: number; inverted?: boolean }) => {
+    const isPositive = inverted ? diff < 0 : diff > 0;
+    const isNeutral = diff === 0;
+    
+    if (isNeutral) {
+      return <Minus size={14} className="text-muted-foreground" />;
+    }
+    
+    return (
+      <div className={`flex items-center gap-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+        {diff > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+        <span className="text-badge">{Math.abs(diff)}%</span>
+      </div>
+    );
+  };
+
+  // Summary text
+  const getSummaryText = () => {
+    if (currentWeek.workouts === 0 && previousWeek.workouts === 0) {
+      return 'Начни тренироваться, чтобы увидеть прогресс';
+    }
+    if (currentWeek.workouts === 0) {
+      return 'На этой неделе пока нет тренировок';
+    }
+    if (previousWeek.workouts === 0) {
+      return 'Отличное начало! Продолжай в том же духе';
+    }
+    if (caloriesDiff > 20) {
+      return `На ${caloriesDiff}% больше калорий чем на прошлой неделе 🔥`;
+    }
+    if (caloriesDiff < -20) {
+      return `На ${Math.abs(caloriesDiff)}% меньше активности — не сдавайся!`;
+    }
+    return 'Стабильный прогресс, так держать!';
+  };
 
   return (
     <>
@@ -73,7 +161,7 @@ const AnalysisCard: React.FC = () => {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-lg bg-card rounded-t-3xl p-6 pb-10"
+              className="w-full max-w-lg bg-card rounded-t-3xl p-6 pb-10 max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Handle */}
@@ -91,9 +179,9 @@ const AnalysisCard: React.FC = () => {
               </div>
 
               {/* Progress Ring */}
-              <div className="flex items-center justify-center mb-8">
+              <div className="flex items-center justify-center mb-6">
                 <div className="relative">
-                  <CircularProgress value={percentage} size={140} strokeWidth={10} delay={0} showValue={false} />
+                  <CircularProgress value={percentage} size={120} strokeWidth={10} delay={0} showValue={false} />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-display-sm text-extralight text-foreground">{percentage}%</span>
                     <span className="text-caption text-muted-foreground">выполнено</span>
@@ -101,8 +189,84 @@ const AnalysisCard: React.FC = () => {
                 </div>
               </div>
 
+              {/* Summary */}
+              <div className="glass rounded-2xl p-4 mb-6 text-center">
+                <p className="text-body text-foreground">{getSummaryText()}</p>
+              </div>
+
+              {/* Mini Chart - 4 weeks */}
+              <div className="glass rounded-2xl p-4 mb-6">
+                <p className="text-caption text-muted-foreground mb-4">Последние 4 недели</p>
+                <div className="flex items-end justify-between gap-2 h-24">
+                  {weeksData.map((week, index) => {
+                    const height = maxCalories > 0 ? (week.calories / maxCalories) * 100 : 0;
+                    const isCurrentWeek = index === 3;
+                    
+                    return (
+                      <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                        <div className="w-full h-20 flex items-end justify-center">
+                          <motion.div
+                            initial={{ height: 0 }}
+                            animate={{ height: `${Math.max(height, 4)}%` }}
+                            transition={{ delay: index * 0.1, duration: 0.5 }}
+                            className={`w-full max-w-8 rounded-t-lg ${
+                              isCurrentWeek ? 'bg-primary' : 'bg-primary/30'
+                            }`}
+                          />
+                        </div>
+                        <span className="text-badge text-muted-foreground">{week.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Goal line indicator */}
+                <div className="relative mt-2">
+                  <div className="border-t border-dashed border-primary/50 w-full" />
+                  <span className="absolute right-0 -top-3 text-badge text-primary/70">цель</span>
+                </div>
+              </div>
+
+              {/* Comparison with previous week */}
+              <div className="glass rounded-2xl p-4 mb-6">
+                <p className="text-caption text-muted-foreground mb-3">Сравнение с прошлой неделей</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Flame size={16} className="text-primary" />
+                      <span className="text-body text-foreground">Калории</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-body text-foreground">{currentWeek.calories}</span>
+                      <TrendIndicator diff={caloriesDiff} />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock size={16} className="text-primary" />
+                      <span className="text-body text-foreground">Время</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-body text-foreground">{currentWeek.duration} мин</span>
+                      <TrendIndicator diff={durationDiff} />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Dumbbell size={16} className="text-primary" />
+                      <span className="text-body text-foreground">Тренировок</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-body text-foreground">{currentWeek.workouts}</span>
+                      <TrendIndicator diff={workoutsDiff} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="glass rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Flame size={16} className="text-primary" />
@@ -118,39 +282,7 @@ const AnalysisCard: React.FC = () => {
                   </div>
                   <div className="text-title text-foreground">{goal} <span className="text-body text-muted-foreground">ккал</span></div>
                 </div>
-
-                <div className="glass rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock size={16} className="text-primary" />
-                    <span className="text-caption text-muted-foreground">Время</span>
-                  </div>
-                  <div className="text-title text-foreground">{totalDuration} <span className="text-body text-muted-foreground">мин</span></div>
-                </div>
-
-                <div className="glass rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Dumbbell size={16} className="text-primary" />
-                    <span className="text-caption text-muted-foreground">Тренировок</span>
-                  </div>
-                  <div className="text-title text-foreground">{weekSessions.length}</div>
-                </div>
               </div>
-
-              {/* Additional Info */}
-              {weekSessions.length > 0 && (
-                <div className="glass rounded-2xl p-4">
-                  <p className="text-caption text-muted-foreground mb-1">Среднее за тренировку</p>
-                  <p className="text-body text-foreground">{avgCaloriesPerWorkout} ккал</p>
-                </div>
-              )}
-
-              {weekSessions.length === 0 && (
-                <div className="text-center py-4">
-                  <p className="text-body text-muted-foreground leading-relaxed">
-                    Начни тренировку,<br />чтобы увидеть статистику
-                  </p>
-                </div>
-              )}
             </motion.div>
           </motion.div>
         )}
