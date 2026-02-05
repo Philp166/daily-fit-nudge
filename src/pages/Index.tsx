@@ -51,7 +51,6 @@ const AppContent: React.FC = () => {
   const [showWorkouts, setShowWorkouts] = useState(false);
   const [showConstructor, setShowConstructor] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
-  const [showSimpleTimer, setShowSimpleTimer] = useState(false);
   const [timerExercises, setTimerExercises] = useState<WorkoutExercise[]>([]);
   const [timerWorkoutName, setTimerWorkoutName] = useState('');
   const [editWorkout, setEditWorkout] = useState<EditWorkoutData | null>(null);
@@ -223,11 +222,6 @@ const AppContent: React.FC = () => {
           totalCalories: activeWorkout.totalCalories,
           phase: activeWorkout.phase,
         } : undefined}
-      />
-
-      <SimpleTimer
-        isOpen={showSimpleTimer}
-        onClose={() => setShowSimpleTimer(false)}
       />
     </div>
   );
