@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Clock, Flame, ListChecks, ChevronRight, Star, Edit2, Dumbbell } from 'lucide-react';
 import Badge from '../dashboard/Badge';
@@ -13,15 +13,25 @@ interface WorkoutsListProps {
   onEditWorkout?: (workout: Workout) => void;
 }
 
-const WorkoutsList: React.FC<WorkoutsListProps> = ({ 
-  isOpen, 
-  onClose, 
+const WorkoutsList: React.FC<WorkoutsListProps> = ({
+  isOpen,
+  onClose,
   onSelectWorkout,
-  onEditWorkout 
+  onEditWorkout
 }) => {
   const { customWorkouts, toggleFavorite } = useUser();
   const [selectedCategory, setSelectedCategory] = useState('Все');
   const [activeTab, setActiveTab] = useState<'preset' | 'favorites'>('preset');
+
+  // Body scroll lock when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const filteredWorkouts = selectedCategory === 'Все'
     ? presetWorkouts
@@ -130,7 +140,7 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
                 </div>
 
                 {/* Workouts List */}
-                <div className="flex-1 overflow-y-auto px-5 pb-24 hide-scrollbar">
+                <div className="flex-1 overflow-y-auto px-5 pb-safe-bottom hide-scrollbar">
                   <div className="space-y-3">
                     {filteredWorkouts.map((workout, index) => (
                       <motion.div
@@ -186,7 +196,7 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
             )}
 
             {activeTab === 'favorites' && (
-              <div className="flex-1 overflow-y-auto px-5 pb-24 hide-scrollbar">
+              <div className="flex-1 overflow-y-auto px-5 pb-safe-bottom hide-scrollbar">
                 {favoriteWorkouts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center">
                     <div className="w-16 h-16 rounded-3xl glass flex items-center justify-center mb-4">

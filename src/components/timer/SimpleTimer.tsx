@@ -225,6 +225,7 @@ const SimpleTimer: React.FC<SimpleTimerProps> = ({ isOpen, onClose }) => {
     setCurrentSet(1);
     setTimeLeft(0);
     setTotalCaloriesBurned(0);
+    setActualWorkSeconds(0); // Reset actual work time counter
     setWorkoutStartTime(null);
     setIsComplete(false);
   };

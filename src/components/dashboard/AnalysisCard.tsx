@@ -41,7 +41,10 @@ const AnalysisCard: React.FC = () => {
     
     for (let i = 0; i < 4; i++) {
       const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay() - (i * 7));
+      // Fix: Monday-based weeks (Sunday = go back 6 days to previous Monday)
+      const dayOfWeek = now.getDay();
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      weekStart.setDate(now.getDate() - daysToMonday - (i * 7));
       weekStart.setHours(0, 0, 0, 0);
       
       const weekEnd = new Date(weekStart);

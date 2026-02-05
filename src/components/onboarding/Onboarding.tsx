@@ -102,6 +102,7 @@ const Onboarding: React.FC = () => {
   const handleSubmit = () => {
     setProfile({
       ...formData,
+      name: formData.name.trim(), // Sanitize whitespace
       dailyCalorieGoal: 0, // Will be calculated
     });
   };

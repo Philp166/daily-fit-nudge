@@ -189,6 +189,16 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
   const [currentStep, setCurrentStep] = useState<ConstructorStep>('exercises');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
+  // Body scroll lock when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   // Load workout for editing
   useEffect(() => {
     if (editWorkout && isOpen) {

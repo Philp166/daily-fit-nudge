@@ -27,12 +27,11 @@ export const formatTimeCompact = (totalSeconds: number): string => {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
+  // Format ЧЧ:ММ:СС (consistent with Timer Background Rule)
   if (hours > 0) {
-    return `${hours}ч ${minutes}м`;
-  } else if (minutes > 0) {
-    return `${minutes}м ${seconds}с`;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
-  return `${seconds}с`;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
 const TimeInput: React.FC<TimeInputProps> = ({
