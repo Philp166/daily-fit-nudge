@@ -9,9 +9,9 @@ const ActivityIcon: React.FC<ActivityIconProps> = ({ size = 24, className = '' }
   const rendered = Math.round(size * 1.6);
   return (
     <picture>
-      <source srcSet="/activity.webp" type="image/webp" />
+      <source srcSet={`${import.meta.env.BASE_URL}activity.webp`} type="image/webp" />
       <img
-        src="/activity.png"
+        src={`${import.meta.env.BASE_URL}activity.png`}
         alt=""
         width={rendered}
         height={rendered}

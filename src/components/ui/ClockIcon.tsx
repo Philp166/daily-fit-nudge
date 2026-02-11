@@ -9,9 +9,9 @@ const ClockIcon: React.FC<ClockIconProps> = ({ size = 24, className = '' }) => {
   const rendered = Math.round(size * 1.6);
   return (
     <picture>
-      <source srcSet="/clock.webp" type="image/webp" />
+      <source srcSet={`${import.meta.env.BASE_URL}clock.webp`} type="image/webp" />
       <img
-        src="/clock.png"
+        src={`${import.meta.env.BASE_URL}clock.png`}
         alt=""
         width={rendered}
         height={rendered}

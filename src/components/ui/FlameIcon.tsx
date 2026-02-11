@@ -9,9 +9,9 @@ const FlameIcon: React.FC<FlameIconProps> = ({ size = 24, className = '' }) => {
   const rendered = Math.round(size * 1.6);
   return (
     <picture>
-      <source srcSet="/flame.webp" type="image/webp" />
+      <source srcSet={`${import.meta.env.BASE_URL}flame.webp`} type="image/webp" />
       <img
-        src="/flame.png"
+        src={`${import.meta.env.BASE_URL}flame.png`}
         alt=""
         width={rendered}
         height={rendered}

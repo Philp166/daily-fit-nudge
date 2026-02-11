@@ -9,9 +9,9 @@ const LightningIcon: React.FC<LightningIconProps> = ({ size = 24, className = ''
   const rendered = Math.round(size * 1.6);
   return (
     <picture>
-      <source srcSet="/lightning.webp" type="image/webp" />
+      <source srcSet={`${import.meta.env.BASE_URL}lightning.webp`} type="image/webp" />
       <img
-        src="/lightning.png"
+        src={`${import.meta.env.BASE_URL}lightning.png`}
         alt=""
         width={rendered}
         height={rendered}

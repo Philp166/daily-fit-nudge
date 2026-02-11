@@ -9,9 +9,9 @@ const HeartIcon: React.FC<HeartIconProps> = ({ size = 24, className = '' }) => {
   const rendered = Math.round(size * 1.6);
   return (
     <picture>
-      <source srcSet="/heart.webp" type="image/webp" />
+      <source srcSet={`${import.meta.env.BASE_URL}heart.webp`} type="image/webp" />
       <img
-        src="/heart.png"
+        src={`${import.meta.env.BASE_URL}heart.png`}
         alt=""
         width={rendered}
         height={rendered}

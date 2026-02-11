@@ -118,9 +118,9 @@ const Onboarding: React.FC = () => {
           <>
             <div className="flex flex-col items-center mb-3">
               <picture>
-                <source srcSet="/hello.webp" type="image/webp" />
+                <source srcSet={`${import.meta.env.BASE_URL}hello.webp`} type="image/webp" />
                 <img
-                  src="/hello.png"
+                  src={`${import.meta.env.BASE_URL}hello.png`}
                   alt=""
                   width={120}
                   height={120}
@@ -212,7 +212,7 @@ const Onboarding: React.FC = () => {
                   style={{ touchAction: 'manipulation' }}
                 >
                   <img
-                    src={`/avatars/${av}.webp`}
+                    src={`${import.meta.env.BASE_URL}avatars/${av}.webp`}
                     alt=""
                     className="w-full h-full object-cover"
                     draggable={false}

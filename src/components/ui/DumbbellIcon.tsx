@@ -9,9 +9,9 @@ const DumbbellIcon: React.FC<DumbbellIconProps> = ({ size = 24, className = '' }
   const rendered = Math.round(size * 1.6);
   return (
     <picture>
-      <source srcSet="/dumbbell.webp" type="image/webp" />
+      <source srcSet={`${import.meta.env.BASE_URL}dumbbell.webp`} type="image/webp" />
       <img
-        src="/dumbbell.png"
+        src={`${import.meta.env.BASE_URL}dumbbell.png`}
         alt=""
         width={rendered}
         height={rendered}
