@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Flame, Play, ChevronUp } from 'lucide-react';
 import { getExerciseById, getExerciseIconComponent } from '@/data/exercises';
@@ -45,18 +45,20 @@ const ActiveWorkoutWidget: React.FC<ActiveWorkoutWidgetProps> = ({
   onCancel,
 }) => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const isDragging = useRef(false);
 
   const exercise = currentExercise ? getExerciseById(currentExercise.exerciseId) : null;
   const ExerciseIcon = exercise ? getExerciseIconComponent(exercise.iconType) : Play;
 
   const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    if (hours > 0) {
-      return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
+    const total = Math.min(seconds, 59 * 60 + 59);
+    const mins = Math.floor(total / 60);
+    const secs = total % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleTap = () => {
+    if (!isDragging.current) onExpand();
   };
 
   const handleCancelClick = (e: React.MouseEvent) => {
@@ -74,22 +76,20 @@ const ActiveWorkoutWidget: React.FC<ActiveWorkoutWidgetProps> = ({
       <AnimatePresence>
         {isVisible && (
           <motion.div
+            drag
+            dragConstraints={{ top: -600, bottom: 0, left: 0, right: 0 }}
+            dragElastic={0.1}
+            dragMomentum={false}
+            onDragStart={() => { isDragging.current = true; }}
+            onDragEnd={() => { setTimeout(() => { isDragging.current = false; }, 50); }}
+            onClick={handleTap}
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-20 left-4 right-4 z-40"
+            className="fixed bottom-20 left-4 right-4 z-40 glass-strong rounded-3xl p-4 shadow-2xl cursor-grab active:cursor-grabbing"
+            style={{ touchAction: 'none' }}
           >
-            <motion.div
-              onClick={onExpand}
-              className={`rounded-3xl p-4 shadow-2xl cursor-pointer transition-colors duration-300 ${
-                phase === 'work' 
-                  ? 'bg-blue-900/95 border border-blue-700/50' 
-                  : 'bg-green-900/95 border border-green-700/50'
-              }`}
-              style={{ backdropFilter: 'blur(20px)' }}
-              whileTap={{ scale: 0.98 }}
-            >
               <div className="flex items-center gap-3">
                 {/* Exercise Icon */}
                 <div className="w-12 h-12 rounded-2xl bg-foreground/10 flex items-center justify-center flex-shrink-0">
@@ -131,15 +131,15 @@ const ActiveWorkoutWidget: React.FC<ActiveWorkoutWidgetProps> = ({
                 </div>
 
                 {/* Close button */}
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
+                <button
+                  type="button"
                   onClick={handleCancelClick}
-                  className="w-8 h-8 rounded-xl bg-foreground/10 flex items-center justify-center flex-shrink-0"
+                  className="w-8 h-8 rounded-xl bg-foreground/10 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
+                  style={{ touchAction: 'manipulation' }}
                 >
                   <X size={16} className="text-foreground/70" />
-                </motion.button>
+                </button>
               </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,0 +1,97 @@
+---
+description: "Применять при зависании AI агента. Ключевые слова: завис, не отвечает, freeze, зациклился. Требует: НЕ перезапускать сразу, сначала понять причину через RCA, исправить, только потом повторять."
+globs: 
+alwaysApply: false
+tags: [debugging, recovery, rca]
+---
+
+# ❄️ PROTOCOL: FREEZE RECOVERY
+
+## Context
+
+- **Когда:** AI завис, зациклился, не отвечает
+- **Ключевые слова:** завис, freeze, зациклился, прервал
+- **Принцип:** UNDERSTAND BEFORE RETRY
+
+<critical>
+  НЕ перезапускай код который завис!
+  Сначала найди причину.
+</critical>
+
+---
+
+## Requirements
+
+### Workflow
+
+<required>
+  1. НЕ перезапускай код который завис
+  2. ПРОВЕРЬ что запускал и как
+  3. НАЙДИ почему завис (RCA)
+  4. ИСПРАВЬ причину
+  5. Только потом повторяй
+</required>
+
+### Immediate Actions
+
+```markdown
+## ❄️ FREEZE DETECTED
+
+**Что делал:** [описание]
+**Команда:** [exact command]
+**Время работы:** [сколько]
+**Последний output:** [что видел]
+```
+
+### Common Freeze Patterns
+
+| Pattern | Cause | Fix |
+|---------|-------|-----|
+| Infinite loop | No exit condition | Add limit/break |
+| Memory overflow | Large dataset | Process in chunks |
+| Network timeout | Slow API | Add timeout |
+| Deadlock | Race condition | Review locks |
+
+---
+
+## Examples
+
+<example>
+GOOD: RCA перед retry
+```markdown
+## ❄️ FREEZE DETECTED
+**Команда:** df.groupby('id').apply(complex_func)
+**Время:** > 5 минут
+
+### RCA:
+Why 1: Долго выполняется
+Why 2: complex_func тяжёлая на каждую строку
+Why 3: 1M rows × O(n) = слишком много
+
+### Fix: Vectorize complex_func или limit rows
+```
+</example>
+
+<example type="invalid">
+BAD: Retry без понимания
+```
+Завис. Перезапускаю...
+Опять завис. Попробую ещё раз...
+```
+Проблема: Причина не найдена, будет зависать снова.
+</example>
+
+---
+
+## Critical Points
+
+<critical>
+  - НИКОГДА не делай retry без понимания причины
+  - ВСЕГДА применяй RCA (5 Whys)
+  - Найди root cause → исправь → потом retry
+</critical>
+
+---
+
+**Версия:** 1.1
+**Связанные модули:** `standard-rca.mdc`, `_base-5wh.mdc`

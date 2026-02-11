@@ -1,23 +1,23 @@
 import React from 'react';
-import { 
-  Flame, 
-  Scale, 
-  Dumbbell, 
-  Zap, 
-  Heart, 
-  Timer, 
+import {
+  Scale,
+  Timer,
   Target,
   Trophy,
   Sparkles,
   TrendingUp,
-  Activity,
   Play,
   Calendar,
-  Clock,
   Star,
   Medal,
   Hand
 } from 'lucide-react';
+import DumbbellIcon from '@/components/ui/DumbbellIcon';
+import LightningIcon from '@/components/ui/LightningIcon';
+import FlameIcon from '@/components/ui/FlameIcon';
+import HeartIcon from '@/components/ui/HeartIcon';
+import ActivityIcon from '@/components/ui/ActivityIcon';
+import ClockIcon from '@/components/ui/ClockIcon';
 
 export type IconName = 
   | 'flame' 
@@ -46,23 +46,16 @@ interface GlassIconProps {
 }
 
 const iconMap = {
-  flame: Flame,
   scale: Scale,
-  dumbbell: Dumbbell,
-  zap: Zap,
-  heart: Heart,
   timer: Timer,
   target: Target,
   trophy: Trophy,
   sparkles: Sparkles,
   trending: TrendingUp,
-  activity: Activity,
   play: Play,
   calendar: Calendar,
-  clock: Clock,
   star: Star,
   medal: Medal,
-  wave: Activity,
   hand: Hand,
 };
 
@@ -81,10 +74,11 @@ const iconSizes = {
 };
 
 const GlassIcon: React.FC<GlassIconProps> = ({ name, size = 'md', className = '' }) => {
-  const IconComponent = iconMap[name] || Activity;
-  
+  const isCustomIcon = name === 'dumbbell' || name === 'zap' || name === 'flame' || name === 'heart' || name === 'activity' || name === 'wave' || name === 'clock';
+  const IconComponent = isCustomIcon ? null : (iconMap[name as keyof typeof iconMap] || null);
+
   return (
-    <div 
+    <div
       className={`
         ${sizeClasses[size]}
         rounded-xl
@@ -93,11 +87,25 @@ const GlassIcon: React.FC<GlassIconProps> = ({ name, size = 'md', className = ''
         ${className}
       `}
     >
-      <IconComponent 
-        size={iconSizes[size]} 
-        className="text-primary" 
-        strokeWidth={1.5}
-      />
+      {name === 'dumbbell' ? (
+        <DumbbellIcon size={iconSizes[size]} />
+      ) : name === 'zap' ? (
+        <LightningIcon size={iconSizes[size]} />
+      ) : name === 'flame' ? (
+        <FlameIcon size={iconSizes[size]} />
+      ) : name === 'heart' ? (
+        <HeartIcon size={iconSizes[size]} />
+      ) : name === 'activity' || name === 'wave' ? (
+        <ActivityIcon size={iconSizes[size]} />
+      ) : name === 'clock' ? (
+        <ClockIcon size={iconSizes[size]} />
+      ) : (
+        IconComponent && <IconComponent
+          size={iconSizes[size]}
+          className="text-primary"
+          strokeWidth={1.5}
+        />
+      )}
     </div>
   );
 };

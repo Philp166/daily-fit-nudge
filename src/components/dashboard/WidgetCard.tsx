@@ -14,17 +14,32 @@ const WidgetCard: React.FC<WidgetCardProps> = ({
   onClick,
   delay = 0,
 }) => {
-  return (
+  // Use a wrapper button for better mobile touch handling
+  const content = (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay, ease: 'easeOut' }}
-      onClick={onClick}
-      className={`glass rounded-3xl p-5 card-interactive ${className}`}
+      className={`glass rounded-3xl p-5 ${className}`}
     >
       {children}
     </motion.div>
   );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full text-left active:scale-[0.98] transition-transform"
+        style={{ touchAction: 'manipulation' }}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return content;
 };
 
 export default WidgetCard;

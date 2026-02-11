@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(explorer \"c:\\\\Users\\\\philip\\\\Desktop\\\\fitapp\\\\тест\")",
+      "Bash(tree:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run test:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter test:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(copy \"C:\\\\Users\\\\philip\\\\Downloads\\\\Frame 11.png\" \"c:\\\\Users\\\\philip\\\\Desktop\\\\fitapp\\\\public\\\\favicon.png\")",
+      "Bash(ping:*)",
+      "Bash(npm run build:*)",
+      "Bash(for i in 1 2 3 4 5 6)",
+      "Bash(do cp \"C:\\\\Users\\\\philip\\\\Desktop\\\\emodzi interfit\\\\icons\\\\male\\\\male $i.png\" \"c:\\\\Users\\\\philip\\\\Desktop\\\\fitapp\\\\public\\\\avatars\\\\male-$i.png\")",
+      "Bash(done)",
+      "Bash(do cp \"C:\\\\Users\\\\philip\\\\Desktop\\\\emodzi interfit\\\\icons\\\\female\\\\female $i.png\" \"c:\\\\Users\\\\philip\\\\Desktop\\\\fitapp\\\\public\\\\avatars\\\\female-$i.png\")",
+      "Bash(npx vite build)",
+      "Bash(npx vite:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(tasklist:*)",
+      "Bash(powershell:*)",
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(npm install:*)",
+      "Bash(node scripts/optimize-images.mjs:*)",
+      "Bash(cmd /c type:*)",
+      "Bash(cmd /c \"netstat -ano | findstr :8080\")",
+      "Bash(cmd /c \"for /f \"\"tokens=5\"\" %a in \\(''netstat -ano ^| findstr :8080 ^| findstr LISTENING''\\) do taskkill /F /PID %a 2>nul\")",
+      "Bash(cmd /c \"for /f \"\"tokens=5\"\" %a in \\(''netstat -ano ^| findstr :8081 ^| findstr LISTENING''\\) do taskkill /F /PID %a 2>nul\")",
+      "Bash(cmd /c \"for /f \"\"tokens=5\"\" %a in \\(''netstat -ano ^| findstr :8082 ^| findstr LISTENING''\\) do taskkill /F /PID %a 2>nul\")",
+      "Bash(cmd /c:*)",
+      "Bash(node -e:*)"
+    ]
+  }
+}

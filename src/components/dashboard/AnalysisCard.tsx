@@ -1,6 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Flame, Clock, Dumbbell, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import DumbbellIcon from '@/components/ui/DumbbellIcon';
+import FlameIcon from '@/components/ui/FlameIcon';
+import ClockIcon from '@/components/ui/ClockIcon';
 import WidgetCard from './WidgetCard';
 import Badge from './Badge';
 import CircularProgress from './CircularProgress';
@@ -22,16 +26,12 @@ const AnalysisCard: React.FC = () => {
     : 0;
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  // Lock body scroll when modal is open
   useEffect(() => {
     if (isDetailOpen) {
+      const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      return () => { document.body.style.overflow = prev; };
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isDetailOpen]);
 
   // Calculate stats for last 4 weeks
@@ -106,7 +106,7 @@ const AnalysisCard: React.FC = () => {
     }
     
     return (
-      <div className={`flex items-center gap-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+      <div className={`flex items-center gap-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
         {diff > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
         <span className="text-badge">{Math.abs(diff)}%</span>
       </div>
@@ -135,59 +135,67 @@ const AnalysisCard: React.FC = () => {
 
   return (
     <>
-      <WidgetCard 
-        delay={0.7} 
+      <WidgetCard
+        delay={0.7}
         onClick={() => setIsDetailOpen(true)}
         className="cursor-pointer active:scale-[0.98] transition-transform"
       >
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <Badge className="mb-4">Анализ недели</Badge>
-
-            <div className="mt-6">
-              <div className="text-title text-foreground mb-1">
-                <span className="text-display-sm text-extralight">{current}</span>
-                <span className="text-muted-white text-body"> / {goal}</span>
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl p-6 -m-5">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <div className="inline-block px-3 py-1 bg-white/20 rounded-full mb-4">
+                <span className="text-xs font-semibold text-white uppercase tracking-wide">Анализ недели</span>
               </div>
-              <p className="text-caption text-muted-white">
-                ккал сожжено за неделю
-              </p>
-            </div>
-          </div>
 
-          <div className="ml-4">
-            <CircularProgress value={percentage} size={90} strokeWidth={8} delay={0.3} />
+              <div className="mt-4">
+                <div className="mb-2">
+                  <span className="text-5xl font-extralight text-white">{current}</span>
+                  <span className="text-white/80 text-lg ml-2 font-medium">/ {goal}</span>
+                </div>
+                <p className="text-sm text-white/90 font-medium">
+                  ккал сожжено за неделю
+                </p>
+              </div>
+            </div>
+
+            <div className="ml-4">
+              <CircularProgress value={percentage} size={90} strokeWidth={8} delay={0.3} />
+            </div>
           </div>
         </div>
       </WidgetCard>
 
-      {/* Detail Modal */}
-      <AnimatePresence>
-        {isDetailOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end justify-center"
-            onClick={() => setIsDetailOpen(false)}
-          >
+      {/* Detail Modal - portal so overlay covers full viewport and scroll is isolated */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isDetailOpen && (
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-lg bg-card rounded-t-3xl p-6 pb-10 max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-foreground/40 backdrop-blur-md flex items-end justify-center"
+              style={{ top: 0, left: 0, right: 0, bottom: 0 }}
+              onClick={() => setIsDetailOpen(false)}
             >
+              <motion.div
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="w-full max-w-lg bg-card rounded-t-3xl p-6 pb-28 max-h-[85vh] overflow-y-auto overscroll-contain"
+                onClick={(e) => e.stopPropagation()}
+              >
               {/* Handle */}
               <div className="w-12 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-6" />
               
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-title text-foreground">Анализ недели</h2>
-                <button 
+                <button
+                  type="button"
                   onClick={() => setIsDetailOpen(false)}
-                  className="w-10 h-10 rounded-full glass flex items-center justify-center"
+                  className="w-10 h-10 rounded-full glass flex items-center justify-center active:scale-90 transition-transform"
+                  style={{ touchAction: 'manipulation' }}
                 >
                   <X size={18} className="text-foreground/70" />
                 </button>
@@ -205,12 +213,12 @@ const AnalysisCard: React.FC = () => {
               </div>
 
               {/* Summary */}
-              <div className="glass rounded-2xl p-4 mb-6 text-center">
+              <div className="glass rounded-3xl p-4 mb-6 text-center">
                 <p className="text-body text-foreground">{getSummaryText()}</p>
               </div>
 
               {/* Mini Chart - 4 weeks */}
-              <div className="glass rounded-2xl p-4 mb-6">
+              <div className="glass rounded-3xl p-4 mb-6">
                 <p className="text-caption text-muted-foreground mb-4">Последние 4 недели</p>
                 <div className="flex items-end justify-between gap-2 h-24">
                   {weeksData.map((week, index) => {
@@ -224,7 +232,7 @@ const AnalysisCard: React.FC = () => {
                             initial={{ height: 0 }}
                             animate={{ height: `${Math.max(height, 4)}%` }}
                             transition={{ delay: index * 0.1, duration: 0.5 }}
-                            className={`w-full max-w-8 rounded-t-lg ${
+                            className={`w-full max-w-8 rounded-t-2xl ${
                               isCurrentWeek ? 'bg-primary' : 'bg-primary/30'
                             }`}
                           />
@@ -234,20 +242,15 @@ const AnalysisCard: React.FC = () => {
                     );
                   })}
                 </div>
-                {/* Goal line indicator */}
-                <div className="relative mt-2">
-                  <div className="border-t border-dashed border-primary/50 w-full" />
-                  <span className="absolute right-0 -top-3 text-badge text-primary/70">цель</span>
-                </div>
               </div>
 
               {/* Comparison with previous week */}
-              <div className="glass rounded-2xl p-4 mb-6">
+              <div className="glass rounded-3xl p-4 mb-6">
                 <p className="text-caption text-muted-foreground mb-3">Сравнение с прошлой неделей</p>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Flame size={16} className="text-primary" />
+                      <FlameIcon size={16} />
                       <span className="text-body text-foreground">Калории</span>
                     </div>
                     <div className="flex items-center gap-3">
@@ -258,7 +261,7 @@ const AnalysisCard: React.FC = () => {
                   
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Clock size={16} className="text-primary" />
+                      <ClockIcon size={16} />
                       <span className="text-body text-foreground">Время</span>
                     </div>
                     <div className="flex items-center gap-3">
@@ -269,7 +272,7 @@ const AnalysisCard: React.FC = () => {
                   
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Dumbbell size={16} className="text-primary" />
+                      <DumbbellIcon size={16} />
                       <span className="text-body text-foreground">Тренировок</span>
                     </div>
                     <div className="flex items-center gap-3">
@@ -282,15 +285,15 @@ const AnalysisCard: React.FC = () => {
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="glass rounded-2xl p-4">
+                <div className="glass rounded-3xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Flame size={16} className="text-primary" />
+                    <FlameIcon size={16} />
                     <span className="text-caption text-muted-foreground">Сожжено</span>
                   </div>
                   <div className="text-title text-foreground">{current} <span className="text-body text-muted-foreground">ккал</span></div>
                 </div>
 
-                <div className="glass rounded-2xl p-4">
+                <div className="glass rounded-3xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp size={16} className="text-primary" />
                     <span className="text-caption text-muted-foreground">Цель</span>
@@ -301,7 +304,9 @@ const AnalysisCard: React.FC = () => {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 };

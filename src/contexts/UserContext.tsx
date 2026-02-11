@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { generateId } from '@/lib/utils';
 
 export interface UserProfile {
   name: string;
+  gender: 'male' | 'female';
+  avatar: string;
   age: number;
   height: number; // cm
   weight: number; // kg
@@ -144,7 +147,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const addWorkoutSession = (session: Omit<WorkoutSession, 'id' | 'completedAt'>) => {
     const newSession: WorkoutSession = {
       ...session,
-      id: crypto.randomUUID(),
+      id: generateId(),
       completedAt: new Date(),
     };
     setWorkoutSessions(prev => [newSession, ...prev]);
@@ -166,7 +169,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Add new workout
       const newWorkout: CustomWorkout = {
         ...workout,
-        id: crypto.randomUUID(),
+        id: generateId(),
         createdAt: new Date(),
       };
       setCustomWorkouts(prev => [newWorkout, ...prev]);

@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Minus } from 'lucide-react';
+import { TimeWheelPicker } from './WheelPicker';
 
 interface TimeInputProps {
   value: number; // total seconds
@@ -38,158 +38,38 @@ const TimeInput: React.FC<TimeInputProps> = ({
   value,
   onChange,
   label,
-  maxSeconds = 3600,
+  maxSeconds = 59 * 60 + 59,
   minSeconds = 0,
   showHours = false,
 }) => {
-  const hours = Math.floor(value / 3600);
-  const minutes = Math.floor((value % 3600) / 60);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const minutes = Math.floor(value / 60);
   const seconds = value % 60;
-
-  const [editingField, setEditingField] = useState<'hours' | 'minutes' | 'seconds' | null>(null);
-  const [inputValue, setInputValue] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (editingField && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [editingField]);
-
-  const updateTime = (h: number, m: number, s: number) => {
-    const total = h * 3600 + m * 60 + s;
-    onChange(Math.max(minSeconds, Math.min(maxSeconds, total)));
-  };
-
-  const handleFieldClick = (field: 'hours' | 'minutes' | 'seconds', currentValue: number) => {
-    setEditingField(field);
-    setInputValue(currentValue.toString());
-  };
-
-  const handleBlur = () => {
-    if (editingField) {
-      const parsed = parseInt(inputValue, 10);
-      if (!isNaN(parsed)) {
-        let h = hours, m = minutes, s = seconds;
-        if (editingField === 'hours') {
-          h = Math.max(0, Math.min(23, parsed));
-        } else if (editingField === 'minutes') {
-          m = Math.max(0, Math.min(59, parsed));
-        } else {
-          s = Math.max(0, Math.min(59, parsed));
-        }
-        updateTime(h, m, s);
-      }
-    }
-    setEditingField(null);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleBlur();
-    }
-  };
-
-  const increment = (amount: number) => {
-    onChange(Math.min(maxSeconds, Math.max(minSeconds, value + amount)));
-  };
-
-  const showHoursField = showHours || hours > 0 || maxSeconds >= 3600;
+  const displayTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
   return (
-    <div className="glass rounded-2xl p-4">
-      <p className="text-caption text-muted-foreground mb-3 text-center">{label}</p>
-      <div className="flex items-center justify-between">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => increment(-5)}
-          className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+    <>
+      <div className="glass rounded-3xl p-5">
+        <p className="text-caption text-muted-foreground mb-4 text-center">{label}</p>
+        <button
+          type="button"
+          onClick={() => setIsPickerOpen(true)}
+          className="w-full text-display-sm text-extralight text-foreground px-4 py-3 rounded-xl hover:bg-muted transition-colors flex items-center justify-center active:scale-[0.98]"
+          style={{ touchAction: 'manipulation' }}
         >
-          <Minus size={24} />
-        </motion.button>
-
-        <div className="flex items-center gap-1">
-          {showHoursField && (
-            <>
-              {editingField === 'hours' ? (
-                <input
-                  ref={inputRef}
-                  type="number"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onBlur={handleBlur}
-                  onKeyDown={handleKeyDown}
-                  className="w-12 text-center text-display-sm text-extralight bg-transparent outline-none border-b-2 border-primary"
-                  min={0}
-                  max={23}
-                />
-              ) : (
-                <span
-                  onClick={() => handleFieldClick('hours', hours)}
-                  className="text-display-sm text-extralight cursor-pointer hover:text-primary transition-colors"
-                >
-                  {hours.toString().padStart(2, '0')}
-                </span>
-              )}
-              <span className="text-display-sm text-extralight text-muted-foreground">:</span>
-            </>
-          )}
-
-          {editingField === 'minutes' ? (
-            <input
-              ref={inputRef}
-              type="number"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyDown}
-              className="w-12 text-center text-display-sm text-extralight bg-transparent outline-none border-b-2 border-primary"
-              min={0}
-              max={59}
-            />
-          ) : (
-            <span
-              onClick={() => handleFieldClick('minutes', minutes)}
-              className="text-display-sm text-extralight cursor-pointer hover:text-primary transition-colors"
-            >
-              {minutes.toString().padStart(2, '0')}
-            </span>
-          )}
-
-          <span className="text-display-sm text-extralight text-muted-foreground">:</span>
-
-          {editingField === 'seconds' ? (
-            <input
-              ref={inputRef}
-              type="number"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyDown}
-              className="w-12 text-center text-display-sm text-extralight bg-transparent outline-none border-b-2 border-primary"
-              min={0}
-              max={59}
-            />
-          ) : (
-            <span
-              onClick={() => handleFieldClick('seconds', seconds)}
-              className="text-display-sm text-extralight cursor-pointer hover:text-primary transition-colors"
-            >
-              {seconds.toString().padStart(2, '0')}
-            </span>
-          )}
-        </div>
-
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => increment(5)}
-          className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
-        >
-          <Plus size={24} />
-        </motion.button>
+          {displayTime}
+        </button>
       </div>
-    </div>
+      <TimeWheelPicker
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        value={value}
+        onChange={onChange}
+        label={label}
+        maxSeconds={maxSeconds}
+        minSeconds={minSeconds}
+      />
+    </>
   );
 };
 

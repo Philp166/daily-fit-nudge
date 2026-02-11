@@ -27,18 +27,29 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-background px-5 pt-safe-top pb-40"
+      className="min-h-screen bg-background px-5 pt-safe-top"
     >
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-2"
+        className="mb-6 flex items-center gap-4"
       >
-        <h1 className="text-title text-foreground">
-          Привет, {profile?.name || 'Атлет'}!
-        </h1>
+        {profile?.avatar && (
+          <img
+            src={`/avatars/${profile.avatar}.webp`}
+            alt=""
+            className="w-14 h-14 rounded-full object-cover shrink-0"
+            draggable={false}
+          />
+        )}
+        <div>
+          <p className="text-sm text-muted-foreground mb-1 font-medium">С возвращением!</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            {profile?.name || 'Атлет'}
+          </h1>
+        </div>
       </motion.div>
 
       {/* Calories Widget */}

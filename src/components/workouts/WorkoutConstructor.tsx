@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { X, Plus, Minus, Search, GripVertical, Trash2, Clock, Flame, Star, Dumbbell, Pencil } from 'lucide-react';
+import { X, Plus, Minus, Search, GripVertical, Trash2, Flame, Star, Pencil } from 'lucide-react';
+import DumbbellIcon from '@/components/ui/DumbbellIcon';
+import ClockIcon from '@/components/ui/ClockIcon';
 import { exercises, exerciseCategories, getExerciseById, calculateCalories, getExerciseIconComponent, Exercise } from '@/data/exercises';
 import { useUser } from '@/contexts/UserContext';
 import TimeInput, { formatTimeCompact } from '@/components/ui/TimeInput';
+import { generateId } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +17,35 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
+/** Строка упражнения: тап/клик ловит document (useEffect capture). Здесь только разметка и a11y. */
+function ExercisePickerButton({
+  exercise,
+  onAdd,
+  children,
+}: {
+  exercise: Exercise;
+  onAdd: (ex: Exercise) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      data-exercise-id={exercise.id}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onAdd(exercise);
+        }
+      }}
+      className="w-full glass rounded-md p-4 flex items-center gap-3 text-left active:scale-[0.98] transition-transform select-none cursor-pointer"
+      style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+    >
+      {children}
+    </div>
+  );
+}
 
 // Editable name input with local state to prevent re-renders
 interface NameInputProps {
@@ -101,14 +133,15 @@ const NumberInput: React.FC<NumberInputProps> = ({ value, onChange, min, max, st
     <div className="glass rounded-2xl p-4">
       <p className="text-caption text-muted-foreground mb-3 text-center">{label}</p>
       <div className="flex items-center justify-between">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
+        <button
+          type="button"
           onClick={() => onChange(Math.max(min, value - step))}
-          className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+          className="w-14 h-14 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
+          style={{ touchAction: 'manipulation' }}
         >
           <Minus size={24} />
-        </motion.button>
-        
+        </button>
+
         {isEditing ? (
           <input
             ref={inputRef}
@@ -130,13 +163,14 @@ const NumberInput: React.FC<NumberInputProps> = ({ value, onChange, min, max, st
           </span>
         )}
         
-        <motion.button
-          whileTap={{ scale: 0.9 }}
+        <button
+          type="button"
           onClick={() => onChange(Math.min(max, value + step))}
-          className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+          className="w-14 h-14 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
+          style={{ touchAction: 'manipulation' }}
         >
           <Plus size={24} />
-        </motion.button>
+        </button>
       </div>
     </div>
   );
@@ -205,7 +239,7 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
       setWorkoutName(editWorkout.name);
       setSelectedExercises(editWorkout.exercises.map(e => ({
         ...e,
-        id: e.id || crypto.randomUUID(),
+        id: e.id || generateId(),
       })));
       // Check if this workout is already a favorite
       const existing = customWorkouts.find(w => w.name === editWorkout.name);
@@ -227,7 +261,7 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
 
   const addExercise = (exercise: Exercise) => {
     const newExercise: WorkoutExercise = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       exerciseId: exercise.id,
       sets: 3,
       workTime: 45,
@@ -237,6 +271,91 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
     setShowExerciseList(false);
     setSearchQuery('');
   };
+
+  const addExerciseRef = useRef(addExercise);
+  addExerciseRef.current = addExercise;
+
+  const setSelectedCategoryRef = useRef(setSelectedCategory);
+  setSelectedCategoryRef.current = setSelectedCategory;
+
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const hadMoveRef = useRef(false);
+  const TAP_MOVE_THRESHOLD = 8;
+  const savePointerStart = (e: TouchEvent | MouseEvent) => {
+    hadMoveRef.current = false;
+    const x = 'touches' in e ? e.touches[0]?.clientX : e.clientX;
+    const y = 'touches' in e ? e.touches[0]?.clientY : e.clientY;
+    if (x != null && y != null) pointerStartRef.current = { x, y };
+  };
+  const onPointerMove = (e: TouchEvent) => {
+    const start = pointerStartRef.current;
+    if (!start || !e.touches[0]) return;
+    const x = e.touches[0].clientX;
+    const y = e.touches[0].clientY;
+    const dx = Math.abs(x - start.x);
+    const dy = Math.abs(y - start.y);
+    if (dx > TAP_MOVE_THRESHOLD || dy > TAP_MOVE_THRESHOLD) hadMoveRef.current = true;
+  };
+  const isTap = (e: TouchEvent | MouseEvent): boolean => {
+    const start = pointerStartRef.current;
+    pointerStartRef.current = null;
+    if (start == null) return false;
+    if (hadMoveRef.current) {
+      hadMoveRef.current = false;
+      return false;
+    }
+    const endX = 'changedTouches' in e ? (e as TouchEvent).changedTouches[0]?.clientX : (e as MouseEvent).clientX;
+    const endY = 'changedTouches' in e ? (e as TouchEvent).changedTouches[0]?.clientY : (e as MouseEvent).clientY;
+    const dx = Math.abs((endX ?? start.x) - start.x);
+    const dy = Math.abs((endY ?? start.y) - start.y);
+    return dx <= TAP_MOVE_THRESHOLD && dy <= TAP_MOVE_THRESHOLD;
+  };
+
+  useEffect(() => {
+    if (!showExerciseList) return;
+    document.addEventListener('touchstart', savePointerStart, { capture: true, passive: true });
+    document.addEventListener('touchmove', onPointerMove, { capture: true, passive: true });
+    document.addEventListener('mousedown', savePointerStart, { capture: true });
+    return () => {
+      document.removeEventListener('touchstart', savePointerStart, { capture: true });
+      document.removeEventListener('touchmove', onPointerMove, { capture: true });
+      document.removeEventListener('mousedown', savePointerStart, { capture: true });
+    };
+  }, [showExerciseList]);
+
+  useEffect(() => {
+    if (!showExerciseList) return;
+    const handleTap = (e: TouchEvent | MouseEvent) => {
+      if (!isTap(e)) return;
+      const target = e.target as HTMLElement;
+      const exerciseRow = target.closest('[data-exercise-id]');
+      if (exerciseRow) {
+        const id = exerciseRow.getAttribute('data-exercise-id');
+        if (!id) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const ex = getExerciseById(id);
+        if (ex) addExerciseRef.current(ex);
+        return;
+      }
+      const categoryBtn = target.closest('[data-exercise-category]');
+      if (categoryBtn) {
+        const cat = categoryBtn.getAttribute('data-exercise-category');
+        if (cat) {
+          e.preventDefault();
+          e.stopPropagation();
+          setSelectedCategoryRef.current(cat);
+        }
+      }
+    };
+    const opts = { capture: true };
+    document.addEventListener('touchend', handleTap, opts);
+    document.addEventListener('click', handleTap, opts);
+    return () => {
+      document.removeEventListener('touchend', handleTap, opts);
+      document.removeEventListener('click', handleTap, opts);
+    };
+  }, [showExerciseList]);
 
   const removeExercise = (id: string) => {
     setSelectedExercises(selectedExercises.filter(ex => ex.id !== id));
@@ -347,23 +466,25 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
       <div className="flex items-center justify-between px-5 pt-safe-top pb-4">
         <h2 className="text-title text-foreground">Тренировка готова</h2>
         <div className="flex items-center gap-2">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
+          <button
+            type="button"
             onClick={() => setIsFavorite(!isFavorite)}
-            className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+            className="w-10 h-10 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
+            style={{ touchAction: 'manipulation' }}
           >
-            <Star 
-              size={20} 
-              className={isFavorite ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'} 
+            <Star
+              size={20}
+              className={isFavorite ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}
             />
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
+          </button>
+          <button
+            type="button"
             onClick={handleCancelPreview}
-            className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+            className="w-10 h-10 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
+            style={{ touchAction: 'manipulation' }}
           >
             <X size={20} />
-          </motion.button>
+          </button>
         </div>
       </div>
 
@@ -376,7 +497,7 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
           {/* Stats */}
           <div className="flex gap-3 mb-4">
             <div className="glass rounded-2xl px-4 py-2 flex items-center gap-2">
-              <Clock size={16} className="text-primary" />
+              <ClockIcon size={16} />
               <span className="text-caption text-foreground">
                 {Math.floor(calculateTotalTime() / 60)} мин
               </span>
@@ -417,20 +538,22 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
       {/* Bottom Actions */}
       <div className="px-5 pb-safe-bottom mb-4 pt-4 bg-gradient-to-t from-background via-background to-transparent">
         <div className="flex gap-3">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+          <button
+            type="button"
             onClick={handleEditFromPreview}
-            className="flex-1 py-4 rounded-2xl glass text-foreground text-body"
+            className="flex-1 py-4 rounded-2xl glass text-foreground text-body active:scale-95 transition-transform"
+            style={{ touchAction: 'manipulation' }}
           >
             Редактировать
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+          </button>
+          <button
+            type="button"
             onClick={handleStartWorkout}
-            className="flex-1 py-4 rounded-2xl bg-primary text-primary-foreground text-body"
+            className="flex-1 py-4 rounded-2xl bg-primary text-primary-foreground text-body active:scale-95 transition-transform"
+            style={{ touchAction: 'manipulation' }}
           >
             Начать
-          </motion.button>
+          </button>
         </div>
       </div>
     </motion.div>
@@ -466,13 +589,13 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                   {/* Header */}
                   <div className="flex items-center justify-between px-5 pt-safe-top pb-4">
                     <h2 className="text-title text-foreground">Добавь упражнения</h2>
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
+                    <button
+                      type="button"
                       onClick={handleClose}
-                      className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+                      className="w-10 h-10 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
                     >
                       <X size={20} />
-                    </motion.button>
+                    </button>
                   </div>
 
                   {/* Stats */}
@@ -480,7 +603,7 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                     <div className="px-5 pb-4">
                       <div className="flex gap-3">
                         <div className="glass rounded-2xl px-4 py-2 flex items-center gap-2">
-                          <Clock size={16} className="text-primary" />
+                          <ClockIcon size={16} />
                           <span className="text-caption text-foreground">
                             {Math.floor(calculateTotalTime() / 60)} мин
                           </span>
@@ -500,7 +623,7 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                     {selectedExercises.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full text-center">
                         <div className="w-16 h-16 rounded-3xl glass flex items-center justify-center mb-4">
-                          <Dumbbell size={32} className="text-primary" />
+                          <DumbbellIcon size={32} />
                         </div>
                         <p className="text-body text-muted-foreground mb-2">
                           Добавь упражнения
@@ -529,7 +652,7 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                                 className="glass rounded-3xl p-4"
                               >
                                 <div className="flex items-center gap-3 mb-3">
-                                  <div className="cursor-grab active:cursor-grabbing">
+                                  <div className="cursor-grab active:cursor-grabbing touch-none">
                                     <GripVertical size={20} className="text-muted-foreground" />
                                   </div>
                                   <div className="w-10 h-10 rounded-2xl glass flex items-center justify-center">
@@ -539,20 +662,22 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                                     <p className="text-body text-foreground">{exercise.name}</p>
                                     <p className="text-badge text-muted-foreground">{exercise.category}</p>
                                   </div>
-                                  <motion.button
-                                    whileTap={{ scale: 0.9 }}
+                                  <button
+                                    type="button"
                                     onClick={() => setEditingExercise(isEditing ? null : item.id)}
-                                    className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+                                    className="w-10 h-10 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
+                                    style={{ touchAction: 'manipulation' }}
                                   >
                                     <Pencil size={18} className={isEditing ? 'text-primary' : 'text-muted-foreground'} />
-                                  </motion.button>
-                                  <motion.button
-                                    whileTap={{ scale: 0.9 }}
+                                  </button>
+                                  <button
+                                    type="button"
                                     onClick={() => removeExercise(item.id)}
-                                    className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+                                    className="w-10 h-10 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
+                                    style={{ touchAction: 'manipulation' }}
                                   >
                                     <Trash2 size={18} className="text-destructive" />
-                                  </motion.button>
+                                  </button>
                                 </div>
 
                                 {/* Exercise Settings - Always visible but compact or expanded */}
@@ -576,14 +701,14 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                                         value={item.workTime}
                                         onChange={(val) => updateExercise(item.id, 'workTime', val)}
                                         minSeconds={5}
-                                        maxSeconds={3600}
+                                        maxSeconds={59 * 60 + 59}
                                       />
                                       <TimeInput
                                         label="Время отдыха"
                                         value={item.restTime}
                                         onChange={(val) => updateExercise(item.id, 'restTime', val)}
                                         minSeconds={0}
-                                        maxSeconds={3600}
+                                        maxSeconds={59 * 60 + 59}
                                       />
                                     </motion.div>
                                   ) : (
@@ -611,21 +736,21 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                   {/* Bottom Actions */}
                   <div className="absolute bottom-0 left-0 right-0 px-5 pb-safe-bottom mb-4 pt-4 bg-gradient-to-t from-background via-background to-transparent">
                     <div className="flex gap-3">
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
+                      <button
+                        type="button"
                         onClick={() => setShowExerciseList(true)}
-                        className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+                        className="w-14 h-14 rounded-2xl glass flex items-center justify-center active:scale-95 transition-transform"
                       >
                         <Plus size={24} />
-                      </motion.button>
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
+                      </button>
+                      <button
+                        type="button"
                         onClick={handleSaveWorkout}
                         disabled={selectedExercises.length === 0}
-                        className="flex-1 py-4 rounded-2xl bg-primary text-primary-foreground text-body disabled:opacity-50"
+                        className="flex-1 py-4 rounded-2xl bg-primary text-primary-foreground text-body disabled:opacity-50 active:scale-95 transition-transform"
                       >
                         Сохранить
-                      </motion.button>
+                      </button>
                     </div>
                   </div>
 
@@ -636,22 +761,22 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-background z-10"
+                        className="fixed inset-0 bg-background z-[100]"
                       >
                         <div className="h-full flex flex-col">
                           {/* Search Header */}
                           <div className="px-5 pt-safe-top pb-4">
                             <div className="flex items-center gap-3 mb-4">
-                              <motion.button
-                                whileTap={{ scale: 0.9 }}
+                              <button
+                                type="button"
                                 onClick={() => {
                                   setShowExerciseList(false);
                                   setSearchQuery('');
                                 }}
-                                className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+                                className="w-10 h-10 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
                               >
                                 <X size={20} />
-                              </motion.button>
+                              </button>
                               <div className="flex-1 relative">
                                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                 <input
@@ -667,44 +792,49 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                             {/* Categories */}
                             <div className="overflow-x-auto hide-scrollbar">
                               <div className="flex gap-2">
-                                <motion.button
-                                  whileTap={{ scale: 0.95 }}
+                                <button
+                                  type="button"
+                                  data-exercise-category="Все"
                                   onClick={() => setSelectedCategory('Все')}
-                                  className={`px-4 py-2 rounded-2xl text-caption whitespace-nowrap transition-colors ${
+                                  onPointerUp={() => setSelectedCategory('Все')}
+                                  style={{ touchAction: 'manipulation' }}
+                                  className={`px-4 py-2 rounded-2xl text-caption whitespace-nowrap transition-colors active:scale-95 ${
                                     selectedCategory === 'Все'
                                       ? 'bg-primary text-primary-foreground'
                                       : 'glass text-foreground/70'
                                   }`}
                                 >
                                   Все
-                                </motion.button>
+                                </button>
                                 {exerciseCategories.map((category) => (
-                                  <motion.button
+                                  <button
                                     key={category}
-                                    whileTap={{ scale: 0.95 }}
+                                    type="button"
+                                    data-exercise-category={category}
                                     onClick={() => setSelectedCategory(category)}
-                                    className={`px-4 py-2 rounded-2xl text-caption whitespace-nowrap transition-colors ${
+                                    onPointerUp={() => setSelectedCategory(category)}
+                                    style={{ touchAction: 'manipulation' }}
+                                    className={`px-4 py-2 rounded-2xl text-caption whitespace-nowrap transition-colors active:scale-95 ${
                                       selectedCategory === category
                                         ? 'bg-primary text-primary-foreground'
                                         : 'glass text-foreground/70'
                                     }`}
                                   >
                                     {category}
-                                  </motion.button>
+                                  </button>
                                 ))}
                               </div>
                             </div>
                           </div>
 
-                          {/* Exercise Grid */}
+                          {/* Exercise Grid — тапы ловит document listener в useEffect (capture) */}
                           <div className="flex-1 overflow-y-auto px-5 pb-8 hide-scrollbar">
                             <div className="space-y-2">
                               {filteredExercises.map((exercise) => (
-                                <motion.button
+                                <ExercisePickerButton
                                   key={exercise.id}
-                                  whileTap={{ scale: 0.98 }}
-                                  onClick={() => addExercise(exercise)}
-                                  className="w-full glass rounded-2xl p-4 flex items-center gap-3 text-left"
+                                  exercise={exercise}
+                                  onAdd={addExercise}
                                 >
                                   <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center">
                                     <ExerciseIconDisplay iconType={exercise.iconType} />
@@ -714,7 +844,7 @@ const WorkoutConstructor: React.FC<WorkoutConstructorProps> = ({
                                     <p className="text-badge text-muted-foreground">{exercise.category}</p>
                                   </div>
                                   <Plus size={20} className="text-primary" />
-                                </motion.button>
+                                </ExercisePickerButton>
                               ))}
                             </div>
                           </div>

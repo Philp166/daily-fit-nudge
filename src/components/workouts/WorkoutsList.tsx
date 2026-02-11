@@ -1,10 +1,114 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, Flame, ListChecks, ChevronRight, Star, Edit2, Dumbbell } from 'lucide-react';
+import { X, Flame, ListChecks, ChevronRight, Star, Edit2 } from 'lucide-react';
+import DumbbellIcon from '@/components/ui/DumbbellIcon';
+import ClockIcon from '@/components/ui/ClockIcon';
 import Badge from '../dashboard/Badge';
-import { presetWorkouts, workoutCategories, Workout } from '@/data/workouts';
+import { presetWorkouts, workoutCategories, Workout, computeWorkoutCalories } from '@/data/workouts';
 import { getExerciseById } from '@/data/exercises';
 import { useUser } from '@/contexts/UserContext';
+
+/** Карточка пресета: тап по карточке открывает тренировку, скролл не триггерит. */
+function WorkoutCard({
+  workout,
+  index,
+  getDifficultyColor,
+  onSelectWorkout,
+  onEditWorkout,
+  handleEditWorkout,
+}: {
+  workout: Workout;
+  index: number;
+  getDifficultyColor: (d: string) => string;
+  onSelectWorkout: (w: Workout) => void;
+  onEditWorkout?: (w: Workout) => void;
+  handleEditWorkout: (w: Workout, e: React.MouseEvent | React.TouchEvent) => void;
+}) {
+  const touchRef = useRef({ startY: 0, moved: false });
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchRef.current.startY = e.touches[0].clientY;
+    touchRef.current.moved = false;
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (Math.abs(e.touches[0].clientY - touchRef.current.startY) > 10) {
+      touchRef.current.moved = true;
+    }
+  };
+  const handleCardClick = () => {
+    if (touchRef.current.moved) return;
+    onSelectWorkout(workout);
+  };
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (touchRef.current.moved) return;
+    if (onEditWorkout) onEditWorkout(workout);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+    >
+      <div
+        role="button"
+        tabIndex={0}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onClick={handleCardClick}
+        onKeyDown={(e) => { if (e.key === 'Enter') onSelectWorkout(workout); }}
+        className="w-full text-left glass rounded-3xl p-4 active:scale-[0.98] transition-transform cursor-pointer"
+      >
+        <div className="flex justify-between items-start mb-3">
+          <div>
+            <h3 className="text-body font-normal text-foreground mb-1">
+              {workout.name}
+            </h3>
+            <span className={`text-badge px-2 py-0.5 rounded-xl ${getDifficultyColor(workout.difficulty)}`}>
+              {workout.difficulty}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            {onEditWorkout && (
+              <div
+                role="button"
+                tabIndex={0}
+                className="w-10 h-10 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform cursor-pointer"
+                onClick={handleEdit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (onEditWorkout) onEditWorkout(workout);
+                  }
+                }}
+                aria-label="Редактировать"
+              >
+                <Edit2 size={16} className="text-muted-foreground" />
+              </div>
+            )}
+            <ChevronRight size={20} className="text-muted-foreground mt-2.5" />
+          </div>
+        </div>
+
+        <div className="flex gap-4 text-caption text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <ClockIcon size={14} />
+            {workout.totalDuration} мин
+          </span>
+          <span className="flex items-center gap-1">
+            <Flame size={14} />
+            {workout.estimatedCalories} ккал
+          </span>
+          <span className="flex items-center gap-1">
+            <ListChecks size={14} />
+            {workout.exercises.length} упр.
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 interface WorkoutsListProps {
   isOpen: boolean;
@@ -19,7 +123,7 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
   onSelectWorkout,
   onEditWorkout
 }) => {
-  const { customWorkouts, toggleFavorite } = useUser();
+  const { customWorkouts, toggleFavorite, profile } = useUser();
   const [selectedCategory, setSelectedCategory] = useState('Все');
   const [activeTab, setActiveTab] = useState<'preset' | 'favorites'>('preset');
 
@@ -48,8 +152,9 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
     }
   };
 
-  const handleEditWorkout = (workout: Workout, e: React.MouseEvent) => {
+  const handleEditWorkout = (workout: Workout, e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     if (onEditWorkout) {
       onEditWorkout(workout);
     }
@@ -74,33 +179,37 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-safe-top pb-4">
               <h1 className="text-title text-foreground">Тренировки</h1>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
+              <button
+                type="button"
                 onClick={onClose}
-                className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+                className="w-10 h-10 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
               >
                 <X size={20} />
-              </motion.button>
+              </button>
             </div>
 
             {/* Tabs */}
             <div className="px-5 pb-4">
               <div className="glass rounded-2xl p-1 flex">
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
+                <button
+                  type="button"
+                  data-workout-tab="preset"
                   onClick={() => setActiveTab('preset')}
-                  className={`flex-1 py-3 rounded-xl text-caption transition-colors ${
+                  style={{ touchAction: 'manipulation' }}
+                  className={`flex-1 py-3 rounded-xl text-caption transition-colors active:scale-[0.98] ${
                     activeTab === 'preset'
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground'
                   }`}
                 >
                   Готовые
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
+                </button>
+                <button
+                  type="button"
+                  data-workout-tab="favorites"
                   onClick={() => setActiveTab('favorites')}
-                  className={`flex-1 py-3 rounded-xl text-caption transition-colors flex items-center justify-center gap-2 ${
+                  style={{ touchAction: 'manipulation' }}
+                  className={`flex-1 py-3 rounded-xl text-caption transition-colors flex items-center justify-center gap-2 active:scale-[0.98] ${
                     activeTab === 'favorites'
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground'
@@ -113,7 +222,7 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
                       {favoriteWorkouts.length}
                     </span>
                   )}
-                </motion.button>
+                </button>
               </div>
             </div>
 
@@ -123,18 +232,20 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
                 <div className="px-5 pb-4 overflow-x-auto hide-scrollbar">
                   <div className="flex gap-2">
                     {workoutCategories.map((category) => (
-                      <motion.button
+                      <button
                         key={category}
-                        whileTap={{ scale: 0.95 }}
+                        type="button"
+                        data-workout-category={category}
                         onClick={() => setSelectedCategory(category)}
-                        className={`px-4 py-2 rounded-2xl text-caption whitespace-nowrap transition-colors ${
+                        style={{ touchAction: 'manipulation' }}
+                        className={`px-4 py-2 rounded-2xl text-caption whitespace-nowrap transition-colors active:scale-95 ${
                           selectedCategory === category
                             ? 'bg-primary text-primary-foreground'
                             : 'glass text-foreground/70'
                         }`}
                       >
                         {category}
-                      </motion.button>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -143,52 +254,15 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
                 <div className="flex-1 overflow-y-auto px-5 pb-safe-bottom hide-scrollbar">
                   <div className="space-y-3">
                     {filteredWorkouts.map((workout, index) => (
-                      <motion.div
+                      <WorkoutCard
                         key={workout.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        onClick={() => onSelectWorkout(workout)}
-                        className="glass rounded-3xl p-4 card-interactive"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <h3 className="text-body font-normal text-foreground mb-1">
-                              {workout.name}
-                            </h3>
-                            <span className={`text-badge px-2 py-0.5 rounded-xl ${getDifficultyColor(workout.difficulty)}`}>
-                              {workout.difficulty}
-                            </span>
-                          </div>
-                          <div className="flex gap-2">
-                            {onEditWorkout && (
-                              <motion.button
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => handleEditWorkout(workout, e)}
-                                className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
-                              >
-                                <Edit2 size={16} className="text-muted-foreground" />
-                              </motion.button>
-                            )}
-                            <ChevronRight size={20} className="text-muted-foreground mt-2.5" />
-                          </div>
-                        </div>
-
-                        <div className="flex gap-4 text-caption text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Clock size={14} />
-                            {workout.totalDuration} мин
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Flame size={14} />
-                            {workout.estimatedCalories} ккал
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <ListChecks size={14} />
-                            {workout.exercises.length} упр.
-                          </span>
-                        </div>
-                      </motion.div>
+                        workout={workout}
+                        index={index}
+                        getDifficultyColor={getDifficultyColor}
+                        onSelectWorkout={onSelectWorkout}
+                        onEditWorkout={onEditWorkout}
+                        handleEditWorkout={handleEditWorkout}
+                      />
                     ))}
                   </div>
                 </div>
@@ -212,9 +286,10 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
                 ) : (
                   <div className="space-y-3">
                     {favoriteWorkouts.map((workout, index) => {
-                      const totalDuration = workout.exercises.reduce((acc, ex) => 
+                      const totalDuration = workout.exercises.reduce((acc, ex) =>
                         acc + (ex.workTime + ex.restTime) * ex.sets, 0
                       ) / 60;
+                      const estimatedCalories = computeWorkoutCalories(workout.exercises, profile?.weight || 70);
 
                       return (
                         <motion.div
@@ -227,7 +302,7 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
                           <div className="flex justify-between items-start mb-3">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-2xl glass flex items-center justify-center">
-                                <Dumbbell size={20} className="text-primary" />
+                                <DumbbellIcon size={20} />
                               </div>
                               <div>
                                 <h3 className="text-body font-normal text-foreground">
@@ -238,19 +313,23 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
                                 </p>
                               </div>
                             </div>
-                            <motion.button
-                              whileTap={{ scale: 0.9 }}
+                            <button
+                              type="button"
                               onClick={() => toggleFavorite(workout.id)}
-                              className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+                              className="w-10 h-10 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
                             >
                               <Star size={18} className="text-yellow-400 fill-yellow-400" />
-                            </motion.button>
+                            </button>
                           </div>
 
                           <div className="flex gap-3 text-caption text-muted-foreground mb-3">
                             <span className="flex items-center gap-1">
-                              <Clock size={14} />
+                              <ClockIcon size={14} />
                               {Math.round(totalDuration)} мин
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Flame size={14} />
+                              {estimatedCalories} ккал
                             </span>
                             <span className="flex items-center gap-1">
                               <ListChecks size={14} />
@@ -258,8 +337,8 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
                             </span>
                           </div>
 
-                          <motion.button
-                            whileTap={{ scale: 0.98 }}
+                          <button
+                            type="button"
                             onClick={() => {
                               const workoutData: Workout = {
                                 id: workout.id,
@@ -268,14 +347,14 @@ const WorkoutsList: React.FC<WorkoutsListProps> = ({
                                 difficulty: 'Средняя',
                                 exercises: workout.exercises,
                                 totalDuration: Math.round(totalDuration),
-                                estimatedCalories: 0,
+                                estimatedCalories,
                               };
                               onSelectWorkout(workoutData);
                             }}
-                            className="w-full py-3 rounded-2xl bg-primary text-primary-foreground text-caption"
+                            className="w-full py-3 rounded-2xl bg-primary text-primary-foreground text-caption active:scale-[0.98] transition-transform"
                           >
                             Начать тренировку
-                          </motion.button>
+                          </button>
                         </motion.div>
                       );
                     })}

@@ -1,73 +1,57 @@
-# Welcome to your Lovable project
+# Interfit
 
-## Project info
+Web application for planning, performing, and tracking interval workouts (HIIT, Tabata, circuit training). Mobile-first SPA optimized for 320–430px screens.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Tech stack
 
-## How can I edit this code?
+- **Frontend:** React 18, TypeScript, Vite
+- **Styling:** Tailwind CSS, CSS Variables
+- **UI:** shadcn/ui (Radix primitives), Framer Motion
+- **State:** React Context API
+- **Storage:** localStorage (offline-first)
 
-There are several ways of editing your application.
+## Getting started
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+**Requirements:** Node.js 18+ and npm.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd fitapp
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server (with hot reload)
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:8080` (or the port shown in the terminal).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Scripts
 
-**Use GitHub Codespaces**
+| Command | Description |
+|--------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build (output in `dist/`) |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint |
+| `npm run test` | Run tests |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Project structure
 
-## What technologies are used for this project?
+- `src/` — application source (components, pages, contexts, data)
+- `public/` — static assets (favicon, etc.)
+- `docs/` — specification and documentation (e.g. `SPECIFICATION.md`)
 
-This project is built with:
+The mobile (Flutter) app lives in the `mobile/` directory; see `mobile/README.md` for build and run instructions.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Deploy
 
-## How can I deploy this project?
+1. Run `npm run build`.
+2. Deploy the contents of the `dist/` folder to any static hosting (Vercel, Netlify, GitHub Pages, or your own server).
+3. Ensure the server is configured for SPA routing (all routes serve `index.html`).
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## License
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Private project. All rights reserved.

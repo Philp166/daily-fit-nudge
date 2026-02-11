@@ -28,33 +28,37 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
     return () => clearTimeout(timer);
   }, [value, delay]);
 
+  const padding = 20; // Extra space for blur effect
+  const svgSize = size + padding * 2;
+  const centerOffset = padding + size / 2;
+
   return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="transform -rotate-90">
+    <div className="relative" style={{ width: svgSize, height: svgSize }}>
+      <svg width={svgSize} height={svgSize} className="transform -rotate-90">
         {/* Background circle */}
         <circle
-          cx={size / 2}
-          cy={size / 2}
+          cx={centerOffset}
+          cy={centerOffset}
           r={radius}
           fill="none"
-          stroke="hsl(0 0% 100% / 0.1)"
+          stroke="rgba(255, 255, 255, 0.2)"
           strokeWidth={strokeWidth}
         />
-        
+
         {/* Progress circle */}
         <motion.circle
-          cx={size / 2}
-          cy={size / 2}
+          cx={centerOffset}
+          cy={centerOffset}
           r={radius}
           fill="none"
-          stroke="hsl(var(--primary))"
+          stroke="white"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 1.5, delay, ease: 'easeOut' }}
-          className="drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
+          className="drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
         />
       </svg>
 
@@ -65,9 +69,9 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: delay + 0.5 }}
-            className="text-lg font-light text-foreground"
+            className="text-lg font-bold text-white"
           >
-            {Math.round(animatedValue)}
+            {Math.round(animatedValue)}%
           </motion.span>
         </div>
       )}

@@ -1,8 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Pause, Play, SkipForward, Square, ChevronRight, Flame, Dumbbell, Activity, Target, Trophy, Minimize2 } from 'lucide-react';
+import { Pause, Play, SkipForward, Square, ChevronRight, Flame, Target, Trophy, Minimize2 } from 'lucide-react';
+import DumbbellIcon from '@/components/ui/DumbbellIcon';
+import ActivityIcon from '@/components/ui/ActivityIcon';
 import { Exercise, getExerciseById, calculateCalories, getExerciseIconComponent } from '@/data/exercises';
 import { useUser } from '@/contexts/UserContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface WorkoutExercise {
   id?: string;
@@ -27,7 +39,7 @@ interface WorkoutTimerProps {
   workoutName: string;
   onMinimize?: (state: TimerState) => void;
   onStateUpdate?: (state: TimerState) => void;
-  initialState?: TimerState;
+  isMinimized?: boolean;
 }
 
 type Phase = 'work' | 'rest';
@@ -39,20 +51,21 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   workoutName,
   onMinimize,
   onStateUpdate,
-  initialState,
+  isMinimized = false,
 }) => {
   const { profile, addWorkoutSession } = useUser();
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(initialState?.currentExerciseIndex ?? 0);
-  const [currentSet, setCurrentSet] = useState(initialState?.currentSet ?? 1);
-  const [phase, setPhase] = useState<Phase>(initialState?.phase ?? 'work');
-  const [timeLeft, setTimeLeft] = useState(initialState?.timeLeft ?? 0);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [currentSet, setCurrentSet] = useState(1);
+  const [phase, setPhase] = useState<Phase>('work');
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [totalCaloriesBurned, setTotalCaloriesBurned] = useState(initialState?.totalCalories ?? 0);
+  const [totalCaloriesBurned, setTotalCaloriesBurned] = useState(0);
   const [actualWorkSeconds, setActualWorkSeconds] = useState(0);
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [totalSetsCompleted, setTotalSetsCompleted] = useState(0);
+  const [showStopDialog, setShowStopDialog] = useState(false);
 
   const currentWorkoutExercise = exercises[currentExerciseIndex];
   const currentExercise = currentWorkoutExercise
@@ -63,9 +76,24 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     ? getExerciseById(exercises[currentExerciseIndex + 1].exerciseId)
     : undefined;
 
-  // Reset all state when timer closes
+  // Initialize and start timer when opened
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen && !isMinimized && exercises.length > 0 && !isRunning) {
+      // Start the timer
+      setIsRunning(true);
+      if (!workoutStartTime) {
+        setWorkoutStartTime(new Date());
+      }
+      // Set initial time if not already set
+      if (timeLeft === 0) {
+        setTimeLeft(Math.min(exercises[0].workTime, 59 * 60 + 59));
+      }
+    }
+  }, [isOpen, isMinimized, exercises, isRunning, workoutStartTime, timeLeft]);
+
+  // Reset all state when timer fully closes (not minimized)
+  useEffect(() => {
+    if (!isOpen && !isMinimized) {
       setCurrentExerciseIndex(0);
       setCurrentSet(1);
       setPhase('work');
@@ -78,40 +106,21 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       setIsComplete(false);
       setTotalSetsCompleted(0);
     }
-  }, [isOpen]);
+  }, [isOpen, isMinimized]);
 
-  // Initialize timer
+  // Update parent state continuously when minimized
   useEffect(() => {
-    if (isOpen && exercises.length > 0) {
-      if (initialState) {
-        // Restore from minimized state
-        setCurrentExerciseIndex(initialState.currentExerciseIndex);
-        setCurrentSet(initialState.currentSet);
-        setPhase(initialState.phase);
-        setTimeLeft(initialState.timeLeft);
-        setTotalCaloriesBurned(initialState.totalCalories);
-        setIsRunning(true);
-        setIsPaused(false);
-        setIsComplete(false);
-        if (!workoutStartTime) {
-          setWorkoutStartTime(new Date());
-        }
-      } else {
-        // Fresh start - always reset completely
-        setCurrentExerciseIndex(0);
-        setCurrentSet(1);
-        setPhase('work');
-        setTimeLeft(exercises[0].workTime);
-        setIsRunning(true);
-        setIsPaused(false);
-        setTotalCaloriesBurned(0);
-        setActualWorkSeconds(0);
-        setWorkoutStartTime(new Date());
-        setIsComplete(false);
-        setTotalSetsCompleted(0);
-      }
+    if (isMinimized && onStateUpdate) {
+      onStateUpdate({
+        currentExerciseIndex,
+        currentSet,
+        timeLeft,
+        totalCalories: totalCaloriesBurned,
+        phase,
+      });
     }
-  }, [isOpen, exercises, initialState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMinimized, currentExerciseIndex, currentSet, timeLeft, totalCaloriesBurned, phase]);
 
   // Calculate calories per second during work
   const calculateCaloriesPerSecond = useCallback(() => {
@@ -139,7 +148,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
             // Check if there's a rest phase
             if (currentWorkoutExercise.restTime > 0) {
               setPhase('rest');
-              return currentWorkoutExercise.restTime;
+              return Math.min(currentWorkoutExercise.restTime, maxTimerSeconds);
             } else {
               // No rest, go to next set/exercise
               return handleNextSetOrExercise();
@@ -156,20 +165,21 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     return () => clearInterval(interval);
   }, [isRunning, isPaused, phase, currentExerciseIndex, currentSet, isComplete, calculateCaloriesPerSecond]);
 
+  const maxTimerSeconds = 59 * 60 + 59;
   const handleNextSetOrExercise = (): number => {
     if (currentSet < currentWorkoutExercise.sets) {
       // More sets remaining
       setCurrentSet((prev) => prev + 1);
       setTotalSetsCompleted((prev) => prev + 1);
       setPhase('work');
-      return currentWorkoutExercise.workTime;
+      return Math.min(currentWorkoutExercise.workTime, maxTimerSeconds);
     } else if (currentExerciseIndex < exercises.length - 1) {
       // More exercises remaining
       setTotalSetsCompleted((prev) => prev + 1);
       setCurrentExerciseIndex((prev) => prev + 1);
       setCurrentSet(1);
       setPhase('work');
-      return exercises[currentExerciseIndex + 1].workTime;
+      return Math.min(exercises[currentExerciseIndex + 1].workTime, maxTimerSeconds);
     } else {
       // Workout complete!
       setTotalSetsCompleted((prev) => prev + 1);
@@ -186,7 +196,6 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       const duration = Math.round(
         (new Date().getTime() - workoutStartTime.getTime()) / 60000
       );
-
       addWorkoutSession({
         name: workoutName,
         duration: Math.max(1, duration),
@@ -206,7 +215,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     if (phase === 'work') {
       if (currentWorkoutExercise.restTime > 0) {
         setPhase('rest');
-        setTimeLeft(currentWorkoutExercise.restTime);
+        setTimeLeft(Math.min(currentWorkoutExercise.restTime, maxTimerSeconds));
       } else {
         const nextTime = handleNextSetOrExercise();
         setTimeLeft(nextTime);
@@ -216,6 +225,26 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       setTimeLeft(nextTime);
     }
   };
+
+  const handlePrevSetOrExercise = () => {
+    if (phase === 'rest') {
+      setPhase('work');
+      setTimeLeft(Math.min(currentWorkoutExercise.workTime, maxTimerSeconds));
+      return;
+    }
+    if (currentSet > 1) {
+      setCurrentSet((prev) => prev - 1);
+      setPhase('work');
+      setTimeLeft(Math.min(currentWorkoutExercise.workTime, maxTimerSeconds));
+    } else if (currentExerciseIndex > 0) {
+      const prevEx = exercises[currentExerciseIndex - 1];
+      setCurrentExerciseIndex((prev) => prev - 1);
+      setCurrentSet(prevEx.sets);
+      setPhase('work');
+      setTimeLeft(Math.min(prevEx.workTime, maxTimerSeconds));
+    }
+  };
+
 
   const handleMinimize = () => {
     if (onMinimize) {
@@ -229,7 +258,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     }
   };
 
-  const stopWorkout = () => {
+  const confirmStopWorkout = () => {
     if (workoutStartTime && totalCaloriesBurned > 0) {
       const duration = Math.round(
         (new Date().getTime() - workoutStartTime.getTime()) / 60000
@@ -244,33 +273,38 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
         setsCount: totalSetsCompleted,
       });
     }
+    setShowStopDialog(false);
     onClose();
   };
 
+  const stopWorkout = () => {
+    setShowStopDialog(true);
+  };
+
   const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    if (hours > 0) {
-      return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
+    const total = Math.min(seconds, 59 * 60 + 59);
+    const mins = Math.floor(total / 60);
+    const secs = total % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   // Get exercise icon component
-  const ExerciseIcon = currentExercise ? getExerciseIconComponent(currentExercise.iconType) : Dumbbell;
-  const NextExerciseIcon = nextExercise ? getExerciseIconComponent(nextExercise.iconType) : Dumbbell;
+  const ExerciseIcon = currentExercise ? getExerciseIconComponent(currentExercise.iconType) : DumbbellIcon;
+  const NextExerciseIcon = nextExercise ? getExerciseIconComponent(nextExercise.iconType) : DumbbellIcon;
+
+  // Show timer UI when open and not minimized
+  const shouldShowUI = isOpen && !isMinimized;
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {(isOpen || isMinimized) && (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: shouldShowUI ? 1 : 0 }}
           exit={{ opacity: 0 }}
           className={`fixed inset-0 z-50 transition-colors duration-500 ${
-            phase === 'work' ? 'bg-blue-900' : 'bg-green-900'
-          }`}
+            isComplete ? 'bg-background' : phase === 'work' ? 'bg-primary' : 'bg-muted'
+          } ${!shouldShowUI ? 'pointer-events-none' : ''}`}
         >
           <motion.div
             initial={{ y: '100%' }}
@@ -289,21 +323,16 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
               </div>
               <div className="flex gap-2">
                 {onMinimize && (
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
+                  <button
+                    type="button"
                     onClick={handleMinimize}
-                    className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
+                    className="w-10 h-10 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
+                    style={{ touchAction: 'manipulation' }}
+                    aria-label="Свернуть"
                   >
                     <Minimize2 size={20} />
-                  </motion.button>
+                  </button>
                 )}
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={stopWorkout}
-                  className="w-10 h-10 rounded-2xl glass flex items-center justify-center"
-                >
-                  <X size={20} />
-                </motion.button>
               </div>
             </div>
 
@@ -335,7 +364,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                   <div className="glass rounded-3xl p-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-2xl glass flex items-center justify-center">
-                        <Activity size={20} className="text-primary" />
+                        <ActivityIcon size={20} />
                       </div>
                       <span className="text-body text-foreground/70">Упражнений</span>
                     </div>
@@ -352,13 +381,14 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                   </div>
                 </div>
 
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
+                <button
+                  type="button"
                   onClick={onClose}
-                  className="w-full py-4 rounded-2xl bg-foreground text-background text-body"
+                  className="w-full py-4 rounded-2xl bg-foreground text-background text-body active:scale-95 transition-transform"
+                  style={{ touchAction: 'manipulation' }}
                 >
                   Готово
-                </motion.button>
+                </button>
               </div>
             ) : (
               <>
@@ -414,36 +444,38 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                   </div>
                 )}
 
-                {/* Controls */}
+                {/* Controls — как на референсе: Стоп | Пауза | След. подход */}
                 <div className="px-5 pb-safe-bottom mb-8">
-                  <div className="flex items-center justify-center gap-6">
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
+                  <div className="flex items-center justify-center gap-4">
+                    <button
+                      type="button"
                       onClick={stopWorkout}
-                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
+                      style={{ touchAction: 'manipulation' }}
                     >
                       <Square size={24} />
-                    </motion.button>
-
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
+                    </button>
+                    <button
+                      type="button"
                       onClick={togglePause}
-                      className="w-20 h-20 rounded-3xl bg-foreground flex items-center justify-center"
+                      className="w-20 h-20 rounded-3xl bg-foreground flex items-center justify-center active:scale-90 transition-transform shadow-md"
+                      style={{ touchAction: 'manipulation' }}
                     >
                       {isPaused ? (
                         <Play size={32} className="text-background ml-1" />
                       ) : (
                         <Pause size={32} className="text-background" />
                       )}
-                    </motion.button>
-
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Следующий подход"
                       onClick={skipPhase}
-                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center"
+                      className="w-14 h-14 rounded-2xl glass flex items-center justify-center active:scale-90 transition-transform"
+                      style={{ touchAction: 'manipulation' }}
                     >
                       <SkipForward size={24} />
-                    </motion.button>
+                    </button>
                   </div>
                 </div>
               </>
@@ -451,6 +483,24 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
           </motion.div>
         </motion.div>
       )}
+
+      {/* Stop Confirmation Dialog */}
+      <AlertDialog open={showStopDialog} onOpenChange={setShowStopDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Остановить тренировку?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Прогресс тренировки будет сохранен. Вы уверены, что хотите остановить таймер?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmStopWorkout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Да, остановить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AnimatePresence>
   );
 };
