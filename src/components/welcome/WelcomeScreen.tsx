@@ -93,7 +93,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
               stiffness: 80,
               mass: 0.8
             }}
-            className="absolute bg-white/95 backdrop-blur-md rounded-[28px] px-4 py-3 shadow-xl flex items-center gap-3 border border-white/50"
+            className="absolute bg-gray-100/95 backdrop-blur-md rounded-full px-4 py-3 shadow-xl flex items-center gap-3 border border-white/50"
             style={{
               left: card.left,
               bottom: card.bottom,
