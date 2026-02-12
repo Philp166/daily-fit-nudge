@@ -1,53 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Scale } from 'lucide-react';
-import DumbbellIcon from '@/components/ui/DumbbellIcon';
-import FlameIcon from '@/components/ui/FlameIcon';
+import { Flame, TrendingUp } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
-import GlassIcon from '@/components/ui/GlassIcon';
-import { WheelPicker } from '@/components/ui/WheelPicker';
-
-interface NumberInputProps {
-  value: number;
-  onChange: (value: number) => void;
-  min: number;
-  max: number;
-  label: string;
-  unit?: string;
-}
-
-const NumberInput: React.FC<NumberInputProps> = ({ value, onChange, min, max, label, unit }) => {
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
-
-  return (
-    <>
-      <div className="bg-card rounded-3xl p-5 shadow-sm border border-border">
-        <label className="text-caption text-muted-foreground block mb-4 text-center">
-          {label}
-        </label>
-        <button
-          type="button"
-          onClick={() => setIsPickerOpen(true)}
-          className="w-full text-display-sm text-extralight px-4 py-3 rounded-xl hover:bg-muted transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
-          style={{ touchAction: 'manipulation' }}
-        >
-          <span className="text-foreground">{value}</span>
-          {unit && <span className="text-muted-foreground">{unit}</span>}
-        </button>
-      </div>
-      <WheelPicker
-        isOpen={isPickerOpen}
-        onClose={() => setIsPickerOpen(false)}
-        value={value}
-        onChange={onChange}
-        min={min}
-        max={max}
-        label={label}
-        unit={unit}
-      />
-    </>
-  );
-};
 
 const Onboarding: React.FC = () => {
   const { setProfile } = useUser();
@@ -56,18 +10,36 @@ const Onboarding: React.FC = () => {
     name: '',
     gender: 'male' as 'male' | 'female',
     avatar: 'male-1',
-    age: 25,
-    height: 170,
-    weight: 70,
-    goal: 'maintain' as 'lose' | 'maintain' | 'gain',
+    age: '',
+    height: '',
+    weight: '',
+    goal: 'lose' as 'lose' | 'maintain' | 'gain',
   });
+
+  // Refs for autofocus
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const ageInputRef = useRef<HTMLInputElement>(null);
+
+  // Autofocus on mount and step change
+  useEffect(() => {
+    if (step === 0 && nameInputRef.current) {
+      nameInputRef.current.focus();
+    } else if (step === 3 && ageInputRef.current) {
+      ageInputRef.current.focus();
+    }
+  }, [step]);
 
   const avatarOptions = [1, 2, 3, 4, 5, 6].map(n => `${formData.gender}-${n}`);
 
   const handleSubmit = () => {
     setProfile({
-      ...formData,
-      name: formData.name.trim(), // Sanitize whitespace
+      name: formData.name.trim(),
+      gender: formData.gender,
+      avatar: formData.avatar,
+      age: parseInt(formData.age) || 25,
+      height: parseInt(formData.height) || 170,
+      weight: parseInt(formData.weight) || 70,
+      goal: formData.goal,
       dailyCalorieGoal: 0, // Will be calculated
     });
   };
@@ -76,32 +48,39 @@ const Onboarding: React.FC = () => {
     {
       value: 'lose',
       label: 'Похудеть',
-      icon: <FlameIcon size={24} />,
-      desc: 'Сжигать больше калорий'
+      icon: <Flame size={28} className="text-orange-500" />,
     },
     {
       value: 'maintain',
-      label: 'Поддержать форму',
-      icon: <Scale size={24} className="text-foreground/70" />,
-      desc: 'Оставаться в тонусе'
+      label: 'Поддерживать форму',
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
+          <path d="M18 20V10M12 20V4M6 20v-6"/>
+        </svg>
+      ),
     },
     {
       value: 'gain',
       label: 'Набрать массу',
-      icon: <DumbbellIcon size={24} />,
-      desc: 'Наращивать мышцы'
+      icon: <TrendingUp size={28} className="text-blue-500" />,
     },
   ];
 
+  const isStepValid = () => {
+    if (step === 0) return formData.name.trim().length > 0;
+    if (step === 3) return formData.age && formData.height && formData.weight;
+    return true;
+  };
+
   return (
-    <div className="min-h-screen bg-background flex flex-col px-5 pt-safe-top pb-safe-bottom">
+    <div className="min-h-screen bg-white flex flex-col px-6 pt-safe-top pb-safe-bottom" style={{ fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif' }}>
       {/* Progress dots */}
-      <div className="flex justify-center gap-2 py-6">
+      <div className="flex justify-center gap-2 py-8">
         {[0, 1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className={`w-2 h-2 rounded-full transition-colors ${
-              i <= step ? 'bg-primary' : 'bg-muted'
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              i === step ? 'bg-blue-500 w-6' : i < step ? 'bg-blue-300' : 'bg-gray-200'
             }`}
           />
         ))}
@@ -112,32 +91,18 @@ const Onboarding: React.FC = () => {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.3 }}
         className="flex-1 flex flex-col justify-center"
       >
+        {/* Step 0: Name */}
         {step === 0 && (
           <>
-            <div className="flex flex-col items-center mb-3">
-              <picture>
-                <source srcSet={`${import.meta.env.BASE_URL}hello.webp`} type="image/webp" />
-                <img
-                  src={`${import.meta.env.BASE_URL}hello.png`}
-                  alt=""
-                  width={120}
-                  height={120}
-                  className="mb-2"
-                  style={{ objectFit: 'contain' }}
-                  draggable={false}
-                />
-              </picture>
-              <h1 className="text-display-sm text-extralight text-foreground">
-                Привет!
-              </h1>
-            </div>
-            <p className="text-body text-muted-foreground mb-4">
-              Как тебя зовут?
-            </p>
+            <h1 className="text-3xl font-semibold text-gray-900 mb-8 text-center">
+              Как вас зовут?
+            </h1>
 
             <input
+              ref={nameInputRef}
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -146,73 +111,73 @@ const Onboarding: React.FC = () => {
                   setStep(step + 1);
                 }
               }}
-              placeholder="Введи имя"
-              className="w-full py-4 px-5 bg-card rounded-3xl text-foreground text-title outline-none border-2 border-border focus:border-primary transition-colors shadow-sm"
+              placeholder="Введите имя"
+              className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
             />
           </>
         )}
 
+        {/* Step 1: Gender */}
         {step === 1 && (
           <>
-            <h1 className="text-display-sm text-extralight text-foreground mb-2">
-              Твой пол
+            <h1 className="text-3xl font-semibold text-gray-900 mb-12 text-center">
+              Ваш пол
             </h1>
-            <p className="text-body text-muted-foreground mb-8">
-              Нужно для точного расчёта калорий
-            </p>
 
-            <div className="space-y-3">
-              {([
-                { value: 'male', label: 'Мужской', emoji: '♂' },
-                { value: 'female', label: 'Женский', emoji: '♀' },
-              ] as const).map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, gender: option.value, avatar: `${option.value}-1` })}
-                  className={`w-full p-5 rounded-3xl text-left transition-all active:scale-[0.98] ${
-                    formData.gender === option.value
-                      ? 'bg-primary/20 border-2 border-primary shadow-md'
-                      : 'bg-card border-2 border-transparent shadow-sm'
-                  }`}
-                  style={{ touchAction: 'manipulation' }}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
-                      <span className="text-2xl">{option.emoji}</span>
-                    </div>
-                    <p className="text-body text-foreground">{option.label}</p>
-                  </div>
-                </button>
-              ))}
+            <div className="space-y-4">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, gender: 'male', avatar: 'male-1' })}
+                className={`w-full py-6 px-6 rounded-3xl text-left transition-all flex items-center gap-4 text-lg font-medium ${
+                  formData.gender === 'male'
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+                style={{ touchAction: 'manipulation' }}
+              >
+                <span className="text-3xl">♂</span>
+                <span>Мужской</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, gender: 'female', avatar: 'female-1' })}
+                className={`w-full py-6 px-6 rounded-3xl text-left transition-all flex items-center gap-4 text-lg font-medium ${
+                  formData.gender === 'female'
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+                style={{ touchAction: 'manipulation' }}
+              >
+                <span className="text-3xl">♀</span>
+                <span>Женский</span>
+              </button>
             </div>
           </>
         )}
 
+        {/* Step 2: Avatar */}
         {step === 2 && (
           <>
-            <h1 className="text-display-sm text-extralight text-foreground mb-2">
-              Твой аватар
+            <h1 className="text-3xl font-semibold text-gray-900 mb-12 text-center">
+              Выберите аватар
             </h1>
-            <p className="text-body text-muted-foreground mb-8">
-              Выбери персонажа
-            </p>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-6">
               {avatarOptions.map((av) => (
                 <button
                   key={av}
                   type="button"
                   onClick={() => setFormData({ ...formData, avatar: av })}
-                  className={`aspect-square rounded-full overflow-hidden border-4 transition-all active:scale-[0.95] ${
+                  className={`aspect-square rounded-full overflow-hidden transition-all ${
                     formData.avatar === av
-                      ? 'border-primary shadow-lg scale-105'
-                      : 'border-transparent'
+                      ? 'ring-4 ring-blue-500'
+                      : 'ring-0'
                   }`}
                   style={{ touchAction: 'manipulation' }}
                 >
                   <img
-                    src={`${import.meta.env.BASE_URL}avatars/${av}.webp`}
+                    src={`${import.meta.env.BASE_URL}avatars/${av}.png`}
                     alt=""
                     className="w-full h-full object-cover"
                     draggable={false}
@@ -223,77 +188,72 @@ const Onboarding: React.FC = () => {
           </>
         )}
 
+        {/* Step 3: Personal Data */}
         {step === 3 && (
           <>
-            <h1 className="text-display-sm text-extralight text-foreground mb-2">
-              О тебе
+            <h1 className="text-3xl font-semibold text-gray-900 mb-3 text-center">
+              Расскажите о себе
             </h1>
-            <p className="text-body text-muted-foreground mb-8">
-              Эти данные нужны для расчёта калорий
+            <p className="text-gray-500 mb-12 text-center">
+              Эти данные нужны для расчета калорий
             </p>
 
             <div className="space-y-4">
-              <NumberInput
-                label="Возраст"
+              <input
+                ref={ageInputRef}
+                type="number"
+                inputMode="numeric"
                 value={formData.age}
-                onChange={(age) => setFormData({ ...formData, age })}
-                min={14}
-                max={100}
-                unit="лет"
+                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                placeholder="Возраст"
+                className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
               />
 
-              <NumberInput
-                label="Рост"
+              <input
+                type="number"
+                inputMode="numeric"
                 value={formData.height}
-                onChange={(height) => setFormData({ ...formData, height })}
-                min={140}
-                max={220}
-                unit="см"
+                onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                placeholder="Рост"
+                className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
               />
 
-              <NumberInput
-                label="Вес"
+              <input
+                type="number"
+                inputMode="numeric"
                 value={formData.weight}
-                onChange={(weight) => setFormData({ ...formData, weight })}
-                min={40}
-                max={200}
-                unit="кг"
+                onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                placeholder="Вес"
+                className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
               />
             </div>
           </>
         )}
 
+        {/* Step 4: Goal */}
         {step === 4 && (
           <>
-            <h1 className="text-display-sm text-extralight text-foreground mb-2">
-              Твоя цель
+            <h1 className="text-3xl font-semibold text-gray-900 mb-12 text-center">
+              Ваша цель
             </h1>
-            <p className="text-body text-muted-foreground mb-8">
-              Что хочешь достичь?
-            </p>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {goals.map((goal) => (
                 <button
                   key={goal.value}
                   type="button"
                   onClick={() => setFormData({ ...formData, goal: goal.value as typeof formData.goal })}
-                  className={`w-full p-5 rounded-3xl text-left transition-all active:scale-[0.98] ${
+                  className={`w-full py-6 px-6 rounded-3xl text-left transition-all flex items-center gap-4 text-lg font-medium ${
                     formData.goal === goal.value
-                      ? 'bg-primary/20 border-2 border-primary shadow-md'
-                      : 'bg-card border-2 border-transparent shadow-sm'
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'bg-gray-100 text-gray-700'
                   }`}
                   style={{ touchAction: 'manipulation' }}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
-                      {goal.icon}
-                    </div>
-                    <div>
-                      <p className="text-body text-foreground">{goal.label}</p>
-                      <p className="text-caption text-muted-foreground">{goal.desc}</p>
-                    </div>
+                  <div className="flex items-center justify-center w-12 h-12">
+                    {goal.icon}
                   </div>
+                  <span>{goal.label}</span>
                 </button>
               ))}
             </div>
@@ -302,27 +262,22 @@ const Onboarding: React.FC = () => {
       </motion.div>
 
       {/* Navigation */}
-      <div className="pt-4 pb-4">
-        {step < 4 ? (
-          <button
-            type="button"
-            onClick={() => setStep(step + 1)}
-            disabled={step === 0 && !formData.name.trim()}
-            className="w-full py-4 rounded-full bg-primary text-primary-foreground text-lg font-bold disabled:opacity-50 active:scale-[0.98] transition-transform shadow-lg"
-            style={{ touchAction: 'manipulation' }}
-          >
-            Далее
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="w-full py-4 rounded-full bg-primary text-primary-foreground text-lg font-bold active:scale-[0.98] transition-transform shadow-lg"
-            style={{ touchAction: 'manipulation' }}
-          >
-            Начать
-          </button>
-        )}
+      <div className="pt-6 pb-6">
+        <button
+          type="button"
+          onClick={() => {
+            if (step < 4) {
+              setStep(step + 1);
+            } else {
+              handleSubmit();
+            }
+          }}
+          disabled={!isStepValid()}
+          className="w-full py-5 rounded-full bg-blue-500 text-white text-lg font-semibold disabled:opacity-40 active:scale-[0.98] transition-all shadow-sm"
+          style={{ touchAction: 'manipulation' }}
+        >
+          Продолжить
+        </button>
       </div>
     </div>
   );
