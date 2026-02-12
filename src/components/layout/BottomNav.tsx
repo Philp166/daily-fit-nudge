@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, Timer, User } from 'lucide-react';
+import { Home, User } from 'lucide-react';
 
-type Tab = 'home' | 'timer' | 'profile';
+type Tab = 'home' | 'profile';
 
 interface BottomNavProps {
   activeTab: Tab;
@@ -11,7 +11,6 @@ interface BottomNavProps {
 
 const tabs: { id: Tab; icon: React.ReactNode; label: string }[] = [
   { id: 'home', icon: <Home size={22} strokeWidth={1.5} />, label: 'Главная' },
-  { id: 'timer', icon: <Timer size={22} strokeWidth={1.5} />, label: 'Таймер' },
   { id: 'profile', icon: <User size={22} strokeWidth={1.5} />, label: 'Профиль' },
 ];
 
