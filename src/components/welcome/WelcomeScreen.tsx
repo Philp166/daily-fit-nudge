@@ -9,15 +9,15 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
 
   // Данные для карточек упражнений с точными позициями для хаотичности
   const exerciseCards = [
-    { emoji: '🏊', name: 'Плавание', rotation: -15, left: '2%', bottom: '15%' },
-    { emoji: '💪', name: 'Приседания', rotation: 8, left: '15%', bottom: '8%' },
+    { emoji: '🏊', name: 'Плавание', rotation: -15, left: '5%', bottom: '15%' },
+    { emoji: '💪', name: 'Приседания', rotation: 8, left: '18%', bottom: '8%' },
     { emoji: '🏈', name: 'Регби', rotation: -8, left: '35%', bottom: '12%' },
-    { emoji: '🥊', name: 'Бокс', rotation: 12, left: '55%', bottom: '5%' },
-    { emoji: '🧘', name: 'Пилатес', rotation: -12, left: '10%', bottom: '25%' },
-    { emoji: '🧘‍♀️', name: 'Йога', rotation: 5, left: '45%', bottom: '22%' },
-    { emoji: '⚽', name: 'Футбол', rotation: -6, left: '65%', bottom: '18%' },
-    { emoji: '🏃', name: 'Отжимания', rotation: 10, left: '25%', bottom: '32%' },
-    { emoji: '🏐', name: 'Волейбол', rotation: -10, left: '75%', bottom: '28%' },
+    { emoji: '🥊', name: 'Бокс', rotation: 12, left: '62%', bottom: '5%' },
+    { emoji: '🧘', name: 'Пилатес', rotation: -12, left: '12%', bottom: '25%' },
+    { emoji: '🧘‍♀️', name: 'Йога', rotation: 5, left: '48%', bottom: '22%' },
+    { emoji: '⚽', name: 'Футбол', rotation: -6, left: '72%', bottom: '18%' },
+    { emoji: '🏃', name: 'Отжимания', rotation: 10, left: '28%', bottom: '32%' },
+    { emoji: '🏐', name: 'Волейбол', rotation: -10, left: '85%', bottom: '28%' },
     { emoji: '🤼', name: 'Вольная борьба', rotation: 14, left: '55%', bottom: '35%' },
   ];
 
@@ -75,7 +75,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           <motion.div
             key={card.name}
             initial={{
-              y: 200,
+              y: 300,
               opacity: 0,
               rotate: 0,
               scale: 0.5
@@ -89,9 +89,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             transition={{
               delay: index * 0.08,
               type: 'spring',
-              damping: 14,
-              stiffness: 80,
-              mass: 0.8
+              damping: 8,
+              stiffness: 120,
+              mass: 0.6,
+              velocity: 8
             }}
             className="absolute bg-gray-100/95 backdrop-blur-md rounded-full px-4 py-3 shadow-xl flex items-center gap-3 border border-white/50"
             style={{
