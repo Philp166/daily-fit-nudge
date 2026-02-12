@@ -157,10 +157,10 @@ const DashboardView: React.FC = () => {
           </div>
         )}
 
-        {/* Drag Handle Strip */}
+        {/* Drag Handle Strip - increased tap area */}
         <div
           onPointerDown={(e) => controls.start(e)}
-          className="absolute bottom-0 left-0 right-0 h-12 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
+          className="absolute bottom-0 left-0 right-0 h-24 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none pt-6"
           style={{
             background: 'linear-gradient(to top, rgba(255,255,255,0.15), transparent)',
             borderBottomLeftRadius: '32px',
@@ -202,16 +202,22 @@ const DashboardView: React.FC = () => {
               }}
               animate={{
                 rotate: draggedCard === cardId ? 5 : 0,
+                scale: draggedCard === cardId ? 1.02 : 1,
                 y: draggedCard === cardId ? undefined : 0
               }}
-              transition={{ duration: 0.2 }}
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 25,
+                mass: 0.5
+              }}
               className={`relative ${index > 0 ? '-mt-16' : ''} ${index === cardOrder.length - 1 ? 'pb-16' : ''}`}
             >
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-                className="rounded-[32px] p-8 shadow-xl select-none relative"
+                className="rounded-[32px] p-8 pb-20 shadow-xl select-none relative"
                 style={{
                   background: card.background
                 }}
