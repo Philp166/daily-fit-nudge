@@ -41,10 +41,7 @@ The app will be available at `http://localhost:8080` (or the port shown in the t
 ## Project structure
 
 - `src/` — application source (components, pages, contexts, data)
-- `public/` — static assets (favicon, etc.)
-- `docs/` — specification and documentation (e.g. `SPECIFICATION.md`)
-
-The mobile (Flutter) app lives in the `mobile/` directory; see `mobile/README.md` for build and run instructions.
+- `public/` — static assets (favicon, avatars)
 
 ## Deploy
 
