@@ -49,6 +49,10 @@ const DashboardView: React.FC = () => {
     return 30 - position * 10;
   };
 
+  const getOrder = (cardId: number) => {
+    return cardOrder.indexOf(cardId);
+  };
+
   const handleDragStart = (cardId: number) => {
     setDraggedCard(cardId);
   };
@@ -97,7 +101,7 @@ const DashboardView: React.FC = () => {
       </div>
 
       {/* Stacked Cards - full width, overlapping */}
-      <div className="relative mt-6">
+      <div className="relative mt-6 flex flex-col">
         {/* Constructor Card - Blue */}
         <motion.div
           drag="y"
@@ -112,7 +116,8 @@ const DashboardView: React.FC = () => {
           style={{
             y: draggedCard === 1 ? 0 : card1Y,
             scale: draggedCard === 1 ? 1 : card1Scale,
-            zIndex: getZIndex(1)
+            zIndex: getZIndex(1),
+            order: getOrder(1)
           }}
           animate={{
             rotate: draggedCard === 1 ? 5 : 0,
@@ -125,7 +130,7 @@ const DashboardView: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing"
+            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing select-none"
             style={{
               background: 'linear-gradient(to bottom right, #3699FF, #80BCFF)'
             }}
@@ -175,7 +180,8 @@ const DashboardView: React.FC = () => {
           style={{
             y: draggedCard === 2 ? 0 : card2Y,
             scale: draggedCard === 2 ? 1 : card2Scale,
-            zIndex: getZIndex(2)
+            zIndex: getZIndex(2),
+            order: getOrder(2)
           }}
           animate={{
             rotate: draggedCard === 2 ? 5 : 0,
@@ -188,7 +194,7 @@ const DashboardView: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing"
+            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing select-none"
             style={{
               background: 'linear-gradient(to bottom right, #FF5353, #FFD48F)'
             }}
@@ -235,7 +241,8 @@ const DashboardView: React.FC = () => {
           style={{
             y: draggedCard === 3 ? 0 : card3Y,
             scale: draggedCard === 3 ? 1 : 1,
-            zIndex: getZIndex(3)
+            zIndex: getZIndex(3),
+            order: getOrder(3)
           }}
           animate={{
             rotate: draggedCard === 3 ? 5 : 0,
@@ -248,7 +255,7 @@ const DashboardView: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing"
+            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing select-none"
             style={{
               background: 'linear-gradient(to bottom right, #9DFF53, #C2FF95)'
             }}
