@@ -9,9 +9,10 @@ const DashboardView: React.FC = () => {
   const { profile } = useUser();
   const { scrollY } = useScroll();
   const [cardOrder, setCardOrder] = React.useState([1, 2, 3]);
-  const [activeCard, setActiveCard] = React.useState<number | null>(null);
+  const [draggedCard, setDraggedCard] = React.useState<number | null>(null);
+  const [targetCard, setTargetCard] = React.useState<number | null>(null);
 
-  // Параллакс эффекты для карточек при скролле
+  // Параллакс эффекты для карточек при скролле (отключаются при драге)
   const card1Y = useTransform(scrollY, [0, 300], [0, -50]);
   const card2Y = useTransform(scrollY, [0, 300], [0, -100]);
   const card3Y = useTransform(scrollY, [0, 300], [0, -150]);
@@ -20,16 +21,49 @@ const DashboardView: React.FC = () => {
   const card2Scale = useTransform(scrollY, [0, 200], [1, 0.95]);
 
   const getZIndex = (cardId: number) => {
-    if (activeCard === cardId) return 50;
+    if (draggedCard === cardId) return 50;
     const position = cardOrder.indexOf(cardId);
     return 30 - position * 10;
   };
 
-  const rotateCards = (cardId: number) => {
-    setActiveCard(cardId);
-    // Циклическая ротация: первая карточка уходит в конец
-    setCardOrder(prev => [...prev.slice(1), prev[0]]);
-    setTimeout(() => setActiveCard(null), 300);
+  const handleDragStart = (cardId: number) => {
+    setDraggedCard(cardId);
+  };
+
+  const handleDrag = (_event: any, info: any) => {
+    // Определяем, над какой карточкой находится перетаскиваемая
+    const dragY = info.point.y;
+
+    // Простая логика: если тянем вверх, target - предыдущая карточка, если вниз - следующая
+    if (draggedCard) {
+      const currentIndex = cardOrder.indexOf(draggedCard);
+
+      if (info.offset.y < -80 && currentIndex > 0) {
+        // Тянем вверх - меняемся с предыдущей
+        setTargetCard(cardOrder[currentIndex - 1]);
+      } else if (info.offset.y > 80 && currentIndex < cardOrder.length - 1) {
+        // Тянем вниз - меняемся со следующей
+        setTargetCard(cardOrder[currentIndex + 1]);
+      } else {
+        setTargetCard(null);
+      }
+    }
+  };
+
+  const handleDragEnd = () => {
+    if (draggedCard && targetCard) {
+      // Меняем карточки местами
+      setCardOrder(prev => {
+        const newOrder = [...prev];
+        const draggedIndex = newOrder.indexOf(draggedCard);
+        const targetIndex = newOrder.indexOf(targetCard);
+        [newOrder[draggedIndex], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[draggedIndex]];
+        return newOrder;
+      });
+    }
+
+    setDraggedCard(null);
+    setTargetCard(null);
   };
 
   return (
@@ -43,20 +77,30 @@ const DashboardView: React.FC = () => {
       <div className="relative mt-6">
         {/* Constructor Card - Blue */}
         <motion.div
+          drag="y"
+          dragConstraints={{ top: -200, bottom: 200 }}
+          dragElastic={0.1}
+          dragMomentum={false}
+          onDragStart={() => handleDragStart(1)}
+          onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
           style={{
-            y: card1Y,
-            scale: card1Scale,
+            y: draggedCard === 1 ? 0 : card1Y,
+            scale: draggedCard === 1 ? 1 : card1Scale,
             zIndex: getZIndex(1)
           }}
+          animate={{
+            rotate: draggedCard === 1 ? 5 : 0,
+            opacity: targetCard === 1 ? 0.5 : 1
+          }}
+          transition={{ duration: 0.2 }}
           className="relative"
-          onTapStart={() => rotateCards(1)}
-          whileTap={{ scale: 0.98 }}
         >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="rounded-[32px] p-8 shadow-xl cursor-pointer"
+            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing"
             style={{
               background: 'linear-gradient(to bottom right, #3699FF, #80BCFF)'
             }}
@@ -90,20 +134,30 @@ const DashboardView: React.FC = () => {
 
         {/* Workouts Card - Orange/Coral */}
         <motion.div
+          drag="y"
+          dragConstraints={{ top: -200, bottom: 200 }}
+          dragElastic={0.1}
+          dragMomentum={false}
+          onDragStart={() => handleDragStart(2)}
+          onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
           style={{
-            y: card2Y,
-            scale: card2Scale,
+            y: draggedCard === 2 ? 0 : card2Y,
+            scale: draggedCard === 2 ? 1 : card2Scale,
             zIndex: getZIndex(2)
           }}
+          animate={{
+            rotate: draggedCard === 2 ? 5 : 0,
+            opacity: targetCard === 2 ? 0.5 : 1
+          }}
+          transition={{ duration: 0.2 }}
           className="relative -mt-16"
-          onTapStart={() => rotateCards(2)}
-          whileTap={{ scale: 0.98 }}
         >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="rounded-[32px] p-8 shadow-xl cursor-pointer"
+            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing"
             style={{
               background: 'linear-gradient(to bottom right, #FF5353, #FFD48F)'
             }}
@@ -134,19 +188,30 @@ const DashboardView: React.FC = () => {
 
         {/* Analytics Card - Green */}
         <motion.div
+          drag="y"
+          dragConstraints={{ top: -200, bottom: 200 }}
+          dragElastic={0.1}
+          dragMomentum={false}
+          onDragStart={() => handleDragStart(3)}
+          onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
           style={{
-            y: card3Y,
+            y: draggedCard === 3 ? 0 : card3Y,
+            scale: draggedCard === 3 ? 1 : 1,
             zIndex: getZIndex(3)
           }}
+          animate={{
+            rotate: draggedCard === 3 ? 5 : 0,
+            opacity: targetCard === 3 ? 0.5 : 1
+          }}
+          transition={{ duration: 0.2 }}
           className="relative -mt-16 pb-16"
-          onTapStart={() => rotateCards(3)}
-          whileTap={{ scale: 0.98 }}
         >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="rounded-[32px] p-8 shadow-xl cursor-pointer"
+            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing"
             style={{
               background: 'linear-gradient(to bottom right, #9DFF53, #C2FF95)'
             }}
