@@ -35,13 +35,13 @@ const DashboardView: React.FC = () => {
     }
   };
 
-  // Параллакс эффекты для карточек при скролле (отключаются при драге)
-  const card1Y = useTransform(scrollY, [0, 300], [0, -50]);
-  const card2Y = useTransform(scrollY, [0, 300], [0, -100]);
-  const card3Y = useTransform(scrollY, [0, 300], [0, -150]);
-
-  const card1Scale = useTransform(scrollY, [0, 150], [1, 0.95]);
-  const card2Scale = useTransform(scrollY, [0, 200], [1, 0.95]);
+  const handleLongPressMove = () => {
+    // Отменяем long press если пользователь начал скроллить
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
 
   const getZIndex = (cardId: number) => {
     if (draggedCard === cardId) return 50;
@@ -107,21 +107,20 @@ const DashboardView: React.FC = () => {
           drag="y"
           dragListener={false}
           dragControls={dragControls1}
-          dragConstraints={{ top: -200, bottom: 200 }}
-          dragElastic={0.1}
+          dragConstraints={{ top: -100, bottom: 100 }}
+          dragElastic={0.05}
           dragMomentum={false}
           onDragStart={() => handleDragStart(1)}
           onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           style={{
-            y: draggedCard === 1 ? 0 : card1Y,
-            scale: draggedCard === 1 ? 1 : card1Scale,
             zIndex: getZIndex(1),
             order: getOrder(1)
           }}
           animate={{
             rotate: draggedCard === 1 ? 5 : 0,
-            opacity: targetCard === 1 ? 0.5 : 1
+            opacity: targetCard === 1 ? 0.5 : 1,
+            y: draggedCard === 1 ? undefined : 0
           }}
           transition={{ duration: 0.2 }}
           className="relative"
@@ -135,6 +134,7 @@ const DashboardView: React.FC = () => {
               background: 'linear-gradient(to bottom right, #3699FF, #80BCFF)'
             }}
             onPointerDown={(e) => handleLongPressStart(e, 1, dragControls1)}
+            onPointerMove={handleLongPressMove}
             onPointerUp={handleLongPressEnd}
             onPointerCancel={handleLongPressEnd}
             onPointerLeave={handleLongPressEnd}
@@ -171,21 +171,20 @@ const DashboardView: React.FC = () => {
           drag="y"
           dragListener={false}
           dragControls={dragControls2}
-          dragConstraints={{ top: -200, bottom: 200 }}
-          dragElastic={0.1}
+          dragConstraints={{ top: -100, bottom: 100 }}
+          dragElastic={0.05}
           dragMomentum={false}
           onDragStart={() => handleDragStart(2)}
           onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           style={{
-            y: draggedCard === 2 ? 0 : card2Y,
-            scale: draggedCard === 2 ? 1 : card2Scale,
             zIndex: getZIndex(2),
             order: getOrder(2)
           }}
           animate={{
             rotate: draggedCard === 2 ? 5 : 0,
-            opacity: targetCard === 2 ? 0.5 : 1
+            opacity: targetCard === 2 ? 0.5 : 1,
+            y: draggedCard === 2 ? undefined : 0
           }}
           transition={{ duration: 0.2 }}
           className="relative -mt-16"
@@ -199,6 +198,7 @@ const DashboardView: React.FC = () => {
               background: 'linear-gradient(to bottom right, #FF5353, #FFD48F)'
             }}
             onPointerDown={(e) => handleLongPressStart(e, 2, dragControls2)}
+            onPointerMove={handleLongPressMove}
             onPointerUp={handleLongPressEnd}
             onPointerCancel={handleLongPressEnd}
             onPointerLeave={handleLongPressEnd}
@@ -232,21 +232,20 @@ const DashboardView: React.FC = () => {
           drag="y"
           dragListener={false}
           dragControls={dragControls3}
-          dragConstraints={{ top: -200, bottom: 200 }}
-          dragElastic={0.1}
+          dragConstraints={{ top: -100, bottom: 100 }}
+          dragElastic={0.05}
           dragMomentum={false}
           onDragStart={() => handleDragStart(3)}
           onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           style={{
-            y: draggedCard === 3 ? 0 : card3Y,
-            scale: draggedCard === 3 ? 1 : 1,
             zIndex: getZIndex(3),
             order: getOrder(3)
           }}
           animate={{
             rotate: draggedCard === 3 ? 5 : 0,
-            opacity: targetCard === 3 ? 0.5 : 1
+            opacity: targetCard === 3 ? 0.5 : 1,
+            y: draggedCard === 3 ? undefined : 0
           }}
           transition={{ duration: 0.2 }}
           className="relative -mt-16 pb-16"
@@ -260,6 +259,7 @@ const DashboardView: React.FC = () => {
               background: 'linear-gradient(to bottom right, #9DFF53, #C2FF95)'
             }}
             onPointerDown={(e) => handleLongPressStart(e, 3, dragControls3)}
+            onPointerMove={handleLongPressMove}
             onPointerUp={handleLongPressEnd}
             onPointerCancel={handleLongPressEnd}
             onPointerLeave={handleLongPressEnd}
