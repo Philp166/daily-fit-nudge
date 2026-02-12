@@ -4,6 +4,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import DashboardView from '@/components/dashboard/DashboardView';
 import ProfileView from '@/components/profile/ProfileView';
 import Onboarding from '@/components/onboarding/Onboarding';
+import WelcomeScreen from '@/components/welcome/WelcomeScreen';
 import WorkoutsList from '@/components/workouts/WorkoutsList';
 import WorkoutConstructor from '@/components/workouts/WorkoutConstructor';
 import WorkoutTimer from '@/components/timer/WorkoutTimer';
@@ -59,6 +60,7 @@ interface ActiveWorkoutState {
 
 const AppContent: React.FC = () => {
   const { isOnboarded, customWorkouts } = useUser();
+  const [showWelcome, setShowWelcome] = useState(!isOnboarded);
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [showWorkouts, setShowWorkouts] = useState(false);
   const [showConstructor, setShowConstructor] = useState(false);
@@ -66,7 +68,7 @@ const AppContent: React.FC = () => {
   const [timerExercises, setTimerExercises] = useState<WorkoutExercise[]>([]);
   const [timerWorkoutName, setTimerWorkoutName] = useState('');
   const [editWorkout, setEditWorkout] = useState<EditWorkoutData | null>(null);
-  
+
   // Active workout widget state
   const [activeWorkout, setActiveWorkout] = useState<ActiveWorkoutState | null>(null);
   // Universal (navbar) timer minimized state — свёрнут в виджет как в конструкторе
@@ -76,6 +78,11 @@ const AppContent: React.FC = () => {
   // Timer conflict dialog state
   const [showTimerConflictDialog, setShowTimerConflictDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
+  // Show welcome screen for first-time users
+  if (showWelcome && !isOnboarded) {
+    return <WelcomeScreen onStart={() => setShowWelcome(false)} />;
+  }
 
   if (!isOnboarded) {
     return <Onboarding />;
