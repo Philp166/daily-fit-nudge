@@ -25,10 +25,10 @@ const DashboardView: React.FC = () => {
     return 30 - position * 10;
   };
 
-  const bringToFront = (cardId: number) => {
+  const rotateCards = (cardId: number) => {
     setActiveCard(cardId);
-    const newOrder = [cardId, ...cardOrder.filter(id => id !== cardId)];
-    setCardOrder(newOrder);
+    // Циклическая ротация: первая карточка уходит в конец
+    setCardOrder(prev => [...prev.slice(1), prev[0]]);
     setTimeout(() => setActiveCard(null), 300);
   };
 
@@ -49,7 +49,7 @@ const DashboardView: React.FC = () => {
             zIndex: getZIndex(1)
           }}
           className="relative"
-          onTapStart={() => bringToFront(1)}
+          onTapStart={() => rotateCards(1)}
           whileTap={{ scale: 0.98 }}
         >
           <motion.div
@@ -95,8 +95,8 @@ const DashboardView: React.FC = () => {
             scale: card2Scale,
             zIndex: getZIndex(2)
           }}
-          className="relative -mt-12"
-          onTapStart={() => bringToFront(2)}
+          className="relative -mt-16"
+          onTapStart={() => rotateCards(2)}
           whileTap={{ scale: 0.98 }}
         >
           <motion.div
@@ -138,8 +138,8 @@ const DashboardView: React.FC = () => {
             y: card3Y,
             zIndex: getZIndex(3)
           }}
-          className="relative -mt-12 pb-24"
-          onTapStart={() => bringToFront(3)}
+          className="relative -mt-16 pb-16"
+          onTapStart={() => rotateCards(3)}
           whileTap={{ scale: 0.98 }}
         >
           <motion.div
