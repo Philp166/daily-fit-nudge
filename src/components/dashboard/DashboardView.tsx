@@ -222,7 +222,7 @@ const DashboardView: React.FC = () => {
             <div className="flex items-center justify-between">
               {/* Circular progress */}
               <div className="relative">
-                <CircularProgress value={0} size={120} strokeWidth={10} delay={0.3} />
+                <CircularProgress value={0} size={120} strokeWidth={10} delay={0.3} showValue={false} />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-3xl font-light text-white">0%</span>
                 </div>
