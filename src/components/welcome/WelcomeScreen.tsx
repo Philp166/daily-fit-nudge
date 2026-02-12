@@ -7,18 +7,18 @@ interface WelcomeScreenProps {
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
 
-  // Данные для карточек упражнений с распределением по всей зоне
+  // Данные для карточек упражнений с распределением по нижней зоне
   const exerciseCards = [
-    { emoji: '🏊', name: 'Плавание', rotation: -15, left: '2%', bottom: '38%' },
+    { emoji: '🏊', name: 'Плавание', rotation: -15, left: '2%', bottom: '25%' },
     { emoji: '💪', name: 'Приседания', rotation: 8, left: '13%', bottom: '5%' },
-    { emoji: '🏈', name: 'Регби', rotation: -8, left: '22%', bottom: '22%' },
+    { emoji: '🏈', name: 'Регби', rotation: -8, left: '22%', bottom: '15%' },
     { emoji: '🥊', name: 'Бокс', rotation: 12, left: '32%', bottom: '0%' },
-    { emoji: '🧘', name: 'Пилатес', rotation: -12, left: '42%', bottom: '48%' },
-    { emoji: '🧘‍♀️', name: 'Йога', rotation: 5, left: '52%', bottom: '30%' },
-    { emoji: '⚽', name: 'Футбол', rotation: -6, left: '62%', bottom: '12%' },
-    { emoji: '🏃', name: 'Отжимания', rotation: 10, left: '72%', bottom: '52%' },
-    { emoji: '🏐', name: 'Волейбол', rotation: -10, left: '82%', bottom: '40%' },
-    { emoji: '🤼', name: 'Вольная борьба', rotation: 14, left: '88%', bottom: '58%' },
+    { emoji: '🧘', name: 'Пилатес', rotation: -12, left: '42%', bottom: '32%' },
+    { emoji: '🧘‍♀️', name: 'Йога', rotation: 5, left: '52%', bottom: '20%' },
+    { emoji: '⚽', name: 'Футбол', rotation: -6, left: '62%', bottom: '10%' },
+    { emoji: '🏃', name: 'Отжимания', rotation: 10, left: '72%', bottom: '35%' },
+    { emoji: '🏐', name: 'Волейбол', rotation: -10, left: '82%', bottom: '28%' },
+    { emoji: '🤼', name: 'Вольная борьба', rotation: 14, left: '88%', bottom: '38%' },
   ];
 
   return (
@@ -70,7 +70,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       </div>
 
       {/* Хаотичные карточки внизу */}
-      <div className="absolute bottom-0 left-0 right-0 h-[62%] pointer-events-none overflow-hidden">
+      <div className="absolute bottom-0 left-0 right-0 h-[50%] pointer-events-none overflow-hidden">
         {exerciseCards.map((card, index) => (
           <motion.div
             key={card.name}
