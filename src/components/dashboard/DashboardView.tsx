@@ -17,6 +17,24 @@ const DashboardView: React.FC = () => {
   const dragControls2 = useDragControls();
   const dragControls3 = useDragControls();
 
+  // Long press таймеры
+  const longPressTimer = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleLongPressStart = (e: React.PointerEvent, cardId: number, controls: any) => {
+    // Запускаем таймер на 200ms для long press
+    longPressTimer.current = setTimeout(() => {
+      controls.start(e);
+    }, 200);
+  };
+
+  const handleLongPressEnd = () => {
+    // Отменяем таймер если пользователь отпустил раньше
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
   // Параллакс эффекты для карточек при скролле (отключаются при драге)
   const card1Y = useTransform(scrollY, [0, 300], [0, -50]);
   const card2Y = useTransform(scrollY, [0, 300], [0, -100]);
@@ -107,26 +125,15 @@ const DashboardView: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="rounded-[32px] p-8 shadow-xl"
+            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing"
             style={{
               background: 'linear-gradient(to bottom right, #3699FF, #80BCFF)'
             }}
+            onPointerDown={(e) => handleLongPressStart(e, 1, dragControls1)}
+            onPointerUp={handleLongPressEnd}
+            onPointerCancel={handleLongPressEnd}
+            onPointerLeave={handleLongPressEnd}
           >
-            {/* Drag Handle */}
-            <div
-              onPointerDown={(e) => dragControls1.start(e)}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="7" cy="5" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="13" cy="5" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="7" cy="10" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="13" cy="10" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="7" cy="15" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="13" cy="15" r="1.5" fill="white" opacity="0.8"/>
-              </svg>
-            </div>
-
             {/* Icon and content */}
             <div className="flex items-start gap-5 mb-8">
               <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
@@ -181,26 +188,15 @@ const DashboardView: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="rounded-[32px] p-8 shadow-xl"
+            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing"
             style={{
               background: 'linear-gradient(to bottom right, #FF5353, #FFD48F)'
             }}
+            onPointerDown={(e) => handleLongPressStart(e, 2, dragControls2)}
+            onPointerUp={handleLongPressEnd}
+            onPointerCancel={handleLongPressEnd}
+            onPointerLeave={handleLongPressEnd}
           >
-            {/* Drag Handle */}
-            <div
-              onPointerDown={(e) => dragControls2.start(e)}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="7" cy="5" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="13" cy="5" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="7" cy="10" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="13" cy="10" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="7" cy="15" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="13" cy="15" r="1.5" fill="white" opacity="0.8"/>
-              </svg>
-            </div>
-
             {/* White pill badge */}
             <div className="inline-block px-4 py-2 bg-white/90 rounded-full mb-6">
               <span className="text-sm font-medium text-gray-900">Готовые тренировки</span>
@@ -252,26 +248,15 @@ const DashboardView: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="rounded-[32px] p-8 shadow-xl"
+            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing"
             style={{
               background: 'linear-gradient(to bottom right, #9DFF53, #C2FF95)'
             }}
+            onPointerDown={(e) => handleLongPressStart(e, 3, dragControls3)}
+            onPointerUp={handleLongPressEnd}
+            onPointerCancel={handleLongPressEnd}
+            onPointerLeave={handleLongPressEnd}
           >
-            {/* Drag Handle */}
-            <div
-              onPointerDown={(e) => dragControls3.start(e)}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="7" cy="5" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="13" cy="5" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="7" cy="10" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="13" cy="10" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="7" cy="15" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="13" cy="15" r="1.5" fill="white" opacity="0.8"/>
-              </svg>
-            </div>
-
             {/* White pill badge */}
             <div className="inline-block px-4 py-2 bg-white/90 rounded-full mb-8">
               <span className="text-sm font-medium text-gray-900">Аналитика</span>
