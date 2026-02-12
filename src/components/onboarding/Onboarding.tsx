@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Flame, TrendingUp } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
 const Onboarding: React.FC = () => {
@@ -91,21 +90,17 @@ const Onboarding: React.FC = () => {
     {
       value: 'lose',
       label: 'Похудеть',
-      icon: <Flame size={24} className="text-orange-500" />,
+      icon: '🔥',
     },
     {
       value: 'maintain',
       label: 'Поддерживать форму',
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
-          <path d="M18 20V10M12 20V4M6 20v-6"/>
-        </svg>
-      ),
+      icon: '💪',
     },
     {
       value: 'gain',
       label: 'Набрать массу',
-      icon: <TrendingUp size={24} className="text-blue-500" />,
+      icon: '📈',
     },
   ];
 
@@ -348,7 +343,7 @@ const Onboarding: React.FC = () => {
                   <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
                     formData.goal === goal.value ? 'bg-white' : 'bg-white/50'
                   }`}>
-                    {goal.icon}
+                    <span className="text-2xl">{goal.icon}</span>
                   </div>
                   <span>{goal.label}</span>
                 </button>
