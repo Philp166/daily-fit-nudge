@@ -7,18 +7,18 @@ interface WelcomeScreenProps {
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
 
-  // Данные для карточек упражнений с точными позициями для хаотичности
+  // Данные для карточек упражнений с равномерным распределением по всей ширине
   const exerciseCards = [
-    { emoji: '🏊', name: 'Плавание', rotation: -15, left: '5%', bottom: '15%' },
-    { emoji: '💪', name: 'Приседания', rotation: 8, left: '18%', bottom: '8%' },
-    { emoji: '🏈', name: 'Регби', rotation: -8, left: '35%', bottom: '12%' },
-    { emoji: '🥊', name: 'Бокс', rotation: 12, left: '62%', bottom: '5%' },
-    { emoji: '🧘', name: 'Пилатес', rotation: -12, left: '12%', bottom: '25%' },
-    { emoji: '🧘‍♀️', name: 'Йога', rotation: 5, left: '48%', bottom: '22%' },
-    { emoji: '⚽', name: 'Футбол', rotation: -6, left: '72%', bottom: '18%' },
-    { emoji: '🏃', name: 'Отжимания', rotation: 10, left: '28%', bottom: '32%' },
-    { emoji: '🏐', name: 'Волейбол', rotation: -10, left: '85%', bottom: '28%' },
-    { emoji: '🤼', name: 'Вольная борьба', rotation: 14, left: '55%', bottom: '35%' },
+    { emoji: '🏊', name: 'Плавание', rotation: -15, left: '2%', bottom: '15%' },
+    { emoji: '💪', name: 'Приседания', rotation: 8, left: '13%', bottom: '8%' },
+    { emoji: '🏈', name: 'Регби', rotation: -8, left: '22%', bottom: '12%' },
+    { emoji: '🥊', name: 'Бокс', rotation: 12, left: '32%', bottom: '5%' },
+    { emoji: '🧘', name: 'Пилатес', rotation: -12, left: '42%', bottom: '25%' },
+    { emoji: '🧘‍♀️', name: 'Йога', rotation: 5, left: '52%', bottom: '22%' },
+    { emoji: '⚽', name: 'Футбол', rotation: -6, left: '62%', bottom: '18%' },
+    { emoji: '🏃', name: 'Отжимания', rotation: 10, left: '72%', bottom: '32%' },
+    { emoji: '🏐', name: 'Волейбол', rotation: -10, left: '82%', bottom: '28%' },
+    { emoji: '🤼', name: 'Вольная борьба', rotation: 14, left: '88%', bottom: '35%' },
   ];
 
   return (
@@ -27,7 +27,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif'
     }}>
       {/* Верхняя часть с лого и текстом */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 pb-40 pt-20">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-40 pt-20">
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -51,7 +51,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-white text-center text-[32px] font-semibold mb-10 leading-tight px-4"
+          className="text-white text-center text-[32px] font-semibold mb-10 leading-tight"
         >
           Interfit <span className="font-normal">- твой помощник<br />в организации тренировок</span>
         </motion.h1>
@@ -62,7 +62,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           whileTap={{ scale: 0.95 }}
           onClick={onStart}
-          className="w-full max-w-[calc(100%-4rem)] py-5 rounded-full bg-white text-gray-900 text-lg font-semibold active:scale-[0.98] transition-all shadow-xl"
+          className="w-full py-5 rounded-full bg-white text-gray-900 text-lg font-semibold active:scale-[0.98] transition-all shadow-xl"
           style={{ touchAction: 'manipulation' }}
         >
           Старт
@@ -75,7 +75,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           <motion.div
             key={card.name}
             initial={{
-              y: 300,
+              y: 400,
               opacity: 0,
               rotate: 0,
               scale: 0.5
@@ -89,10 +89,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             transition={{
               delay: index * 0.08,
               type: 'spring',
-              damping: 8,
+              damping: 6,
               stiffness: 120,
-              mass: 0.6,
-              velocity: 8
+              mass: 0.5,
+              velocity: 10 + (index % 3)
             }}
             className="absolute bg-gray-100/95 backdrop-blur-md rounded-full px-4 py-3 shadow-xl flex items-center gap-3 border border-white/50"
             style={{

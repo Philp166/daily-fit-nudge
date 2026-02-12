@@ -15,10 +15,14 @@ const Onboarding: React.FC = () => {
     weight: '',
     goal: 'lose' as 'lose' | 'maintain' | 'gain',
   });
-  const [validationErrors, setValidationErrors] = useState({
-    age: false,
-    height: false,
-    weight: false,
+  const [validationErrors, setValidationErrors] = useState<{
+    age: 'min' | 'max' | null;
+    height: 'min' | 'max' | null;
+    weight: 'min' | 'max' | null;
+  }>({
+    age: null,
+    height: null,
+    weight: null,
   });
 
   // Refs for autofocus
@@ -46,22 +50,30 @@ const Onboarding: React.FC = () => {
     if (value === '' || /^\d+$/.test(value)) {
       setFormData({ ...formData, [field]: value });
 
-      // Check if value exceeds maximum and show warning
+      // Check if value is outside valid range
       const numValue = parseInt(value) || 0;
-      const hasError =
-        (field === 'age' && numValue > 150) ||
-        (field === 'height' && numValue > 250) ||
-        (field === 'weight' && numValue > 280);
+      let errorType: 'min' | 'max' | null = null;
 
-      setValidationErrors({ ...validationErrors, [field]: hasError });
+      if (field === 'age') {
+        if (numValue > 0 && numValue < 6) errorType = 'min';
+        else if (numValue > 150) errorType = 'max';
+      } else if (field === 'height') {
+        if (numValue > 0 && numValue < 100) errorType = 'min';
+        else if (numValue > 250) errorType = 'max';
+      } else if (field === 'weight') {
+        if (numValue > 0 && numValue < 20) errorType = 'min';
+        else if (numValue > 280) errorType = 'max';
+      }
+
+      setValidationErrors({ ...validationErrors, [field]: errorType });
     }
   };
 
   const handleSubmit = () => {
     // Clamp values to valid ranges
-    const age = clamp(parseInt(formData.age) || 25, 14, 150);
-    const height = clamp(parseInt(formData.height) || 170, 140, 250);
-    const weight = clamp(parseInt(formData.weight) || 70, 40, 280);
+    const age = clamp(parseInt(formData.age) || 25, 6, 150);
+    const height = clamp(parseInt(formData.height) || 170, 100, 250);
+    const weight = clamp(parseInt(formData.weight) || 70, 20, 280);
 
     setProfile({
       name: formData.name.trim(),
@@ -103,7 +115,7 @@ const Onboarding: React.FC = () => {
       const age = parseInt(formData.age);
       const height = parseInt(formData.height);
       const weight = parseInt(formData.weight);
-      return age >= 14 && age <= 150 && height >= 140 && height <= 250 && weight >= 40 && weight <= 280;
+      return age >= 6 && age <= 150 && height >= 100 && height <= 250 && weight >= 20 && weight <= 280;
     }
     return true;
   };
@@ -257,14 +269,17 @@ const Onboarding: React.FC = () => {
                   ref={ageInputRef}
                   type="number"
                   inputMode="numeric"
-                  min="14"
+                  min="6"
                   max="150"
                   value={formData.age}
                   onChange={(e) => handleNumberInput('age', e.target.value)}
                   placeholder="Возраст"
                   className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
                 />
-                {validationErrors.age && (
+                {validationErrors.age === 'min' && (
+                  <p className="text-red-500 text-sm mt-2 px-2">Минимум: 6</p>
+                )}
+                {validationErrors.age === 'max' && (
                   <p className="text-red-500 text-sm mt-2 px-2">Максимум: 150</p>
                 )}
               </div>
@@ -273,14 +288,17 @@ const Onboarding: React.FC = () => {
                 <input
                   type="number"
                   inputMode="numeric"
-                  min="140"
+                  min="100"
                   max="250"
                   value={formData.height}
                   onChange={(e) => handleNumberInput('height', e.target.value)}
                   placeholder="Рост"
                   className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
                 />
-                {validationErrors.height && (
+                {validationErrors.height === 'min' && (
+                  <p className="text-red-500 text-sm mt-2 px-2">Минимум: 100</p>
+                )}
+                {validationErrors.height === 'max' && (
                   <p className="text-red-500 text-sm mt-2 px-2">Максимум: 250</p>
                 )}
               </div>
@@ -289,14 +307,17 @@ const Onboarding: React.FC = () => {
                 <input
                   type="number"
                   inputMode="numeric"
-                  min="40"
+                  min="20"
                   max="280"
                   value={formData.weight}
                   onChange={(e) => handleNumberInput('weight', e.target.value)}
                   placeholder="Вес"
                   className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
                 />
-                {validationErrors.weight && (
+                {validationErrors.weight === 'min' && (
+                  <p className="text-red-500 text-sm mt-2 px-2">Минимум: 20</p>
+                )}
+                {validationErrors.weight === 'max' && (
                   <p className="text-red-500 text-sm mt-2 px-2">Максимум: 280</p>
                 )}
               </div>
