@@ -8,6 +8,8 @@ import CircularProgress from '@/components/dashboard/CircularProgress';
 const DashboardView: React.FC = () => {
   const { profile } = useUser();
   const { scrollY } = useScroll();
+  const [cardOrder, setCardOrder] = React.useState([1, 2, 3]);
+  const [activeCard, setActiveCard] = React.useState<number | null>(null);
 
   // Параллакс эффекты для карточек при скролле
   const card1Y = useTransform(scrollY, [0, 300], [0, -50]);
@@ -16,6 +18,19 @@ const DashboardView: React.FC = () => {
 
   const card1Scale = useTransform(scrollY, [0, 150], [1, 0.95]);
   const card2Scale = useTransform(scrollY, [0, 200], [1, 0.95]);
+
+  const getZIndex = (cardId: number) => {
+    if (activeCard === cardId) return 50;
+    const position = cardOrder.indexOf(cardId);
+    return 30 - position * 10;
+  };
+
+  const bringToFront = (cardId: number) => {
+    setActiveCard(cardId);
+    const newOrder = [cardId, ...cardOrder.filter(id => id !== cardId)];
+    setCardOrder(newOrder);
+    setTimeout(() => setActiveCard(null), 300);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,14 +43,20 @@ const DashboardView: React.FC = () => {
       <div className="relative mt-6">
         {/* Constructor Card - Blue */}
         <motion.div
-          style={{ y: card1Y, scale: card1Scale }}
-          className="relative z-30"
+          style={{
+            y: card1Y,
+            scale: card1Scale,
+            zIndex: getZIndex(1)
+          }}
+          className="relative"
+          onTapStart={() => bringToFront(1)}
+          whileTap={{ scale: 0.98 }}
         >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="rounded-[32px] p-8 shadow-xl"
+            className="rounded-[32px] p-8 shadow-xl cursor-pointer"
             style={{
               background: 'linear-gradient(to bottom right, #3699FF, #80BCFF)'
             }}
@@ -69,14 +90,20 @@ const DashboardView: React.FC = () => {
 
         {/* Workouts Card - Orange/Coral */}
         <motion.div
-          style={{ y: card2Y, scale: card2Scale }}
-          className="relative z-20 -mt-6"
+          style={{
+            y: card2Y,
+            scale: card2Scale,
+            zIndex: getZIndex(2)
+          }}
+          className="relative -mt-12"
+          onTapStart={() => bringToFront(2)}
+          whileTap={{ scale: 0.98 }}
         >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="rounded-[32px] p-8 shadow-xl"
+            className="rounded-[32px] p-8 shadow-xl cursor-pointer"
             style={{
               background: 'linear-gradient(to bottom right, #FF5353, #FFD48F)'
             }}
@@ -107,14 +134,19 @@ const DashboardView: React.FC = () => {
 
         {/* Analytics Card - Green */}
         <motion.div
-          style={{ y: card3Y }}
-          className="relative z-10 -mt-6 pb-32"
+          style={{
+            y: card3Y,
+            zIndex: getZIndex(3)
+          }}
+          className="relative -mt-12 pb-24"
+          onTapStart={() => bringToFront(3)}
+          whileTap={{ scale: 0.98 }}
         >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="rounded-[32px] p-8 shadow-xl"
+            className="rounded-[32px] p-8 shadow-xl cursor-pointer"
             style={{
               background: 'linear-gradient(to bottom right, #9DFF53, #C2FF95)'
             }}
