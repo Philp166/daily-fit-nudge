@@ -92,7 +92,7 @@ const ProfileView: React.FC = () => {
             disabled={!isEditing}
           >
             <img
-              src={`${import.meta.env.BASE_URL}avatars/${isEditing ? editData.avatar : (profile.avatar || 'male-1')}.png`}
+              src={`${import.meta.env.BASE_URL}avatars/${isEditing ? editData.avatar : (profile.avatar || 'male-1')}.webp`}
               alt=""
               className={`w-16 h-16 rounded-full object-cover ${isEditing ? 'ring-2 ring-primary' : ''}`}
               draggable={false}
@@ -462,7 +462,7 @@ const ProfileView: React.FC = () => {
                       style={{ touchAction: 'manipulation' }}
                     >
                       <img
-                        src={`${import.meta.env.BASE_URL}avatars/${av}.png`}
+                        src={`${import.meta.env.BASE_URL}avatars/${av}.webp`}
                         alt=""
                         className="w-full h-full object-cover"
                         draggable={false}

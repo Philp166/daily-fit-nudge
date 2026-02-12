@@ -15,6 +15,11 @@ const Onboarding: React.FC = () => {
     weight: '',
     goal: 'lose' as 'lose' | 'maintain' | 'gain',
   });
+  const [validationErrors, setValidationErrors] = useState({
+    age: false,
+    height: false,
+    weight: false,
+  });
 
   // Refs for autofocus
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -39,25 +44,24 @@ const Onboarding: React.FC = () => {
   const handleNumberInput = (field: 'age' | 'height' | 'weight', value: string) => {
     // Allow empty string or valid number
     if (value === '' || /^\d+$/.test(value)) {
+      setFormData({ ...formData, [field]: value });
+
+      // Check if value exceeds maximum and show warning
       const numValue = parseInt(value) || 0;
+      const hasError =
+        (field === 'age' && numValue > 150) ||
+        (field === 'height' && numValue > 250) ||
+        (field === 'weight' && numValue > 280);
 
-      // Only check maximum during input (allow typing smaller numbers)
-      let isValid = true;
-      if (field === 'age' && numValue > 100) isValid = false;
-      if (field === 'height' && numValue > 220) isValid = false;
-      if (field === 'weight' && numValue > 200) isValid = false;
-
-      if (isValid || value === '') {
-        setFormData({ ...formData, [field]: value });
-      }
+      setValidationErrors({ ...validationErrors, [field]: hasError });
     }
   };
 
   const handleSubmit = () => {
     // Clamp values to valid ranges
-    const age = clamp(parseInt(formData.age) || 25, 14, 100);
-    const height = clamp(parseInt(formData.height) || 170, 140, 220);
-    const weight = clamp(parseInt(formData.weight) || 70, 40, 200);
+    const age = clamp(parseInt(formData.age) || 25, 14, 150);
+    const height = clamp(parseInt(formData.height) || 170, 140, 250);
+    const weight = clamp(parseInt(formData.weight) || 70, 40, 280);
 
     setProfile({
       name: formData.name.trim(),
@@ -99,15 +103,15 @@ const Onboarding: React.FC = () => {
       const age = parseInt(formData.age);
       const height = parseInt(formData.height);
       const weight = parseInt(formData.weight);
-      return age >= 14 && age <= 100 && height >= 140 && height <= 220 && weight >= 40 && weight <= 200;
+      return age >= 14 && age <= 150 && height >= 140 && height <= 250 && weight >= 40 && weight <= 280;
     }
     return true;
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col px-6 pb-8" style={{ fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif', paddingTop: 'max(env(safe-area-inset-top), 20px)' }}>
+    <div className="min-h-screen bg-white flex flex-col" style={{ fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif' }}>
       {/* Progress dots */}
-      <div className="flex justify-center gap-2 py-8">
+      <div className="flex justify-center gap-2 py-8 px-6" style={{ paddingTop: 'max(env(safe-area-inset-top, 20px), 20px)' }}>
         {[0, 1, 2, 3, 4].map((i) => (
           <div
             key={i}
@@ -124,7 +128,7 @@ const Onboarding: React.FC = () => {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
         transition={{ duration: 0.3 }}
-        className="flex-1 flex flex-col justify-center"
+        className="flex-1 flex flex-col justify-center px-6"
       >
         {/* Step 0: Name */}
         {step === 0 && (
@@ -170,7 +174,7 @@ const Onboarding: React.FC = () => {
                 <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
                   formData.gender === 'male' ? 'bg-white' : 'bg-white/50'
                 }`}>
-                  <span className="text-2xl">♂</span>
+                  <span className="text-2xl leading-none flex items-center justify-center">♂</span>
                 </div>
                 <span>Мужской</span>
               </button>
@@ -188,7 +192,7 @@ const Onboarding: React.FC = () => {
                 <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
                   formData.gender === 'female' ? 'bg-white' : 'bg-white/50'
                 }`}>
-                  <span className="text-2xl">♀</span>
+                  <span className="text-2xl leading-none flex items-center justify-center">♀</span>
                 </div>
                 <span>Женский</span>
               </button>
@@ -217,7 +221,7 @@ const Onboarding: React.FC = () => {
                   style={{ touchAction: 'manipulation' }}
                 >
                   <img
-                    src={`${import.meta.env.BASE_URL}avatars/${av}.png`}
+                    src={`${import.meta.env.BASE_URL}avatars/${av}.webp`}
                     alt=""
                     className="w-full h-full object-cover"
                     draggable={false}
@@ -239,39 +243,54 @@ const Onboarding: React.FC = () => {
             </p>
 
             <div className="space-y-4">
-              <input
-                ref={ageInputRef}
-                type="number"
-                inputMode="numeric"
-                min="14"
-                max="100"
-                value={formData.age}
-                onChange={(e) => handleNumberInput('age', e.target.value)}
-                placeholder="Возраст"
-                className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
-              />
+              <div>
+                <input
+                  ref={ageInputRef}
+                  type="number"
+                  inputMode="numeric"
+                  min="14"
+                  max="150"
+                  value={formData.age}
+                  onChange={(e) => handleNumberInput('age', e.target.value)}
+                  placeholder="Возраст"
+                  className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
+                />
+                {validationErrors.age && (
+                  <p className="text-red-500 text-sm mt-2 px-2">Максимум: 150</p>
+                )}
+              </div>
 
-              <input
-                type="number"
-                inputMode="numeric"
-                min="140"
-                max="220"
-                value={formData.height}
-                onChange={(e) => handleNumberInput('height', e.target.value)}
-                placeholder="Рост"
-                className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
-              />
+              <div>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min="140"
+                  max="250"
+                  value={formData.height}
+                  onChange={(e) => handleNumberInput('height', e.target.value)}
+                  placeholder="Рост"
+                  className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
+                />
+                {validationErrors.height && (
+                  <p className="text-red-500 text-sm mt-2 px-2">Максимум: 250</p>
+                )}
+              </div>
 
-              <input
-                type="number"
-                inputMode="numeric"
-                min="40"
-                max="200"
-                value={formData.weight}
-                onChange={(e) => handleNumberInput('weight', e.target.value)}
-                placeholder="Вес"
-                className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
-              />
+              <div>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min="40"
+                  max="280"
+                  value={formData.weight}
+                  onChange={(e) => handleNumberInput('weight', e.target.value)}
+                  placeholder="Вес"
+                  className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
+                />
+                {validationErrors.weight && (
+                  <p className="text-red-500 text-sm mt-2 px-2">Максимум: 280</p>
+                )}
+              </div>
             </div>
           </>
         )}
@@ -310,7 +329,7 @@ const Onboarding: React.FC = () => {
       </motion.div>
 
       {/* Navigation */}
-      <div className="pt-6">
+      <div className="pt-6 px-6 pb-8">
         <button
           type="button"
           onClick={() => {

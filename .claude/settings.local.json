@@ -37,7 +37,13 @@
       "Bash(cmd /c \"for /f \"\"tokens=5\"\" %a in \\(''netstat -ano ^| findstr :8081 ^| findstr LISTENING''\\) do taskkill /F /PID %a 2>nul\")",
       "Bash(cmd /c \"for /f \"\"tokens=5\"\" %a in \\(''netstat -ano ^| findstr :8082 ^| findstr LISTENING''\\) do taskkill /F /PID %a 2>nul\")",
       "Bash(cmd /c:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)",
+      "Read(//c/Users/philip/Desktop/emodzi interfit//**)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\philip\\Desktop\\emodzi interfit"
     ]
   }
 }
