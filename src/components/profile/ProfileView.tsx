@@ -92,7 +92,11 @@ const ProfileView: React.FC = () => {
             disabled={!isEditing}
           >
             <img
-              src={`${import.meta.env.BASE_URL}avatars/${isEditing ? editData.avatar : (profile.avatar || 'male-1')}.webp`}
+              src={
+                profile.avatar === 'custom' && profile.customAvatar
+                  ? profile.customAvatar
+                  : `${import.meta.env.BASE_URL}avatars/${isEditing ? editData.avatar : (profile.avatar || 'male-1')}.webp`
+              }
               alt=""
               className={`w-16 h-16 rounded-full object-cover ${isEditing ? 'ring-2 ring-primary' : ''}`}
               draggable={false}

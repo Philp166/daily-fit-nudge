@@ -5,6 +5,7 @@ export interface UserProfile {
   name: string;
   gender: 'male' | 'female';
   avatar: string;
+  customAvatar?: string | null; // base64 кастомного аватара (опционально)
   age: number;
   height: number; // cm
   weight: number; // kg

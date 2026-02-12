@@ -38,7 +38,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       >
         {profile?.avatar && (
           <img
-            src={`${import.meta.env.BASE_URL}avatars/${profile.avatar}.webp`}
+            src={
+              profile.avatar === 'custom' && profile.customAvatar
+                ? profile.customAvatar
+                : `${import.meta.env.BASE_URL}avatars/${profile.avatar}.webp`
+            }
             alt=""
             className="w-14 h-14 rounded-full object-cover shrink-0"
             draggable={false}

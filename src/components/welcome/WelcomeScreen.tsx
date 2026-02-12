@@ -27,7 +27,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif'
     }}>
       {/* Верхняя часть с лого и текстом */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-40 pt-20">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-40 pt-20 relative z-20">
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -70,12 +70,12 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       </div>
 
       {/* Хаотичные карточки внизу */}
-      <div className="absolute bottom-0 left-0 right-0 h-[50%] pointer-events-none overflow-hidden">
+      <div className="absolute bottom-0 left-0 right-0 h-[50%] pointer-events-none overflow-hidden z-0">
         {exerciseCards.map((card, index) => (
           <motion.div
             key={card.name}
             initial={{
-              y: 400,
+              y: -400,
               opacity: 0,
               rotate: 0,
               scale: 0.5

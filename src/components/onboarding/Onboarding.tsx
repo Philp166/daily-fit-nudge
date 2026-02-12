@@ -10,6 +10,7 @@ const Onboarding: React.FC = () => {
     name: '',
     gender: 'male' as 'male' | 'female',
     avatar: 'male-1',
+    customAvatar: null as string | null, // base64 кастомного аватара
     age: '',
     height: '',
     weight: '',
@@ -39,6 +40,69 @@ const Onboarding: React.FC = () => {
   }, [step]);
 
   const avatarOptions = [1, 2, 3, 4, 5, 6].map(n => `${formData.gender}-${n}`);
+
+  // Безопасная обработка пользовательского фото
+  const processCustomPhoto = async (file: File): Promise<string | null> => {
+    // Проверка типа файла
+    if (!file.type.startsWith('image/')) {
+      alert('Пожалуйста, выберите файл изображения');
+      return null;
+    }
+
+    // Ограничение размера файла (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Файл слишком большой. Максимальный размер: 5MB');
+      return null;
+    }
+
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          // Создаем canvas для обработки
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(null);
+            return;
+          }
+
+          // Размер для аватара (квадрат 400x400)
+          const size = 400;
+          canvas.width = size;
+          canvas.height = size;
+
+          // Вычисляем масштаб для кропа (центрированный квадрат)
+          const scale = Math.max(size / img.width, size / img.height);
+          const x = (size / 2) - (img.width / 2) * scale;
+          const y = (size / 2) - (img.height / 2) * scale;
+
+          // Рисуем изображение с масштабированием
+          ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+          // Конвертируем в base64 с сжатием (JPEG 85% качество)
+          // Это также удаляет все EXIF метаданные автоматически
+          const base64 = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(base64);
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const processedPhoto = await processCustomPhoto(file);
+    if (processedPhoto) {
+      setFormData({ ...formData, customAvatar: processedPhoto, avatar: 'custom' });
+    }
+    // Очищаем input для возможности повторного выбора того же файла
+    e.target.value = '';
+  };
 
   // Clamp number to range
   const clamp = (value: number, min: number, max: number) => {
@@ -79,6 +143,7 @@ const Onboarding: React.FC = () => {
       name: formData.name.trim(),
       gender: formData.gender,
       avatar: formData.avatar,
+      customAvatar: formData.customAvatar, // Кастомный аватар (если есть)
       age,
       height,
       weight,
@@ -224,18 +289,81 @@ const Onboarding: React.FC = () => {
         {/* Step 2: Avatar */}
         {step === 2 && (
           <>
-            <h1 className="text-3xl font-semibold text-gray-900 mb-12 text-center">
+            <h1 className="text-3xl font-semibold text-gray-900 mb-3 text-center">
               Выберите аватар
             </h1>
+            <p className="text-gray-500 mb-8 text-center text-sm">
+              Все фото обрабатываются только на вашем устройстве
+            </p>
 
+            {/* Кнопки для загрузки фото */}
+            <div className="grid grid-cols-2 gap-3 mb-8">
+              <label className="flex flex-col items-center justify-center py-4 px-4 bg-blue-500 text-white rounded-2xl cursor-pointer active:scale-95 transition-all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span className="text-sm font-medium">Камера</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="user"
+                  onChange={handlePhotoSelect}
+                  className="hidden"
+                />
+              </label>
+
+              <label className="flex flex-col items-center justify-center py-4 px-4 bg-gray-100 text-gray-700 rounded-2xl cursor-pointer active:scale-95 transition-all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span className="text-sm font-medium">Галерея</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoSelect}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Кастомный аватар (если загружен) */}
+            {formData.customAvatar && (
+              <div className="mb-6">
+                <p className="text-sm text-gray-600 mb-3 text-center">Ваше фото:</p>
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, avatar: 'custom' })}
+                    className={`w-24 h-24 rounded-full overflow-hidden transition-all ${
+                      formData.avatar === 'custom'
+                        ? 'ring-4 ring-blue-500'
+                        : 'ring-0'
+                    }`}
+                    style={{ touchAction: 'manipulation' }}
+                  >
+                    <img
+                      src={formData.customAvatar}
+                      alt="Ваше фото"
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Стандартные аватары */}
+            <p className="text-sm text-gray-600 mb-3 text-center">Или выберите готовый:</p>
             <div className="grid grid-cols-3 gap-6">
               {avatarOptions.map((av) => (
                 <button
                   key={av}
                   type="button"
-                  onClick={() => setFormData({ ...formData, avatar: av })}
+                  onClick={() => setFormData({ ...formData, avatar: av, customAvatar: null })}
                   className={`aspect-square rounded-full overflow-hidden transition-all ${
-                    formData.avatar === av
+                    formData.avatar === av && formData.avatar !== 'custom'
                       ? 'ring-4 ring-blue-500'
                       : 'ring-0'
                   }`}
