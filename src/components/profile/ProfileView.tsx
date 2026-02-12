@@ -53,7 +53,7 @@ const ProfileView: React.FC = () => {
   const handleSave = () => {
     setProfile({
       ...editData,
-      dailyCalorieGoal: profile.dailyCalorieGoal,
+      dailyCalorieGoal: 0, // Will be recalculated by setProfile based on new data
     } as typeof profile);
     setIsEditing(false);
   };
@@ -92,11 +92,7 @@ const ProfileView: React.FC = () => {
             disabled={!isEditing}
           >
             <img
-              src={
-                profile.avatar === 'custom' && profile.customAvatar
-                  ? profile.customAvatar
-                  : `${import.meta.env.BASE_URL}avatars/${isEditing ? editData.avatar : (profile.avatar || 'male-1')}.webp`
-              }
+              src={`${import.meta.env.BASE_URL}avatars/${isEditing ? editData.avatar : (profile.avatar || 'male-1')}.webp`}
               alt=""
               className={`w-16 h-16 rounded-full object-cover ${isEditing ? 'ring-2 ring-primary' : ''}`}
               draggable={false}

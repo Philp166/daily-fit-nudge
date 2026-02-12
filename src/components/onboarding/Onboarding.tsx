@@ -10,7 +10,6 @@ const Onboarding: React.FC = () => {
     name: '',
     gender: 'male' as 'male' | 'female',
     avatar: 'male-1',
-    customAvatar: null as string | null, // base64 кастомного аватара
     age: '',
     height: '',
     weight: '',
@@ -40,69 +39,6 @@ const Onboarding: React.FC = () => {
   }, [step]);
 
   const avatarOptions = [1, 2, 3, 4, 5, 6].map(n => `${formData.gender}-${n}`);
-
-  // Безопасная обработка пользовательского фото
-  const processCustomPhoto = async (file: File): Promise<string | null> => {
-    // Проверка типа файла
-    if (!file.type.startsWith('image/')) {
-      alert('Пожалуйста, выберите файл изображения');
-      return null;
-    }
-
-    // Ограничение размера файла (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Файл слишком большой. Максимальный размер: 5MB');
-      return null;
-    }
-
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          // Создаем canvas для обработки
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            resolve(null);
-            return;
-          }
-
-          // Размер для аватара (квадрат 400x400)
-          const size = 400;
-          canvas.width = size;
-          canvas.height = size;
-
-          // Вычисляем масштаб для кропа (центрированный квадрат)
-          const scale = Math.max(size / img.width, size / img.height);
-          const x = (size / 2) - (img.width / 2) * scale;
-          const y = (size / 2) - (img.height / 2) * scale;
-
-          // Рисуем изображение с масштабированием
-          ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-
-          // Конвертируем в base64 с сжатием (JPEG 85% качество)
-          // Это также удаляет все EXIF метаданные автоматически
-          const base64 = canvas.toDataURL('image/jpeg', 0.85);
-          resolve(base64);
-        };
-        img.src = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const processedPhoto = await processCustomPhoto(file);
-    if (processedPhoto) {
-      setFormData({ ...formData, customAvatar: processedPhoto, avatar: 'custom' });
-    }
-    // Очищаем input для возможности повторного выбора того же файла
-    e.target.value = '';
-  };
 
   // Clamp number to range
   const clamp = (value: number, min: number, max: number) => {
@@ -143,7 +79,6 @@ const Onboarding: React.FC = () => {
       name: formData.name.trim(),
       gender: formData.gender,
       avatar: formData.avatar,
-      customAvatar: formData.customAvatar, // Кастомный аватар (если есть)
       age,
       height,
       weight,
@@ -298,9 +233,9 @@ const Onboarding: React.FC = () => {
                 <button
                   key={av}
                   type="button"
-                  onClick={() => setFormData({ ...formData, avatar: av, customAvatar: null })}
+                  onClick={() => setFormData({ ...formData, avatar: av })}
                   className={`aspect-square rounded-full overflow-hidden transition-all ${
-                    formData.avatar === av && formData.avatar !== 'custom'
+                    formData.avatar === av
                       ? 'ring-4 ring-blue-500'
                       : 'ring-0'
                   }`}
@@ -314,35 +249,6 @@ const Onboarding: React.FC = () => {
                   />
                 </button>
               ))}
-
-              {/* Кнопка для загрузки своего фото */}
-              <label className={`aspect-square rounded-full overflow-hidden transition-all cursor-pointer ${
-                formData.avatar === 'custom'
-                  ? 'ring-4 ring-blue-500'
-                  : 'ring-0'
-              }`}
-              style={{ touchAction: 'manipulation' }}>
-                {formData.customAvatar ? (
-                  <img
-                    src={formData.customAvatar}
-                    alt="Ваше фото"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                      <circle cx="12" cy="13" r="4"/>
-                    </svg>
-                  </div>
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoSelect}
-                  className="hidden"
-                />
-              </label>
             </div>
           </>
         )}

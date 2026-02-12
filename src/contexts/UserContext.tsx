@@ -5,7 +5,6 @@ export interface UserProfile {
   name: string;
   gender: 'male' | 'female';
   avatar: string;
-  customAvatar?: string | null; // base64 кастомного аватара (опционально)
   age: number;
   height: number; // cm
   weight: number; // kg
@@ -57,21 +56,39 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Calculate daily BURN goal (calories to burn through exercise)
-// Based on weight and fitness goal - realistic exercise targets
-const calculateDailyBurnGoal = (weight: number, goal: 'lose' | 'maintain' | 'gain'): number => {
-  // Base burn goal scaled by weight (heavier people burn more)
-  const baseGoal = weight * 4; // ~4 kcal per kg as baseline
-  
+// Uses Mifflin-St Jeor equation for BMR, then adjusts based on goal
+const calculateDailyBurnGoal = (
+  weight: number,
+  height: number,
+  age: number,
+  gender: 'male' | 'female',
+  goal: 'lose' | 'maintain' | 'gain'
+): number => {
+  // Calculate BMR using Mifflin-St Jeor equation
+  let bmr: number;
+  if (gender === 'male') {
+    bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+  } else {
+    bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+  }
+
+  // Calculate TDEE (Total Daily Energy Expenditure) assuming sedentary lifestyle
+  // Sedentary multiplier: 1.2
+  const tdee = bmr * 1.2;
+
+  // Calculate daily burn goal based on fitness goal
   switch (goal) {
     case 'lose':
-      // Higher burn goal for weight loss: 400-600 kcal/day
-      return Math.round(Math.max(400, Math.min(600, baseGoal * 1.5)));
+      // For weight loss: burn 400-600 kcal/day through exercise
+      // This creates a ~500 calorie deficit when combined with diet
+      return Math.round(Math.max(400, Math.min(600, tdee * 0.25)));
     case 'gain':
-      // Lower burn goal for muscle gain: 200-350 kcal/day
-      return Math.round(Math.max(200, Math.min(350, baseGoal * 0.8)));
+      // For muscle gain: burn 200-350 kcal/day through exercise
+      // Lower burn to preserve calories for muscle building
+      return Math.round(Math.max(200, Math.min(350, tdee * 0.15)));
     default:
-      // Maintain: moderate burn: 300-450 kcal/day
-      return Math.round(Math.max(300, Math.min(450, baseGoal)));
+      // Maintain: moderate burn 300-450 kcal/day
+      return Math.round(Math.max(300, Math.min(450, tdee * 0.20)));
   }
 };
 
@@ -137,7 +154,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [customWorkouts]);
 
   const setProfile = (newProfile: UserProfile) => {
-    const dailyCalorieGoal = calculateDailyBurnGoal(newProfile.weight, newProfile.goal);
+    const dailyCalorieGoal = calculateDailyBurnGoal(
+      newProfile.weight,
+      newProfile.height,
+      newProfile.age,
+      newProfile.gender,
+      newProfile.goal
+    );
     setProfileState({ ...newProfile, dailyCalorieGoal });
   };
 
