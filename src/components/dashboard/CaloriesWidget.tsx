@@ -35,7 +35,7 @@ const CaloriesWidget: React.FC = () => {
       transition={{ duration: 0.6, delay: 0.2 }}
       className="p-6 text-center mb-4"
     >
-      <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-3">Сожжено сегодня</p>
+      <p className="text-sm font-medium text-muted-foreground mb-3">Сожжено сегодня</p>
 
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -56,7 +56,7 @@ const CaloriesWidget: React.FC = () => {
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
-          className="absolute inset-y-0 left-0 bg-primary rounded-full shadow-sm"
+          className="absolute inset-y-0 left-0 progress-gradient rounded-full shadow-sm"
         />
 
         {/* Glowing dot at the end */}
