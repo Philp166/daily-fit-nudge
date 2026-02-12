@@ -41,11 +41,11 @@ const Onboarding: React.FC = () => {
     if (value === '' || /^\d+$/.test(value)) {
       const numValue = parseInt(value) || 0;
 
-      // Validate ranges
+      // Only check maximum during input (allow typing smaller numbers)
       let isValid = true;
-      if (field === 'age' && numValue > 0 && (numValue < 14 || numValue > 100)) isValid = false;
-      if (field === 'height' && numValue > 0 && (numValue < 140 || numValue > 220)) isValid = false;
-      if (field === 'weight' && numValue > 0 && (numValue < 40 || numValue > 200)) isValid = false;
+      if (field === 'age' && numValue > 100) isValid = false;
+      if (field === 'height' && numValue > 220) isValid = false;
+      if (field === 'weight' && numValue > 200) isValid = false;
 
       if (isValid || value === '') {
         setFormData({ ...formData, [field]: value });
