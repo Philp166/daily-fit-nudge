@@ -31,14 +31,41 @@ const Onboarding: React.FC = () => {
 
   const avatarOptions = [1, 2, 3, 4, 5, 6].map(n => `${formData.gender}-${n}`);
 
+  // Clamp number to range
+  const clamp = (value: number, min: number, max: number) => {
+    return Math.min(Math.max(value, min), max);
+  };
+
+  const handleNumberInput = (field: 'age' | 'height' | 'weight', value: string) => {
+    // Allow empty string or valid number
+    if (value === '' || /^\d+$/.test(value)) {
+      const numValue = parseInt(value) || 0;
+
+      // Validate ranges
+      let isValid = true;
+      if (field === 'age' && numValue > 0 && (numValue < 14 || numValue > 100)) isValid = false;
+      if (field === 'height' && numValue > 0 && (numValue < 140 || numValue > 220)) isValid = false;
+      if (field === 'weight' && numValue > 0 && (numValue < 40 || numValue > 200)) isValid = false;
+
+      if (isValid || value === '') {
+        setFormData({ ...formData, [field]: value });
+      }
+    }
+  };
+
   const handleSubmit = () => {
+    // Clamp values to valid ranges
+    const age = clamp(parseInt(formData.age) || 25, 14, 100);
+    const height = clamp(parseInt(formData.height) || 170, 140, 220);
+    const weight = clamp(parseInt(formData.weight) || 70, 40, 200);
+
     setProfile({
       name: formData.name.trim(),
       gender: formData.gender,
       avatar: formData.avatar,
-      age: parseInt(formData.age) || 25,
-      height: parseInt(formData.height) || 170,
-      weight: parseInt(formData.weight) || 70,
+      age,
+      height,
+      weight,
       goal: formData.goal,
       dailyCalorieGoal: 0, // Will be calculated
     });
@@ -48,13 +75,13 @@ const Onboarding: React.FC = () => {
     {
       value: 'lose',
       label: 'Похудеть',
-      icon: <Flame size={28} className="text-orange-500" />,
+      icon: <Flame size={24} className="text-orange-500" />,
     },
     {
       value: 'maintain',
       label: 'Поддерживать форму',
       icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
           <path d="M18 20V10M12 20V4M6 20v-6"/>
         </svg>
       ),
@@ -62,18 +89,23 @@ const Onboarding: React.FC = () => {
     {
       value: 'gain',
       label: 'Набрать массу',
-      icon: <TrendingUp size={28} className="text-blue-500" />,
+      icon: <TrendingUp size={24} className="text-blue-500" />,
     },
   ];
 
   const isStepValid = () => {
     if (step === 0) return formData.name.trim().length > 0;
-    if (step === 3) return formData.age && formData.height && formData.weight;
+    if (step === 3) {
+      const age = parseInt(formData.age);
+      const height = parseInt(formData.height);
+      const weight = parseInt(formData.weight);
+      return age >= 14 && age <= 100 && height >= 140 && height <= 220 && weight >= 40 && weight <= 200;
+    }
     return true;
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col px-6 pt-safe-top pb-safe-bottom" style={{ fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif' }}>
+    <div className="min-h-screen bg-white flex flex-col px-6 pb-8" style={{ fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif', paddingTop: 'max(env(safe-area-inset-top), 20px)' }}>
       {/* Progress dots */}
       <div className="flex justify-center gap-2 py-8">
         {[0, 1, 2, 3, 4].map((i) => (
@@ -203,8 +235,10 @@ const Onboarding: React.FC = () => {
                 ref={ageInputRef}
                 type="number"
                 inputMode="numeric"
+                min="14"
+                max="100"
                 value={formData.age}
-                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                onChange={(e) => handleNumberInput('age', e.target.value)}
                 placeholder="Возраст"
                 className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
               />
@@ -212,8 +246,10 @@ const Onboarding: React.FC = () => {
               <input
                 type="number"
                 inputMode="numeric"
+                min="140"
+                max="220"
                 value={formData.height}
-                onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                onChange={(e) => handleNumberInput('height', e.target.value)}
                 placeholder="Рост"
                 className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
               />
@@ -221,8 +257,10 @@ const Onboarding: React.FC = () => {
               <input
                 type="number"
                 inputMode="numeric"
+                min="40"
+                max="200"
                 value={formData.weight}
-                onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                onChange={(e) => handleNumberInput('weight', e.target.value)}
                 placeholder="Вес"
                 className="w-full py-5 px-6 bg-gray-100 rounded-3xl text-gray-900 text-lg outline-none focus:bg-gray-200 transition-colors"
               />
@@ -250,7 +288,9 @@ const Onboarding: React.FC = () => {
                   }`}
                   style={{ touchAction: 'manipulation' }}
                 >
-                  <div className="flex items-center justify-center w-12 h-12">
+                  <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
+                    formData.goal === goal.value ? 'bg-white' : 'bg-white/50'
+                  }`}>
                     {goal.icon}
                   </div>
                   <span>{goal.label}</span>
@@ -262,7 +302,7 @@ const Onboarding: React.FC = () => {
       </motion.div>
 
       {/* Navigation */}
-      <div className="pt-6 pb-6">
+      <div className="pt-6">
         <button
           type="button"
           onClick={() => {
