@@ -171,10 +171,15 @@ const Onboarding: React.FC = () => {
                 }`}
                 style={{ touchAction: 'manipulation' }}
               >
-                <div className={`relative w-12 h-12 rounded-full ${
+                <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
                   formData.gender === 'male' ? 'bg-white' : 'bg-white/50'
                 }`}>
-                  <span className="absolute inset-0 flex items-center justify-center text-2xl leading-none" style={{ transform: 'translateY(-1px)' }}>♂</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="10" cy="14" r="6"/>
+                    <line x1="14.5" y1="9.5" x2="20" y2="4"/>
+                    <line x1="17" y1="4" x2="20" y2="4"/>
+                    <line x1="20" y1="4" x2="20" y2="7"/>
+                  </svg>
                 </div>
                 <span>Мужской</span>
               </button>
@@ -189,10 +194,14 @@ const Onboarding: React.FC = () => {
                 }`}
                 style={{ touchAction: 'manipulation' }}
               >
-                <div className={`relative w-12 h-12 rounded-full ${
+                <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
                   formData.gender === 'female' ? 'bg-white' : 'bg-white/50'
                 }`}>
-                  <span className="absolute inset-0 flex items-center justify-center text-2xl leading-none" style={{ transform: 'translateY(-1px)' }}>♀</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="8" r="6"/>
+                    <line x1="12" y1="14" x2="12" y2="21"/>
+                    <line x1="9" y1="18" x2="15" y2="18"/>
+                  </svg>
                 </div>
                 <span>Женский</span>
               </button>
