@@ -29,13 +29,16 @@ const DashboardView: React.FC = () => {
         {/* Constructor Card - Blue */}
         <motion.div
           style={{ y: card1Y, scale: card1Scale }}
-          className="relative z-30 px-5"
+          className="relative z-30"
         >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-[32px] p-8 shadow-xl"
+            className="rounded-[32px] p-8 shadow-xl"
+            style={{
+              background: 'linear-gradient(to bottom right, #3699FF, #80BCFF)'
+            }}
           >
             {/* Icon and content */}
             <div className="flex items-start gap-5 mb-8">
@@ -67,13 +70,16 @@ const DashboardView: React.FC = () => {
         {/* Workouts Card - Orange/Coral */}
         <motion.div
           style={{ y: card2Y, scale: card2Scale }}
-          className="relative z-20 px-5 -mt-6"
+          className="relative z-20 -mt-6"
         >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 rounded-[32px] p-8 shadow-xl"
+            className="rounded-[32px] p-8 shadow-xl"
+            style={{
+              background: 'linear-gradient(to bottom right, #FF5353, #FFD48F)'
+            }}
           >
             {/* White pill badge */}
             <div className="inline-block px-4 py-2 bg-white/90 rounded-full mb-6">
@@ -102,13 +108,16 @@ const DashboardView: React.FC = () => {
         {/* Analytics Card - Green */}
         <motion.div
           style={{ y: card3Y }}
-          className="relative z-10 px-5 -mt-6 pb-32"
+          className="relative z-10 -mt-6 pb-32"
         >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-gradient-to-br from-green-400 to-green-600 rounded-[32px] p-8 shadow-xl"
+            className="rounded-[32px] p-8 shadow-xl"
+            style={{
+              background: 'linear-gradient(to bottom right, #9DFF53, #C2FF95)'
+            }}
           >
             {/* White pill badge */}
             <div className="inline-block px-4 py-2 bg-white/90 rounded-full mb-8">
