@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { generateId } from '@/lib/utils';
 
 export interface UserProfile {
   name: string;
@@ -12,43 +11,11 @@ export interface UserProfile {
   dailyCalorieGoal: number;
 }
 
-export interface WorkoutSession {
-  id: string;
-  name: string;
-  duration: number; // minutes (actual workout time)
-  actualWorkTime: number; // seconds of actual work performed
-  caloriesBurned: number;
-  exercisesCount: number;
-  setsCount: number;
-  completedAt: Date;
-}
-
-export interface CustomWorkout {
-  id: string;
-  name: string;
-  exercises: {
-    exerciseId: string;
-    sets: number;
-    workTime: number;
-    restTime: number;
-  }[];
-  isFavorite: boolean;
-  createdAt: Date;
-}
-
 interface UserContextType {
   profile: UserProfile | null;
   setProfile: (profile: UserProfile) => void;
   isOnboarded: boolean;
   todayCalories: number;
-  addCalories: (calories: number) => void;
-  workoutSessions: WorkoutSession[];
-  addWorkoutSession: (session: Omit<WorkoutSession, 'id' | 'completedAt'>) => void;
-  customWorkouts: CustomWorkout[];
-  addCustomWorkout: (workout: Omit<CustomWorkout, 'id' | 'createdAt'>) => void;
-  toggleFavorite: (workoutId: string) => void;
-  deleteCustomWorkout: (workoutId: string) => void;
-  getTodaySessions: () => WorkoutSession[];
   getWeekProgress: () => { current: number; goal: number };
   logout: () => void;
 }
@@ -95,16 +62,12 @@ const calculateDailyBurnGoal = (
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [profile, setProfileState] = useState<UserProfile | null>(null);
   const [todayCalories, setTodayCalories] = useState(0);
-  const [workoutSessions, setWorkoutSessions] = useState<WorkoutSession[]>([]);
-  const [customWorkouts, setCustomWorkouts] = useState<CustomWorkout[]>([]);
 
   // Load data from localStorage on mount
   useEffect(() => {
     const savedProfile = localStorage.getItem('interfit_profile');
     const savedCalories = localStorage.getItem('interfit_today_calories');
     const savedDate = localStorage.getItem('interfit_calories_date');
-    const savedSessions = localStorage.getItem('interfit_sessions');
-    const savedCustomWorkouts = localStorage.getItem('interfit_custom_workouts');
 
     if (savedProfile) {
       setProfileState(JSON.parse(savedProfile));
@@ -117,20 +80,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } else {
       setTodayCalories(0);
       localStorage.setItem('interfit_calories_date', today);
-    }
-
-    if (savedSessions) {
-      setWorkoutSessions(JSON.parse(savedSessions).map((s: WorkoutSession) => ({
-        ...s,
-        completedAt: new Date(s.completedAt),
-      })));
-    }
-
-    if (savedCustomWorkouts) {
-      setCustomWorkouts(JSON.parse(savedCustomWorkouts).map((w: CustomWorkout) => ({
-        ...w,
-        createdAt: new Date(w.createdAt),
-      })));
     }
   }, []);
 
@@ -145,14 +94,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('interfit_today_calories', todayCalories.toString());
   }, [todayCalories]);
 
-  useEffect(() => {
-    localStorage.setItem('interfit_sessions', JSON.stringify(workoutSessions));
-  }, [workoutSessions]);
-
-  useEffect(() => {
-    localStorage.setItem('interfit_custom_workouts', JSON.stringify(customWorkouts));
-  }, [customWorkouts]);
-
   const setProfile = (newProfile: UserProfile) => {
     const dailyCalorieGoal = calculateDailyBurnGoal(
       newProfile.weight,
@@ -164,74 +105,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setProfileState({ ...newProfile, dailyCalorieGoal });
   };
 
-  const addCalories = (calories: number) => {
-    setTodayCalories(prev => prev + calories);
-  };
-
-  const addWorkoutSession = (session: Omit<WorkoutSession, 'id' | 'completedAt'>) => {
-    const newSession: WorkoutSession = {
-      ...session,
-      id: generateId(),
-      completedAt: new Date(),
-    };
-    setWorkoutSessions(prev => [newSession, ...prev]);
-    addCalories(session.caloriesBurned);
-  };
-
-  const addCustomWorkout = (workout: Omit<CustomWorkout, 'id' | 'createdAt'>) => {
-    // Check if a workout with the same name already exists
-    const existingIndex = customWorkouts.findIndex(w => w.name === workout.name);
-    
-    if (existingIndex !== -1) {
-      // Update existing workout but preserve its favorite status and id
-      setCustomWorkouts(prev => prev.map((w, idx) => 
-        idx === existingIndex 
-          ? { ...w, exercises: workout.exercises, isFavorite: workout.isFavorite }
-          : w
-      ));
-    } else {
-      // Add new workout
-      const newWorkout: CustomWorkout = {
-        ...workout,
-        id: generateId(),
-        createdAt: new Date(),
-      };
-      setCustomWorkouts(prev => [newWorkout, ...prev]);
-    }
-  };
-
-  const toggleFavorite = (workoutId: string) => {
-    setCustomWorkouts(prev =>
-      prev.map(w =>
-        w.id === workoutId ? { ...w, isFavorite: !w.isFavorite } : w
-      )
-    );
-  };
-
-  const deleteCustomWorkout = (workoutId: string) => {
-    setCustomWorkouts(prev => prev.filter(w => w.id !== workoutId));
-  };
-
-  const getTodaySessions = (): WorkoutSession[] => {
-    const today = new Date().toDateString();
-    return workoutSessions.filter(
-      s => new Date(s.completedAt).toDateString() === today
-    );
-  };
-
   const getWeekProgress = () => {
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    const weekSessions = workoutSessions.filter(
-      s => new Date(s.completedAt) >= startOfWeek
-    );
-
     // Weekly goal = daily burn goal × 7 days
     const weeklyGoal = (profile?.dailyCalorieGoal || 300) * 7;
-    const current = weekSessions.reduce((sum, s) => sum + s.caloriesBurned, 0);
+    const current = 0; // No workout sessions yet, always 0
 
     return {
       current,
@@ -242,8 +119,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     setProfileState(null);
     setTodayCalories(0);
-    setWorkoutSessions([]);
-    setCustomWorkouts([]);
     // Clear all app data from localStorage
     localStorage.clear();
   };
@@ -255,14 +130,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setProfile,
         isOnboarded: !!profile,
         todayCalories,
-        addCalories,
-        workoutSessions,
-        addWorkoutSession,
-        customWorkouts,
-        addCustomWorkout,
-        toggleFavorite,
-        deleteCustomWorkout,
-        getTodaySessions,
         getWeekProgress,
         logout,
       }}
