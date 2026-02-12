@@ -171,10 +171,10 @@ const Onboarding: React.FC = () => {
                 }`}
                 style={{ touchAction: 'manipulation' }}
               >
-                <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
+                <div className={`relative w-12 h-12 rounded-full ${
                   formData.gender === 'male' ? 'bg-white' : 'bg-white/50'
                 }`}>
-                  <span className="text-2xl leading-none flex items-center justify-center">♂</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-2xl leading-none" style={{ transform: 'translateY(-1px)' }}>♂</span>
                 </div>
                 <span>Мужской</span>
               </button>
@@ -189,10 +189,10 @@ const Onboarding: React.FC = () => {
                 }`}
                 style={{ touchAction: 'manipulation' }}
               >
-                <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
+                <div className={`relative w-12 h-12 rounded-full ${
                   formData.gender === 'female' ? 'bg-white' : 'bg-white/50'
                 }`}>
-                  <span className="text-2xl leading-none flex items-center justify-center">♀</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-2xl leading-none" style={{ transform: 'translateY(-1px)' }}>♀</span>
                 </div>
                 <span>Женский</span>
               </button>
