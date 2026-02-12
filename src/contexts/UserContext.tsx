@@ -244,10 +244,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setTodayCalories(0);
     setWorkoutSessions([]);
     setCustomWorkouts([]);
-    localStorage.removeItem('interfit_profile');
-    localStorage.removeItem('interfit_today_calories');
-    localStorage.removeItem('interfit_sessions');
-    localStorage.removeItem('interfit_custom_workouts');
+    // Clear all app data from localStorage
+    localStorage.clear();
   };
 
   return (
