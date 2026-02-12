@@ -1,0 +1,20 @@
+<svg width="291" height="291" viewBox="0 0 291 291" fill="none" xmlns="http://www.w3.org/2000/svg">
+<foreignObject x="-25.4625" y="-25.4625" width="341.925" height="341.925"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(12.73px);clip-path:url(#bgblur_0_151_1651_clip_path);height:100%;width:100%"></div></foreignObject><g data-figma-bg-blur-radius="25.4625">
+<rect x="1.81875" y="1.81875" width="287.362" height="287.362" fill="url(#paint0_linear_151_1651)"/>
+<rect x="1.81875" y="1.81875" width="287.362" height="287.362" stroke="url(#paint1_linear_151_1651)" stroke-width="3.6375"/>
+</g>
+<path d="M99.62 116.629C100.274 114.34 102.366 112.762 104.746 112.762H123.51C127.052 112.762 129.609 116.152 128.636 119.558L123.153 138.749C122.499 141.037 120.407 142.615 118.027 142.615H99.2625C95.7209 142.615 93.1639 139.225 94.1368 135.82L99.62 116.629Z" fill="white"/>
+<path d="M133.737 116.629C134.391 114.34 136.483 112.762 138.863 112.762H200.274C203.815 112.762 206.372 116.152 205.399 119.558L199.916 138.749C199.262 141.037 197.171 142.615 194.791 142.615H133.38C129.838 142.615 127.281 139.225 128.254 135.82L133.737 116.629Z" fill="white"/>
+<path d="M91.0868 150.746C91.7406 148.458 93.8324 146.88 96.2125 146.88H191.741C195.282 146.88 197.839 150.27 196.866 153.675L191.383 172.866C190.729 175.155 188.638 176.733 186.257 176.733H90.7293C87.1876 176.733 84.6307 173.343 85.6036 169.937L91.0868 150.746Z" fill="white"/>
+<defs>
+<clipPath id="bgblur_0_151_1651_clip_path" transform="translate(25.4625 25.4625)"><rect x="1.81875" y="1.81875" width="287.362" height="287.362"/>
+</clipPath><linearGradient id="paint0_linear_151_1651" x1="145.5" y1="0" x2="145.5" y2="291" gradientUnits="userSpaceOnUse">
+<stop stop-color="#3196FF"/>
+<stop offset="1" stop-color="#A3CEFF"/>
+</linearGradient>
+<linearGradient id="paint1_linear_151_1651" x1="-6.07386e-08" y1="68.331" x2="291" y2="222.669" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+</defs>
+</svg>
