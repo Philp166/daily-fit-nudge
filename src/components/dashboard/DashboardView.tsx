@@ -17,32 +17,6 @@ const DashboardView: React.FC = () => {
   const dragControls2 = useDragControls();
   const dragControls3 = useDragControls();
 
-  // Long press таймеры
-  const longPressTimer = React.useRef<NodeJS.Timeout | null>(null);
-
-  const handleLongPressStart = (e: React.PointerEvent, cardId: number, controls: any) => {
-    // Запускаем таймер на 200ms для long press
-    longPressTimer.current = setTimeout(() => {
-      controls.start(e);
-    }, 200);
-  };
-
-  const handleLongPressEnd = () => {
-    // Отменяем таймер если пользователь отпустил раньше
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  };
-
-  const handleLongPressMove = () => {
-    // Отменяем long press если пользователь начал скроллить
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  };
-
   const getZIndex = (cardId: number) => {
     if (draggedCard === cardId) return 50;
     const position = cardOrder.indexOf(cardId);
@@ -129,16 +103,24 @@ const DashboardView: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing select-none"
+            className="rounded-[32px] p-8 shadow-xl select-none relative"
             style={{
               background: 'linear-gradient(to bottom right, #3699FF, #80BCFF)'
             }}
-            onPointerDown={(e) => handleLongPressStart(e, 1, dragControls1)}
-            onPointerMove={handleLongPressMove}
-            onPointerUp={handleLongPressEnd}
-            onPointerCancel={handleLongPressEnd}
-            onPointerLeave={handleLongPressEnd}
           >
+            {/* Drag Handle Strip */}
+            <div
+              onPointerDown={(e) => dragControls1.start(e)}
+              className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
+              style={{
+                background: 'linear-gradient(to bottom, rgba(255,255,255,0.1), transparent)',
+                borderTopLeftRadius: '32px',
+                borderTopRightRadius: '32px'
+              }}
+            >
+              <div className="w-12 h-1 bg-white/30 rounded-full" />
+            </div>
+
             {/* Icon and content */}
             <div className="flex items-start gap-5 mb-8">
               <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
@@ -193,16 +175,24 @@ const DashboardView: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing select-none"
+            className="rounded-[32px] p-8 shadow-xl select-none relative"
             style={{
               background: 'linear-gradient(to bottom right, #FF5353, #FFD48F)'
             }}
-            onPointerDown={(e) => handleLongPressStart(e, 2, dragControls2)}
-            onPointerMove={handleLongPressMove}
-            onPointerUp={handleLongPressEnd}
-            onPointerCancel={handleLongPressEnd}
-            onPointerLeave={handleLongPressEnd}
           >
+            {/* Drag Handle Strip */}
+            <div
+              onPointerDown={(e) => dragControls2.start(e)}
+              className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
+              style={{
+                background: 'linear-gradient(to bottom, rgba(255,255,255,0.1), transparent)',
+                borderTopLeftRadius: '32px',
+                borderTopRightRadius: '32px'
+              }}
+            >
+              <div className="w-12 h-1 bg-white/30 rounded-full" />
+            </div>
+
             {/* White pill badge */}
             <div className="inline-block px-4 py-2 bg-white/90 rounded-full mb-6">
               <span className="text-sm font-medium text-gray-900">Готовые тренировки</span>
@@ -254,16 +244,24 @@ const DashboardView: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="rounded-[32px] p-8 shadow-xl cursor-grab active:cursor-grabbing select-none"
+            className="rounded-[32px] p-8 shadow-xl select-none relative"
             style={{
               background: 'linear-gradient(to bottom right, #9DFF53, #C2FF95)'
             }}
-            onPointerDown={(e) => handleLongPressStart(e, 3, dragControls3)}
-            onPointerMove={handleLongPressMove}
-            onPointerUp={handleLongPressEnd}
-            onPointerCancel={handleLongPressEnd}
-            onPointerLeave={handleLongPressEnd}
           >
+            {/* Drag Handle Strip */}
+            <div
+              onPointerDown={(e) => dragControls3.start(e)}
+              className="absolute top-0 left-0 right-0 h-12 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
+              style={{
+                background: 'linear-gradient(to bottom, rgba(255,255,255,0.1), transparent)',
+                borderTopLeftRadius: '32px',
+                borderTopRightRadius: '32px'
+              }}
+            >
+              <div className="w-12 h-1 bg-white/30 rounded-full" />
+            </div>
+
             {/* White pill badge */}
             <div className="inline-block px-4 py-2 bg-white/90 rounded-full mb-8">
               <span className="text-sm font-medium text-gray-900">Аналитика</span>
