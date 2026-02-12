@@ -10,7 +10,6 @@ const DashboardView: React.FC = () => {
   const { scrollY } = useScroll();
   const [cardOrder, setCardOrder] = React.useState([1, 2, 3]);
   const [draggedCard, setDraggedCard] = React.useState<number | null>(null);
-  const [targetCard, setTargetCard] = React.useState<number | null>(null);
 
   // Drag controls для каждой карточки
   const dragControls1 = useDragControls();
@@ -31,40 +30,12 @@ const DashboardView: React.FC = () => {
     setDraggedCard(cardId);
   };
 
-  const handleDrag = (_event: any, info: any) => {
-    // Определяем, над какой карточкой находится перетаскиваемая
-    const dragY = info.point.y;
-
-    // Простая логика: если тянем вверх, target - предыдущая карточка, если вниз - следующая
-    if (draggedCard) {
-      const currentIndex = cardOrder.indexOf(draggedCard);
-
-      if (info.offset.y < -80 && currentIndex > 0) {
-        // Тянем вверх - меняемся с предыдущей
-        setTargetCard(cardOrder[currentIndex - 1]);
-      } else if (info.offset.y > 80 && currentIndex < cardOrder.length - 1) {
-        // Тянем вниз - меняемся со следующей
-        setTargetCard(cardOrder[currentIndex + 1]);
-      } else {
-        setTargetCard(null);
-      }
-    }
-  };
-
   const handleDragEnd = () => {
-    if (draggedCard && targetCard) {
-      // Меняем карточки местами
-      setCardOrder(prev => {
-        const newOrder = [...prev];
-        const draggedIndex = newOrder.indexOf(draggedCard);
-        const targetIndex = newOrder.indexOf(targetCard);
-        [newOrder[draggedIndex], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[draggedIndex]];
-        return newOrder;
-      });
+    if (draggedCard) {
+      // Циклическая ротация: первая карточка уходит в конец
+      setCardOrder(prev => [...prev.slice(1), prev[0]]);
     }
-
     setDraggedCard(null);
-    setTargetCard(null);
   };
 
   return (
@@ -85,7 +56,6 @@ const DashboardView: React.FC = () => {
           dragElastic={0.05}
           dragMomentum={false}
           onDragStart={() => handleDragStart(1)}
-          onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           style={{
             zIndex: getZIndex(1),
@@ -93,7 +63,6 @@ const DashboardView: React.FC = () => {
           }}
           animate={{
             rotate: draggedCard === 1 ? 5 : 0,
-            opacity: targetCard === 1 ? 0.5 : 1,
             y: draggedCard === 1 ? undefined : 0
           }}
           transition={{ duration: 0.2 }}
@@ -157,7 +126,6 @@ const DashboardView: React.FC = () => {
           dragElastic={0.05}
           dragMomentum={false}
           onDragStart={() => handleDragStart(2)}
-          onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           style={{
             zIndex: getZIndex(2),
@@ -165,7 +133,6 @@ const DashboardView: React.FC = () => {
           }}
           animate={{
             rotate: draggedCard === 2 ? 5 : 0,
-            opacity: targetCard === 2 ? 0.5 : 1,
             y: draggedCard === 2 ? undefined : 0
           }}
           transition={{ duration: 0.2 }}
@@ -226,7 +193,6 @@ const DashboardView: React.FC = () => {
           dragElastic={0.05}
           dragMomentum={false}
           onDragStart={() => handleDragStart(3)}
-          onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           style={{
             zIndex: getZIndex(3),
@@ -234,7 +200,6 @@ const DashboardView: React.FC = () => {
           }}
           animate={{
             rotate: draggedCard === 3 ? 5 : 0,
-            opacity: targetCard === 3 ? 0.5 : 1,
             y: draggedCard === 3 ? undefined : 0
           }}
           transition={{ duration: 0.2 }}
