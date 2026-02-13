@@ -153,12 +153,11 @@ const DashboardView: React.FC = () => {
               Конструктор{'\n'}тренировок
             </h2>
           </div>
-          <div className="w-[45%] h-full flex items-center justify-end">
+          <div className="w-[40%] flex items-center justify-center p-4">
             <img
               src={constructorImg}
               alt="Constructor"
-              className="w-full h-[180px] object-cover object-center"
-              style={{ borderTopRightRadius: '24px', borderBottomRightRadius: '24px' }}
+              className="h-[140px] object-contain"
             />
           </div>
         </div>
@@ -186,12 +185,11 @@ const DashboardView: React.FC = () => {
               Готовых тренировок
             </p>
           </div>
-          <div className="w-[45%] h-full flex items-center justify-end">
+          <div className="w-[40%] flex items-center justify-center p-4">
             <img
               src={workoutsImg}
               alt="Workouts"
-              className="w-full h-[180px] object-cover object-center"
-              style={{ borderTopRightRadius: '24px', borderBottomRightRadius: '24px' }}
+              className="h-[120px] object-contain"
             />
           </div>
         </div>
