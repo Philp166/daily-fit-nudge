@@ -1,234 +1,202 @@
-import React from 'react';
-import { motion, useScroll, useTransform, useDragControls } from 'framer-motion';
-
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
-import CaloriesWidget from '@/components/dashboard/CaloriesWidget';
 import CircularProgress from '@/components/dashboard/CircularProgress';
+import logoSvg from '@/assets/logo.svg';
+import constructorImg from '@/assets/constructor-img.jpg';
+import workoutsImg from '@/assets/workouts-img.jpg';
 
-interface CardData {
-  id: number;
-  background: string;
-  badge?: string;
-  icon: string;
-  title?: string;
-  description?: string;
-  buttonText?: string;
-  bigNumber?: string;
-  bigNumberLabel?: string;
-  showProgress?: boolean;
-}
-
-const cardData: CardData[] = [
-  {
-    id: 1,
-    background: 'linear-gradient(to bottom right, #3699FF, #80BCFF)',
-    icon: '💪',
-    title: 'Создай свою тренировку',
-    description: 'Собери идеальную тренировочную программу под себя',
-    buttonText: 'Начать',
-  },
-  {
-    id: 2,
-    background: 'linear-gradient(to bottom right, #FF5353, #FFD48F)',
-    badge: 'Готовые тренировки',
-    icon: '🏃',
-    bigNumber: '37',
-    bigNumberLabel: 'готовых программ',
-  },
-  {
-    id: 3,
-    background: 'linear-gradient(to bottom right, #9DFF53, #C2FF95)',
-    badge: 'Аналитика',
-    showProgress: true,
-  },
-];
+type Period = 'day' | 'week' | 'month';
 
 const DashboardView: React.FC = () => {
-  const { profile } = useUser();
-  const { scrollY } = useScroll();
-  const [cardOrder, setCardOrder] = React.useState([1, 2, 3]);
-  const [draggedCard, setDraggedCard] = React.useState<number | null>(null);
+  const { todayCalories, profile } = useUser();
+  const goal = profile?.dailyCalorieGoal || 800;
+  const progress = Math.min(Math.round((todayCalories / goal) * 100), 100);
+  const [period, setPeriod] = useState<Period>('day');
 
-  // Drag controls для каждой карточки
-  const dragControls1 = useDragControls();
-  const dragControls2 = useDragControls();
-  const dragControls3 = useDragControls();
-
-  const getZIndex = (cardId: number) => {
-    if (draggedCard === cardId) return 50;
-    const position = cardOrder.indexOf(cardId);
-    return 30 - position * 10;
-  };
-
-  const getDragControls = (cardId: number) => {
-    if (cardId === 1) return dragControls1;
-    if (cardId === 2) return dragControls2;
-    return dragControls3;
-  };
-
-  const handleDragStart = (cardId: number) => {
-    setDraggedCard(cardId);
-  };
-
-  const handleDragEnd = () => {
-    if (draggedCard) {
-      // Циклическая ротация: первая карточка уходит в конец
-      setCardOrder(prev => [...prev.slice(1), prev[0]]);
+  // Stagger animation config
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08, delayChildren: 0.1 }
     }
-    setDraggedCard(null);
   };
 
-  const renderCardContent = (card: CardData, controls: ReturnType<typeof useDragControls>) => {
-    return (
-      <>
-        {/* Badge if exists */}
-        {card.badge && (
-          <div className={`inline-block px-4 py-2 bg-white/90 rounded-full ${card.title ? 'mb-6' : 'mb-8'}`}>
-            <span className="text-sm font-medium text-gray-900">{card.badge}</span>
-          </div>
-        )}
-
-        {/* Constructor card layout */}
-        {card.title && (
-          <>
-            <div className="flex items-start gap-5 mb-8">
-              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
-                <span className="text-5xl">{card.icon}</span>
-              </div>
-              <div className="flex-1 pt-2">
-                <h2 className="text-3xl font-semibold text-white leading-tight">
-                  {card.title}
-                </h2>
-              </div>
-            </div>
-            {card.description && (
-              <p className="text-white/90 text-base mb-8 leading-relaxed">
-                {card.description}
-              </p>
-            )}
-            {card.buttonText && (
-              <button
-                type="button"
-                className="w-full py-4 rounded-full bg-white text-blue-600 text-base font-semibold active:scale-[0.98] transition-all shadow-lg"
-                style={{ touchAction: 'manipulation' }}
-              >
-                {card.buttonText}
-              </button>
-            )}
-          </>
-        )}
-
-        {/* Big number layout */}
-        {card.bigNumber && (
-          <div className="flex items-center justify-between">
-            <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <span className="text-5xl">{card.icon}</span>
-            </div>
-            <div className="text-right">
-              <div className="text-[120px] font-extralight text-white leading-none">
-                {card.bigNumber}
-              </div>
-              {card.bigNumberLabel && (
-                <p className="text-white/90 text-lg font-medium mt-2">
-                  {card.bigNumberLabel}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Progress layout */}
-        {card.showProgress && (
-          <div className="flex items-center justify-between">
-            <div className="relative">
-              <CircularProgress value={0} size={120} strokeWidth={10} delay={0.3} showValue={false} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-3xl font-light text-white">0%</span>
-              </div>
-            </div>
-            <div className="text-right flex-1 ml-6">
-              <div className="text-[72px] font-extralight text-white leading-none mb-2">
-                0<span className="text-5xl text-white/80">/2100</span>
-              </div>
-              <p className="text-white/90 text-lg font-medium">
-                калорий за неделю
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Drag Handle Strip - increased tap area */}
-        <div
-          onPointerDown={(e) => controls.start(e)}
-          className="absolute bottom-0 left-0 right-0 h-24 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none pt-6"
-          style={{
-            background: 'linear-gradient(to top, rgba(255,255,255,0.15), transparent)',
-            borderBottomLeftRadius: '32px',
-            borderBottomRightRadius: '32px'
-          }}
-        >
-          <div className="w-12 h-1 bg-white/40 rounded-full" />
-        </div>
-      </>
-    );
+  const fadeUp = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Calories Widget with padding */}
-      <div className="px-5 pt-safe-top">
-        <CaloriesWidget />
-      </div>
+    <motion.div
+      className="min-h-screen bg-background px-4 pt-safe-top"
+      variants={container}
+      initial="hidden"
+      animate="show"
+    >
+      {/* Header: Logo + Period Selector */}
+      <motion.div variants={fadeUp} className="flex items-center justify-between mb-5 px-1">
+        <img src={logoSvg} alt="Interfit" className="h-6 opacity-90" />
 
-      {/* Stacked Cards - full width, overlapping */}
-      <div className="relative mt-6">
-        {cardOrder.map((cardId, index) => {
-          const card = cardData.find(c => c.id === cardId)!;
-          const controls = getDragControls(cardId);
-
-          return (
-            <motion.div
-              key={cardId}
-              drag="y"
-              dragListener={false}
-              dragControls={controls}
-              dragConstraints={{ top: -100, bottom: 100 }}
-              dragElastic={0.05}
-              dragMomentum={false}
-              onDragStart={() => handleDragStart(cardId)}
-              onDragEnd={handleDragEnd}
-              style={{
-                zIndex: getZIndex(cardId)
-              }}
-              animate={{
-                rotate: draggedCard === cardId ? 5 : 0,
-                scale: draggedCard === cardId ? 1.02 : 1,
-                y: draggedCard === cardId ? undefined : 0
-              }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 25,
-                mass: 0.5
-              }}
-              className={`relative ${index > 0 ? '-mt-16' : ''} ${index === cardOrder.length - 1 ? 'pb-16' : ''}`}
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-                className="rounded-[32px] p-8 pb-20 shadow-xl select-none relative"
-                style={{
-                  background: card.background
-                }}
+        <div className="flex items-center bg-[hsl(180,30%,20%)] rounded-full p-1">
+          {(['day', 'week', 'month'] as Period[]).map((p) => {
+            const label = p === 'day' ? 'Д' : p === 'week' ? 'Н' : 'М';
+            const isActive = period === p;
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPeriod(p)}
+                className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                  isActive ? 'text-white' : 'text-white/40'
+                }`}
+                style={{ touchAction: 'manipulation' }}
               >
-                {renderCardContent(card, controls)}
-              </motion.div>
+                {isActive && (
+                  <motion.div
+                    layoutId="periodSelector"
+                    className="absolute inset-0 bg-[hsl(180,30%,28%)] rounded-full"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* Analytics Card */}
+      <motion.div
+        variants={fadeUp}
+        className="glass rounded-3xl p-6 pb-8 mb-3 relative overflow-hidden"
+        whileTap={{ scale: 0.985 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      >
+        {/* Top row: Calories + Ring */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <motion.div
+              className="text-7xl font-bold text-white leading-none"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              {todayCalories}
             </motion.div>
-          );
-        })}
-      </div>
-    </div>
+            <p className="text-white/60 text-base mt-2">
+              ккал из {goal}
+            </p>
+          </div>
+
+          <div className="relative">
+            <CircularProgress
+              value={progress}
+              size={80}
+              strokeWidth={8}
+              delay={0.4}
+              showValue={false}
+              color="#FF8A00"
+              trackColor="rgba(255,255,255,0.1)"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-white text-base font-semibold">{progress}%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats row */}
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold text-white">2</span>
+              <span className="text-lg text-white/70">трен.</span>
+            </div>
+            <p className="text-white/40 text-xs mt-0.5">физ.нагрузка</p>
+          </div>
+
+          <div className="flex-1 text-center">
+            <div className="flex items-baseline gap-1 justify-center">
+              <span className="text-3xl font-bold text-white">67</span>
+              <span className="text-lg text-white/70">мин.</span>
+            </div>
+            <p className="text-white/40 text-xs mt-0.5">время активности</p>
+          </div>
+
+          <div className="flex-1 text-right">
+            <div className="flex items-baseline gap-1 justify-end">
+              <span className="text-3xl font-bold text-white">14</span>
+              <span className="text-lg text-white/70">упр.</span>
+            </div>
+            <p className="text-white/40 text-xs mt-0.5">зоны роста</p>
+          </div>
+        </div>
+
+        {/* Drag indicator */}
+        <div className="flex justify-center mt-5">
+          <div className="w-10 h-1 bg-white/20 rounded-full" />
+        </div>
+      </motion.div>
+
+      {/* Constructor Card */}
+      <motion.div
+        variants={fadeUp}
+        className="rounded-3xl overflow-hidden mb-3 relative"
+        style={{ backgroundColor: '#F5941D' }}
+        whileTap={{ scale: 0.975 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      >
+        <div className="flex items-center justify-between min-h-[180px]">
+          <div className="p-6 pr-0 flex-1 z-10">
+            <h2 className="text-[28px] font-bold text-white leading-tight">
+              Конструктор{'\n'}тренировок
+            </h2>
+          </div>
+          <div className="w-[45%] h-full flex items-center justify-end">
+            <img
+              src={constructorImg}
+              alt="Constructor"
+              className="w-full h-[180px] object-cover object-center"
+              style={{ borderTopRightRadius: '24px', borderBottomRightRadius: '24px' }}
+            />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Workouts Base Card */}
+      <motion.div
+        variants={fadeUp}
+        className="rounded-3xl overflow-hidden mb-6 relative"
+        style={{ backgroundColor: '#4ECDC4' }}
+        whileTap={{ scale: 0.975 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      >
+        <div className="flex items-center justify-between min-h-[180px]">
+          <div className="p-6 pr-0 flex-1 z-10">
+            <motion.div
+              className="text-7xl font-bold text-[#0D3B3B] leading-none"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              150
+            </motion.div>
+            <p className="text-[#0D3B3B]/70 text-base font-medium mt-2">
+              Готовых тренировок
+            </p>
+          </div>
+          <div className="w-[45%] h-full flex items-center justify-end">
+            <img
+              src={workoutsImg}
+              alt="Workouts"
+              className="w-full h-[180px] object-cover object-center"
+              style={{ borderTopRightRadius: '24px', borderBottomRightRadius: '24px' }}
+            />
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

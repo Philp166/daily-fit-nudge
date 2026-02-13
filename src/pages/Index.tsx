@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
 import { UserProvider, useUser } from '@/contexts/UserContext';
-import BottomNav from '@/components/layout/BottomNav';
+import BottomNav, { type Tab } from '@/components/layout/BottomNav';
 import DashboardView from '@/components/dashboard/DashboardView';
 import ProfileView from '@/components/profile/ProfileView';
 import Onboarding from '@/components/onboarding/Onboarding';
 import WelcomeScreen from '@/components/welcome/WelcomeScreen';
 
-type Tab = 'home' | 'profile';
+const TimerPlaceholder: React.FC = () => (
+  <div className="min-h-screen bg-background flex items-center justify-center px-6">
+    <div className="text-center">
+      <div className="text-5xl mb-4">⏱</div>
+      <h2 className="text-xl font-semibold text-white mb-2">Таймер</h2>
+      <p className="text-white/40 text-sm">Скоро здесь появится таймер тренировок</p>
+    </div>
+  </div>
+);
 
 const AppContent: React.FC = () => {
   const { isOnboarded } = useUser();
@@ -31,6 +39,10 @@ const AppContent: React.FC = () => {
             <DashboardView />
             <div className="min-h-[8rem] shrink-0" aria-hidden="true" />
           </>
+        )}
+
+        {activeTab === 'timer' && (
+          <TimerPlaceholder />
         )}
 
         {activeTab === 'profile' && (

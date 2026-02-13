@@ -7,6 +7,8 @@ interface CircularProgressProps {
   strokeWidth?: number;
   showValue?: boolean;
   delay?: number;
+  color?: string;
+  trackColor?: string;
 }
 
 const CircularProgress: React.FC<CircularProgressProps> = ({
@@ -15,6 +17,8 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
   strokeWidth = 6,
   showValue = true,
   delay = 0,
+  color = 'white',
+  trackColor = 'rgba(255, 255, 255, 0.2)',
 }) => {
   const [animatedValue, setAnimatedValue] = useState(0);
   const radius = (size - strokeWidth) / 2;
@@ -28,37 +32,33 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
     return () => clearTimeout(timer);
   }, [value, delay]);
 
-  const padding = 20; // Extra space for blur effect
-  const svgSize = size + padding * 2;
-  const centerOffset = padding + size / 2;
-
   return (
-    <div className="relative" style={{ width: svgSize, height: svgSize }}>
-      <svg width={svgSize} height={svgSize} className="transform -rotate-90">
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
         {/* Background circle */}
         <circle
-          cx={centerOffset}
-          cy={centerOffset}
+          cx={size / 2}
+          cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255, 255, 255, 0.2)"
+          stroke={trackColor}
           strokeWidth={strokeWidth}
         />
 
         {/* Progress circle */}
         <motion.circle
-          cx={centerOffset}
-          cy={centerOffset}
+          cx={size / 2}
+          cy={size / 2}
           r={radius}
           fill="none"
-          stroke="white"
+          stroke={color}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.5, delay, ease: 'easeOut' }}
-          className="drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+          transition={{ duration: 1.2, delay, ease: 'easeOut' }}
+          style={{ filter: `drop-shadow(0 0 6px ${color}40)` }}
         />
       </svg>
 

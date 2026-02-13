@@ -4,51 +4,42 @@
 
 @layer base {
   :root {
-    /* Light theme base */
-    --background: 220 14% 96%; /* #F8F9FA */
-    --foreground: 0 0% 9%; /* Dark gray/black for text */
+    /* Dark teal theme */
+    --background: 180 40% 13%; /* #0D3B3B - deep teal */
+    --foreground: 0 0% 100%; /* White text */
 
-    --card: 0 0% 100%; /* White */
-    --card-foreground: 0 0% 9%;
+    --card: 180 35% 17%; /* #1A4D4D - slightly lighter teal for cards */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover: 180 35% 17%;
+    --popover-foreground: 0 0% 100%;
 
-    /* Blue gradient primary (instead of lime green) */
-    --primary: 213 94% 68%; /* #4A9EFF */
-    --primary-foreground: 0 0% 100%; /* White text on blue */
+    /* Orange accent */
+    --primary: 30 100% 50%; /* #FF8A00 - vibrant orange */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary: 180 35% 20%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 14% 91%; /* Light gray */
-    --muted-foreground: 0 0% 45%; /* Gray for secondary text */
+    --muted: 180 30% 22%;
+    --muted-foreground: 180 15% 70%; /* Soft teal-gray for secondary text */
 
-    --accent: 213 94% 68%;
+    --accent: 30 100% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 85%; /* Light gray border */
-    --input: 0 0% 100%;
-    --ring: 213 94% 68%;
+    --border: 180 30% 25%;
+    --input: 180 35% 20%;
+    --ring: 30 100% 50%;
 
     --radius: 1.5rem;
 
-    /* Card gradient colors */
-    --blue-start: 213 94% 68%; /* #4A9EFF */
-    --blue-end: 207 89% 61%; /* #3B82F6 */
-
-    --orange-start: 25 95% 63%; /* #FF7A50 */
-    --orange-end: 33 100% 50%; /* #FF8C00 */
-
-    --green-start: 142 76% 59%; /* #5BD88F */
-    --green-end: 158 64% 52%; /* #34D399 */
-
-    /* Light theme effects */
-    --glass-bg: 0 0% 100%; /* Solid white */
-    --glass-border: 220 13% 90%; /* Light gray border */
+    /* Card specific colors */
+    --card-analytics: 180 35% 17%;
+    --card-constructor: 30 100% 50%; /* Orange */
+    --card-workouts: 174 60% 55%; /* Cyan/turquoise */
   }
 }
 
@@ -74,20 +65,16 @@
 }
 
 @layer components {
-  /* Light theme cards */
+  /* Glass card for dark theme */
   .glass {
-    background: hsl(var(--glass-bg));
-    border: 1px solid hsl(var(--glass-border));
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+    background: hsl(var(--card));
+    border: 1px solid hsl(180 30% 25% / 0.5);
+    box-shadow: 0 4px 24px 0 rgb(0 0 0 / 0.2);
   }
 
-  /* Progress bar blue gradient */
-  .progress-gradient {
-    background: linear-gradient(
-      90deg,
-      hsl(var(--blue-start)) 0%,
-      hsl(var(--blue-end)) 100%
-    );
+  /* Orange progress ring */
+  .ring-gradient {
+    stroke: #FF8A00;
   }
 
   /* Text utilities */
