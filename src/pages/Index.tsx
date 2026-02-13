@@ -33,12 +33,9 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="h-screen bg-background overflow-hidden flex flex-col">
-      <div className="flex-1 overflow-y-auto pb-28 pb-safe-bottom overscroll-contain">
+      <div className="flex-1 overflow-hidden pb-24 pb-safe-bottom flex flex-col">
         {activeTab === 'home' && (
-          <>
-            <DashboardView />
-            <div className="min-h-[8rem] shrink-0" aria-hidden="true" />
-          </>
+          <DashboardView />
         )}
 
         {activeTab === 'timer' && (
