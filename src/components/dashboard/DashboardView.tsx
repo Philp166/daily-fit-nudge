@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import CircularProgress from '@/components/dashboard/CircularProgress';
 import logoSvg from '@/assets/logo.svg';
-import constructorImg from '@/assets/constructor-img.jpg';
-import workoutsImg from '@/assets/workouts-img.jpg';
+import constructorImg from '@/assets/constructor-img.png';
+import workoutsImg from '@/assets/workouts-img.png';
 
 type Period = 'day' | 'week' | 'month';
 
@@ -110,7 +110,7 @@ const DashboardView: React.FC = () => {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-bold text-white">2</span>
+              <span className="text-3xl font-bold text-white">0</span>
               <span className="text-lg text-white/70">трен.</span>
             </div>
             <p className="text-white/40 text-xs mt-0.5">физ.нагрузка</p>
@@ -118,7 +118,7 @@ const DashboardView: React.FC = () => {
 
           <div className="flex-1 text-center">
             <div className="flex items-baseline gap-1 justify-center">
-              <span className="text-3xl font-bold text-white">67</span>
+              <span className="text-3xl font-bold text-white">0</span>
               <span className="text-lg text-white/70">мин.</span>
             </div>
             <p className="text-white/40 text-xs mt-0.5">время активности</p>
@@ -126,7 +126,7 @@ const DashboardView: React.FC = () => {
 
           <div className="flex-1 text-right">
             <div className="flex items-baseline gap-1 justify-end">
-              <span className="text-3xl font-bold text-white">14</span>
+              <span className="text-3xl font-bold text-white">0</span>
               <span className="text-lg text-white/70">упр.</span>
             </div>
             <p className="text-white/40 text-xs mt-0.5">зоны роста</p>
