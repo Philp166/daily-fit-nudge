@@ -8,7 +8,7 @@ import workoutsImg from '@/assets/workouts-img.png';
 
 type Period = 'day' | 'week' | 'month';
 
-const HANDLE_STRIP_HEIGHT = 28;
+const HANDLE_STRIP_HEIGHT = 36; // Taller = easier to grab, more sensitive feel
 const ANALYTICS_EXPANDED = 420 - HANDLE_STRIP_HEIGHT; // 392 — content only, stats row always visible
 const ANALYTICS_COLLAPSED = 76 - HANDLE_STRIP_HEIGHT;  // 48 — content only
 const OVERDRAG = 24;
@@ -44,7 +44,8 @@ const DashboardView: React.FC = () => {
   };
 
   const handleDrag = (_: unknown, info: PanInfo) => {
-    const raw = dragStartY.current + info.offset.y;
+    const DRAG_SENSITIVITY = 1.3; // Block moves more per pixel of finger
+    const raw = dragStartY.current + info.offset.y * DRAG_SENSITIVITY;
     const clamped = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, raw));
     panelHeight.set(clamped);
   };
@@ -57,8 +58,7 @@ const DashboardView: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Small top gap so collapsed block sits just below notch */}
-      <div className="shrink-0 mt-3 flex flex-col">
+      <div className="shrink-0 flex flex-col">
         <motion.div
           style={{ height: panelHeight, backgroundColor: '#006776' }}
           className="shrink-0 overflow-hidden relative pt-safe-top"
