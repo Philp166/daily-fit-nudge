@@ -20,16 +20,18 @@ const DashboardView: React.FC = () => {
 
   const analyticsHeight = useMotionValue(ANALYTICS_EXPANDED);
 
-  // Smooth opacity transitions
+  // Smooth opacity transitions with easing
   const headerOpacity = useTransform(
     analyticsHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 40, ANALYTICS_EXPANDED],
-    [0, 0, 1]
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 60, ANALYTICS_EXPANDED],
+    [0, 0, 1],
+    { ease: [0.4, 0.0, 0.2, 1] }
   );
   const contentOpacity = useTransform(
     analyticsHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 80, ANALYTICS_EXPANDED - 50, ANALYTICS_EXPANDED],
-    [0, 0, 0.5, 1]
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 100, ANALYTICS_EXPANDED - 40, ANALYTICS_EXPANDED],
+    [0, 0, 0.7, 1],
+    { ease: [0.4, 0.0, 0.2, 1] }
   );
 
   const dragStartY = useRef(0);
@@ -50,18 +52,20 @@ const DashboardView: React.FC = () => {
     const currentHeight = analyticsHeight.get();
     const velocity = info.velocity.y;
 
-    // Faster, more responsive snapping
-    if (velocity < -500 || (velocity < 300 && currentHeight < SNAP_THRESHOLD)) {
+    // Smooth, responsive snapping with better physics
+    if (velocity < -400 || (velocity < 200 && currentHeight < SNAP_THRESHOLD)) {
       animate(analyticsHeight, ANALYTICS_COLLAPSED, {
         type: 'spring',
-        stiffness: 500,
-        damping: 30
+        stiffness: 450,
+        damping: 32,
+        mass: 0.8
       });
     } else {
       animate(analyticsHeight, ANALYTICS_EXPANDED, {
         type: 'spring',
-        stiffness: 500,
-        damping: 30
+        stiffness: 450,
+        damping: 32,
+        mass: 0.8
       });
     }
   };
@@ -72,10 +76,11 @@ const DashboardView: React.FC = () => {
       {/* Analytics block — #006776 teal, rounded bottom, starts from top */}
       <motion.div
         style={{ height: analyticsHeight }}
-        className="shrink-0 rounded-b-3xl overflow-hidden relative"
+        className="shrink-0 rounded-b-3xl overflow-hidden relative pt-safe-top"
         initial={{ backgroundColor: '#006776' }}
+        transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }}
       >
-        <div className="h-full pt-safe-top px-5 pb-3 flex flex-col">
+        <div className="h-full px-5 pb-3 flex flex-col">
 
           {/* Header: Logo + Period Selector */}
           <motion.div
@@ -203,11 +208,11 @@ const DashboardView: React.FC = () => {
                 Конструктор тренировок
               </h2>
             </div>
-            <div className="w-[35%] flex items-center justify-center">
+            <div className="w-[40%] flex items-center justify-center">
               <img
                 src={constructorImg}
                 alt="Constructor"
-                className="h-full max-h-[160px] object-contain"
+                className="h-full max-h-[180px] object-contain"
               />
             </div>
           </div>
