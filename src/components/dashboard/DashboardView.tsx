@@ -9,7 +9,7 @@ import workoutsImg from '@/assets/workouts-img.png';
 type Period = 'day' | 'week' | 'month';
 
 const ANALYTICS_EXPANDED = 380;
-const ANALYTICS_COLLAPSED = 60;
+const ANALYTICS_COLLAPSED = 76; // Enough height so drag handle stays in teal zone, clear of card text
 const SNAP_THRESHOLD = 220; // Below this height → snap to collapsed; above → expanded
 const VELOCITY_COLLAPSE_THRESHOLD = -450; // Fast upward swipe to force collapse
 
@@ -29,7 +29,7 @@ const DashboardView: React.FC = () => {
   );
   const contentOpacity = useTransform(
     analyticsHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 60, 200, ANALYTICS_EXPANDED],
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 64, 200, ANALYTICS_EXPANDED],
     [0, 0.3, 1, 1]
   );
 
@@ -188,8 +188,8 @@ const DashboardView: React.FC = () => {
         </motion.div>
       </motion.div>
 
-      {/* Cards section — fills remaining space */}
-      <div className="flex flex-col flex-1 min-h-0 gap-3 px-4 py-4 bg-background">
+      {/* Cards section — gap above so drag handle doesn't sit on text */}
+      <div className="flex flex-col flex-1 min-h-0 gap-3 px-4 pt-6 pb-4 bg-background">
         {/* Constructor Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

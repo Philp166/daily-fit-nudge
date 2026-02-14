@@ -17,12 +17,12 @@ const tabs: { id: Tab; icon: React.ReactNode; label: string }[] = [
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-safe-bottom z-50">
+    <div className="fixed bottom-0 left-0 right-0 flex justify-center safe-nav-bottom z-50">
       <motion.nav
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.5 }}
-        className="bg-[hsl(180,30%,18%)] backdrop-blur-lg rounded-full px-3 py-2.5 mb-4 mx-4 flex items-center gap-1 shadow-2xl border border-white/5"
+        className="bg-[hsl(180,30%,18%)] backdrop-blur-lg rounded-full px-3 py-2.5 mb-6 mx-4 flex items-center gap-1 shadow-2xl border border-white/5"
       >
         {tabs.map((tab) => (
           <button
