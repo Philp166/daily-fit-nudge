@@ -215,7 +215,7 @@ const DashboardView: React.FC = () => {
               </h2>
             </div>
             <div className="w-[42%] flex items-center justify-center min-h-[140px] shrink-0">
-              <img src={constructorImg} alt="Constructor" className="w-full h-full min-h-[120px] max-h-[200px] object-contain" />
+              <img src={constructorImg} alt="Constructor" className="w-full h-full min-h-[120px] max-h-[200px] object-contain object-right" />
             </div>
           </div>
         </motion.div>
