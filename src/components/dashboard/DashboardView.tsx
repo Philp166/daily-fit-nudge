@@ -57,8 +57,8 @@ const DashboardView: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Top gap so collapsed block + handle sit lower, away from notch */}
-      <div className="shrink-0 mt-6 flex flex-col">
+      {/* Small top gap so collapsed block sits just below notch */}
+      <div className="shrink-0 mt-3 flex flex-col">
         <motion.div
           style={{ height: panelHeight, backgroundColor: '#006776' }}
           className="shrink-0 overflow-hidden relative pt-safe-top"
