@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { motion, useMotionValue, useTransform, animate, PanInfo } from 'framer-motion';
+import React, { useState, useRef, useCallback } from 'react';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import CircularProgress from '@/components/dashboard/CircularProgress';
 import logoSvg from '@/assets/logo.svg';
@@ -15,6 +15,7 @@ const OVERDRAG = 24;
 const MIN_HEIGHT = ANALYTICS_COLLAPSED - OVERDRAG;
 const MAX_HEIGHT = ANALYTICS_EXPANDED + OVERDRAG;
 const SNAP_THRESHOLD = (ANALYTICS_COLLAPSED + ANALYTICS_EXPANDED) / 2; // ~220
+const DRAG_SENSITIVITY = 1.3;
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 30, mass: 1 };
 
@@ -37,24 +38,57 @@ const DashboardView: React.FC = () => {
     [0, 0.3, 1, 1]
   );
 
-  const dragStartY = useRef(0);
+  const handleRef = useRef<HTMLDivElement>(null);
+  const dragStateRef = useRef<{ startClientY: number; startPanelHeight: number } | null>(null);
 
-  const handleDragStart = () => {
-    dragStartY.current = panelHeight.get();
-  };
+  const onPointerMove = useCallback(
+    (e: PointerEvent) => {
+      const state = dragStateRef.current;
+      if (!state) return;
+      const deltaY = e.clientY - state.startClientY;
+      const raw = state.startPanelHeight + deltaY * DRAG_SENSITIVITY;
+      const clamped = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, raw));
+      panelHeight.set(clamped);
+    },
+    [panelHeight]
+  );
 
-  const handleDrag = (_: unknown, info: PanInfo) => {
-    const DRAG_SENSITIVITY = 1.3; // Block moves more per pixel of finger
-    const raw = dragStartY.current + info.offset.y * DRAG_SENSITIVITY;
-    const clamped = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, raw));
-    panelHeight.set(clamped);
-  };
+  const onPointerUp = useCallback(
+    (e: PointerEvent) => {
+      const el = handleRef.current;
+      if (el) {
+        try {
+          el.releasePointerCapture(e.pointerId);
+        } catch {
+          // ignore if already released
+        }
+        el.removeEventListener('pointermove', onPointerMove);
+        el.removeEventListener('pointerup', onPointerUp);
+        el.removeEventListener('pointercancel', onPointerUp);
+      }
+      dragStateRef.current = null;
+      const current = panelHeight.get();
+      const target = current < SNAP_THRESHOLD ? ANALYTICS_COLLAPSED : ANALYTICS_EXPANDED;
+      animate(panelHeight, target, SPRING);
+    },
+    [panelHeight, onPointerMove]
+  );
 
-  const handleDragEnd = () => {
-    const current = panelHeight.get();
-    const target = current < SNAP_THRESHOLD ? ANALYTICS_COLLAPSED : ANALYTICS_EXPANDED;
-    animate(panelHeight, target, SPRING);
-  };
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      const el = handleRef.current;
+      if (!el || e.button !== 0) return;
+      dragStateRef.current = {
+        startClientY: e.clientY,
+        startPanelHeight: panelHeight.get(),
+      };
+      el.setPointerCapture(e.pointerId);
+      el.addEventListener('pointermove', onPointerMove);
+      el.addEventListener('pointerup', onPointerUp);
+      el.addEventListener('pointercancel', onPointerUp);
+    },
+    [panelHeight, onPointerMove, onPointerUp]
+  );
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -155,9 +189,8 @@ const DashboardView: React.FC = () => {
         </motion.div>
 
         <motion.div
-          onPanStart={handleDragStart}
-          onPan={handleDrag}
-          onPanEnd={handleDragEnd}
+          ref={handleRef}
+          onPointerDown={handlePointerDown}
           className="shrink-0 rounded-b-3xl bg-[#006776] flex justify-center items-center cursor-grab active:cursor-grabbing touch-none select-none"
           style={{ height: HANDLE_STRIP_HEIGHT, touchAction: 'none' }}
         >
