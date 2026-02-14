@@ -20,18 +20,16 @@ const DashboardView: React.FC = () => {
 
   const analyticsHeight = useMotionValue(ANALYTICS_EXPANDED);
 
-  // Smooth opacity transitions with easing
+  // Smooth opacity transitions
   const headerOpacity = useTransform(
     analyticsHeight,
     [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 60, ANALYTICS_EXPANDED],
-    [0, 0, 1],
-    { ease: [0.4, 0.0, 0.2, 1] }
+    [0, 0, 1]
   );
   const contentOpacity = useTransform(
     analyticsHeight,
     [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 100, ANALYTICS_EXPANDED - 40, ANALYTICS_EXPANDED],
-    [0, 0, 0.7, 1],
-    { ease: [0.4, 0.0, 0.2, 1] }
+    [0, 0, 0.7, 1]
   );
 
   const dragStartY = useRef(0);
@@ -75,10 +73,8 @@ const DashboardView: React.FC = () => {
 
       {/* Analytics block — #006776 teal, rounded bottom, starts from top */}
       <motion.div
-        style={{ height: analyticsHeight }}
+        style={{ height: analyticsHeight, backgroundColor: '#006776' }}
         className="shrink-0 rounded-b-3xl overflow-hidden relative pt-safe-top"
-        initial={{ backgroundColor: '#006776' }}
-        transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }}
       >
         <div className="h-full px-5 pb-3 flex flex-col">
 
