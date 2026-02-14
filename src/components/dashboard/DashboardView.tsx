@@ -20,16 +20,16 @@ const DashboardView: React.FC = () => {
 
   const analyticsHeight = useMotionValue(ANALYTICS_EXPANDED);
 
-  // Smooth symmetrical opacity transitions
+  // Opacity: content stays visible longer when collapsing (roll-up effect), fades only at the end
   const headerOpacity = useTransform(
     analyticsHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 100, ANALYTICS_EXPANDED],
-    [0, 0.3, 1]
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 80, 200, ANALYTICS_EXPANDED],
+    [0, 0.4, 1, 1]
   );
   const contentOpacity = useTransform(
     analyticsHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 90, ANALYTICS_EXPANDED - 60, ANALYTICS_EXPANDED],
-    [0, 0.2, 0.85, 1]
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 60, 200, ANALYTICS_EXPANDED],
+    [0, 0.3, 1, 1]
   );
 
   const dragStartY = useRef(0);
@@ -56,11 +56,12 @@ const DashboardView: React.FC = () => {
       (velocity <= 0 && currentHeight < SNAP_THRESHOLD); // Slow upward drag past midpoint
 
     const target = shouldCollapse ? ANALYTICS_COLLAPSED : ANALYTICS_EXPANDED;
+    const isCollapsing = target === ANALYTICS_COLLAPSED;
 
     animate(analyticsHeight, target, {
       type: 'spring',
-      stiffness: 300,
-      damping: 35,
+      stiffness: isCollapsing ? 200 : 300,
+      damping: isCollapsing ? 30 : 35,
       mass: 1,
       velocity: velocity
     });
