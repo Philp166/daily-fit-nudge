@@ -98,9 +98,9 @@
     padding-bottom: max(env(safe-area-inset-bottom, 20px), 20px);
   }
 
-  /* Extra bottom clearance so nav doesn't conflict with iOS home gesture */
+  /* Extra bottom clearance so nav doesn't conflict with iOS home gesture (PWA/standalone) */
   .safe-nav-bottom {
-    padding-bottom: calc(max(env(safe-area-inset-bottom, 20px), 20px) + 12px);
+    padding-bottom: calc(max(env(safe-area-inset-bottom, 20px), 20px) + 20px);
   }
 }
 

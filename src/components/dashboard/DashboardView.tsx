@@ -8,10 +8,15 @@ import workoutsImg from '@/assets/workouts-img.png';
 
 type Period = 'day' | 'week' | 'month';
 
-const ANALYTICS_EXPANDED = 380;
-const ANALYTICS_COLLAPSED = 76; // Enough height so drag handle stays in teal zone, clear of card text
-const SNAP_THRESHOLD = 220; // Below this height → snap to collapsed; above → expanded
-const VELOCITY_COLLAPSE_THRESHOLD = -450; // Fast upward swipe to force collapse
+const HANDLE_STRIP_HEIGHT = 28;
+const ANALYTICS_EXPANDED = 380 - HANDLE_STRIP_HEIGHT; // 352 — content only
+const ANALYTICS_COLLAPSED = 76 - HANDLE_STRIP_HEIGHT;  // 48 — content only
+const OVERDRAG = 24; // Allow stretch past limits (px)
+const MIN_HEIGHT = ANALYTICS_COLLAPSED - OVERDRAG;
+const MAX_HEIGHT = ANALYTICS_EXPANDED + OVERDRAG;
+const SNAP_THRESHOLD = (ANALYTICS_COLLAPSED + ANALYTICS_EXPANDED) / 2; // 200
+
+const SPRING = { type: 'spring' as const, stiffness: 260, damping: 30, mass: 1 };
 
 const DashboardView: React.FC = () => {
   const { todayCalories, profile } = useUser();
@@ -19,73 +24,50 @@ const DashboardView: React.FC = () => {
   const progress = Math.min(Math.round((todayCalories / goal) * 100), 100);
   const [period, setPeriod] = useState<Period>('day');
 
-  const analyticsHeight = useMotionValue(ANALYTICS_EXPANDED);
+  const panelHeight = useMotionValue(ANALYTICS_EXPANDED);
 
-  // Opacity: content stays visible longer when collapsing (roll-up effect), fades only at the end
   const headerOpacity = useTransform(
-    analyticsHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 80, 200, ANALYTICS_EXPANDED],
+    panelHeight,
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 70, 180, ANALYTICS_EXPANDED],
     [0, 0.4, 1, 1]
   );
   const contentOpacity = useTransform(
-    analyticsHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 64, 200, ANALYTICS_EXPANDED],
+    panelHeight,
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 56, 180, ANALYTICS_EXPANDED],
     [0, 0.3, 1, 1]
   );
 
   const dragStartY = useRef(0);
 
   const handleDragStart = () => {
-    dragStartY.current = analyticsHeight.get();
+    dragStartY.current = panelHeight.get();
   };
 
-  const handleDrag = (_: any, info: PanInfo) => {
-    const newHeight = Math.max(
-      ANALYTICS_COLLAPSED,
-      Math.min(ANALYTICS_EXPANDED, dragStartY.current + info.offset.y)
-    );
-    analyticsHeight.set(newHeight);
+  const handleDrag = (_: unknown, info: PanInfo) => {
+    const raw = dragStartY.current + info.offset.y;
+    const clamped = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, raw));
+    panelHeight.set(clamped);
   };
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    const currentHeight = analyticsHeight.get();
-    const velocityY = info.velocity.y;
-
-    // Snap: position first, then fast swipe can override
-    // - Below threshold → collapse; above → expand
-    // - Very fast upward swipe (strong intent) → collapse even from high
-    const fastUpwardSwipe = velocityY < VELOCITY_COLLAPSE_THRESHOLD;
-    const belowMidpoint = currentHeight < SNAP_THRESHOLD;
-    const shouldCollapse = fastUpwardSwipe || belowMidpoint;
-
-    const target = shouldCollapse ? ANALYTICS_COLLAPSED : ANALYTICS_EXPANDED;
-
-    // Same spring for open and close: smooth, symmetric, no velocity (predictable)
-    animate(analyticsHeight, target, {
-      type: 'spring',
-      stiffness: 280,
-      damping: 32,
-      mass: 1
-    });
+  const handleDragEnd = () => {
+    const current = panelHeight.get();
+    const target = current < SNAP_THRESHOLD ? ANALYTICS_COLLAPSED : ANALYTICS_EXPANDED;
+    animate(panelHeight, target, SPRING);
   };
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-
-      {/* Analytics block — #006776 teal, rounded bottom, starts from top */}
+      {/* Analytics content — height animates; no handle inside */}
       <motion.div
-        style={{ height: analyticsHeight, backgroundColor: '#006776' }}
-        className="shrink-0 rounded-b-3xl overflow-hidden relative pt-safe-top"
+        style={{ height: panelHeight, backgroundColor: '#006776' }}
+        className="shrink-0 overflow-hidden relative pt-safe-top"
       >
         <div className="h-full px-5 pb-3 flex flex-col">
-
-          {/* Header: Logo + Period Selector */}
           <motion.div
             style={{ opacity: headerOpacity }}
             className="flex items-center justify-between mb-4 pt-3"
           >
             <img src={logoSvg} alt="Interfit" className="h-7 opacity-95" />
-
             <div className="flex items-center bg-[#005563] rounded-full p-1">
               {(['day', 'week', 'month'] as Period[]).map((p) => {
                 const label = p === 'day' ? 'Д' : p === 'week' ? 'Н' : 'М';
@@ -114,7 +96,6 @@ const DashboardView: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Dark nested container for Calories + Ring */}
           <motion.div
             style={{ opacity: contentOpacity }}
             className="bg-[#004D5C] rounded-2xl p-5 mb-4"
@@ -124,11 +105,8 @@ const DashboardView: React.FC = () => {
                 <div className="text-8xl font-bold text-white leading-none tracking-tight">
                   {todayCalories}
                 </div>
-                <p className="text-white/70 text-lg mt-2">
-                  ккал из {goal}
-                </p>
+                <p className="text-white/70 text-lg mt-2">ккал из {goal}</p>
               </div>
-
               <div className="relative shrink-0">
                 <CircularProgress
                   value={progress}
@@ -146,7 +124,6 @@ const DashboardView: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Stats row */}
           <motion.div
             style={{ opacity: contentOpacity }}
             className="flex items-start justify-between px-2"
@@ -158,7 +135,6 @@ const DashboardView: React.FC = () => {
               </div>
               <p className="text-white/50 text-sm mt-1">физ.нагрузка</p>
             </div>
-
             <div className="flex-1 text-center">
               <div className="flex items-baseline gap-1 justify-center">
                 <span className="text-4xl font-bold text-white">0</span>
@@ -166,7 +142,6 @@ const DashboardView: React.FC = () => {
               </div>
               <p className="text-white/50 text-sm mt-1">время активности</p>
             </div>
-
             <div className="flex-1 text-right">
               <div className="flex items-baseline gap-1 justify-end">
                 <span className="text-4xl font-bold text-white">0</span>
@@ -176,21 +151,21 @@ const DashboardView: React.FC = () => {
             </div>
           </motion.div>
         </div>
-
-        {/* Drag handle — always visible at bottom */}
-        <motion.div
-          onPanStart={handleDragStart}
-          onPan={handleDrag}
-          onPanEnd={handleDragEnd}
-          className="absolute bottom-0 left-0 right-0 flex justify-center py-4 cursor-grab active:cursor-grabbing touch-none z-10"
-        >
-          <div className="w-12 h-1.5 bg-white/30 rounded-full" />
-        </motion.div>
       </motion.div>
 
-      {/* Cards section — gap above so drag handle doesn't sit on text */}
+      {/* Handle strip — fixed height, never on card text; overdrag feels like stretch */}
+      <motion.div
+        onPanStart={handleDragStart}
+        onPan={handleDrag}
+        onPanEnd={handleDragEnd}
+        className="shrink-0 rounded-b-3xl bg-[#006776] flex justify-center items-center cursor-grab active:cursor-grabbing touch-none select-none"
+        style={{ height: HANDLE_STRIP_HEIGHT, touchAction: 'none' }}
+      >
+        <div className="w-12 h-1.5 bg-white/35 rounded-full pointer-events-none" />
+      </motion.div>
+
+      {/* Cards — clear gap below handle strip */}
       <div className="flex flex-col flex-1 min-h-0 gap-3 px-4 pt-6 pb-4 bg-background">
-        {/* Constructor Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -206,16 +181,10 @@ const DashboardView: React.FC = () => {
               </h2>
             </div>
             <div className="w-[40%] flex items-center justify-center">
-              <img
-                src={constructorImg}
-                alt="Constructor"
-                className="h-full max-h-[180px] object-contain"
-              />
+              <img src={constructorImg} alt="Constructor" className="h-full max-h-[180px] object-contain" />
             </div>
           </div>
         </motion.div>
-
-        {/* Workouts Base Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -226,19 +195,11 @@ const DashboardView: React.FC = () => {
         >
           <div className="flex items-center justify-between h-full px-6 py-6">
             <div className="flex-1 pr-4">
-              <div className="text-8xl font-bold text-[#0D3B3B] leading-none tracking-tight">
-                150
-              </div>
-              <p className="text-[#0D3B3B]/80 text-xl font-medium mt-2">
-                Готовых тренировок
-              </p>
+              <div className="text-8xl font-bold text-[#0D3B3B] leading-none tracking-tight">150</div>
+              <p className="text-[#0D3B3B]/80 text-xl font-medium mt-2">Готовых тренировок</p>
             </div>
             <div className="w-[35%] flex items-center justify-center">
-              <img
-                src={workoutsImg}
-                alt="Workouts"
-                className="h-full max-h-[140px] object-contain"
-              />
+              <img src={workoutsImg} alt="Workouts" className="h-full max-h-[140px] object-contain" />
             </div>
           </div>
         </motion.div>
