@@ -214,8 +214,8 @@ const DashboardView: React.FC = () => {
                 Конструктор тренировок
               </h2>
             </div>
-            <div className="w-[42%] flex items-center justify-start min-h-[140px] shrink-0 overflow-hidden">
-              <img src={constructorImg} alt="Constructor" className="max-w-full max-h-[200px] min-h-[120px] w-auto h-auto object-contain object-left" />
+            <div className="w-[42%] flex items-center justify-end min-h-[140px] shrink-0 overflow-hidden">
+              <img src={constructorImg} alt="Constructor" className="max-w-[140px] max-h-[160px] w-auto h-auto object-contain object-right" />
             </div>
           </div>
         </motion.div>
@@ -230,7 +230,7 @@ const DashboardView: React.FC = () => {
           <div className="flex items-center justify-between h-full px-6 py-6">
             <div className="flex-1 pr-4">
               <div className="text-8xl font-bold text-[#0D3B3B] leading-none tracking-tight">150</div>
-              <p className="text-[#0D3B3B]/80 text-xl font-medium mt-2">Готовых тренировок</p>
+              <p className="text-[#0D3B3B]/80 text-base sm:text-xl font-medium mt-2 whitespace-nowrap">Готовых тренировок</p>
             </div>
             <div className="w-[42%] flex items-center justify-center min-h-[140px] shrink-0">
               <img src={workoutsImg} alt="Workouts" className="w-full h-full min-h-[120px] max-h-[200px] object-contain" />
