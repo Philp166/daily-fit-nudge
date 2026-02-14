@@ -9,12 +9,12 @@ import workoutsImg from '@/assets/workouts-img.png';
 type Period = 'day' | 'week' | 'month';
 
 const HANDLE_STRIP_HEIGHT = 28;
-const ANALYTICS_EXPANDED = 380 - HANDLE_STRIP_HEIGHT; // 352 — content only
+const ANALYTICS_EXPANDED = 420 - HANDLE_STRIP_HEIGHT; // 392 — content only, stats row always visible
 const ANALYTICS_COLLAPSED = 76 - HANDLE_STRIP_HEIGHT;  // 48 — content only
-const OVERDRAG = 24; // Allow stretch past limits (px)
+const OVERDRAG = 24;
 const MIN_HEIGHT = ANALYTICS_COLLAPSED - OVERDRAG;
 const MAX_HEIGHT = ANALYTICS_EXPANDED + OVERDRAG;
-const SNAP_THRESHOLD = (ANALYTICS_COLLAPSED + ANALYTICS_EXPANDED) / 2; // 200
+const SNAP_THRESHOLD = (ANALYTICS_COLLAPSED + ANALYTICS_EXPANDED) / 2; // ~220
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 30, mass: 1 };
 
@@ -28,12 +28,12 @@ const DashboardView: React.FC = () => {
 
   const headerOpacity = useTransform(
     panelHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 70, 180, ANALYTICS_EXPANDED],
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 70, 220, ANALYTICS_EXPANDED],
     [0, 0.4, 1, 1]
   );
   const contentOpacity = useTransform(
     panelHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 56, 180, ANALYTICS_EXPANDED],
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 56, 220, ANALYTICS_EXPANDED],
     [0, 0.3, 1, 1]
   );
 
@@ -62,7 +62,7 @@ const DashboardView: React.FC = () => {
         style={{ height: panelHeight, backgroundColor: '#006776' }}
         className="shrink-0 overflow-hidden relative pt-safe-top"
       >
-        <div className="h-full px-5 pb-3 flex flex-col">
+        <div className="h-full px-5 pb-3 flex flex-col overflow-y-auto min-h-0 hide-scrollbar">
           <motion.div
             style={{ opacity: headerOpacity }}
             className="flex items-center justify-between mb-4 pt-3"
