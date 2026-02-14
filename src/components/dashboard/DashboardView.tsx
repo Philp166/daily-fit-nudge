@@ -210,12 +210,12 @@ const DashboardView: React.FC = () => {
         >
           <div className="flex items-center justify-between h-full px-6 py-6">
             <div className="flex-1 pr-4">
-              <h2 className="text-5xl font-bold text-white leading-tight">
+              <h2 className="text-4xl font-bold text-white leading-tight">
                 Конструктор тренировок
               </h2>
             </div>
-            <div className="w-[42%] flex items-center justify-end min-h-[140px] shrink-0 overflow-hidden">
-              <img src={constructorImg} alt="Constructor" className="max-w-[140px] max-h-[160px] w-auto h-auto object-contain object-right" />
+            <div className="w-[42%] flex items-center justify-end min-h-[120px] shrink-0 overflow-hidden">
+              <img src={constructorImg} alt="Constructor" className="max-w-[110px] max-h-[130px] w-auto h-auto object-contain object-right" />
             </div>
           </div>
         </motion.div>
