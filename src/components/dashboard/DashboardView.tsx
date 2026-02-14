@@ -50,22 +50,20 @@ const DashboardView: React.FC = () => {
     const currentHeight = analyticsHeight.get();
     const velocity = info.velocity.y;
 
-    // Smooth snapping with consistent physics
-    if (velocity < -400 || (velocity < 200 && currentHeight < SNAP_THRESHOLD)) {
-      animate(analyticsHeight, ANALYTICS_COLLAPSED, {
-        type: 'spring',
-        stiffness: 350,
-        damping: 35,
-        mass: 1
-      });
-    } else {
-      animate(analyticsHeight, ANALYTICS_EXPANDED, {
-        type: 'spring',
-        stiffness: 350,
-        damping: 35,
-        mass: 1
-      });
-    }
+    // Smart snapping based on velocity direction and position
+    const shouldCollapse =
+      velocity < -200 || // Fast upward swipe
+      (velocity <= 0 && currentHeight < SNAP_THRESHOLD); // Slow upward drag past midpoint
+
+    const target = shouldCollapse ? ANALYTICS_COLLAPSED : ANALYTICS_EXPANDED;
+
+    animate(analyticsHeight, target, {
+      type: 'spring',
+      stiffness: 300,
+      damping: 35,
+      mass: 1,
+      velocity: velocity
+    });
   };
 
   return (
