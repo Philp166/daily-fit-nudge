@@ -10,7 +10,8 @@ type Period = 'day' | 'week' | 'month';
 
 const ANALYTICS_EXPANDED = 380;
 const ANALYTICS_COLLAPSED = 60;
-const SNAP_THRESHOLD = 200;
+const SNAP_THRESHOLD = 220; // Below this height → snap to collapsed; above → expanded
+const VELOCITY_COLLAPSE_THRESHOLD = -450; // Fast upward swipe to force collapse
 
 const DashboardView: React.FC = () => {
   const { todayCalories, profile } = useUser();
@@ -48,22 +49,23 @@ const DashboardView: React.FC = () => {
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     const currentHeight = analyticsHeight.get();
-    const velocity = info.velocity.y;
+    const velocityY = info.velocity.y;
 
-    // Smart snapping based on velocity direction and position
-    const shouldCollapse =
-      velocity < -200 || // Fast upward swipe
-      (velocity <= 0 && currentHeight < SNAP_THRESHOLD); // Slow upward drag past midpoint
+    // Snap: position first, then fast swipe can override
+    // - Below threshold → collapse; above → expand
+    // - Very fast upward swipe (strong intent) → collapse even from high
+    const fastUpwardSwipe = velocityY < VELOCITY_COLLAPSE_THRESHOLD;
+    const belowMidpoint = currentHeight < SNAP_THRESHOLD;
+    const shouldCollapse = fastUpwardSwipe || belowMidpoint;
 
     const target = shouldCollapse ? ANALYTICS_COLLAPSED : ANALYTICS_EXPANDED;
-    const isCollapsing = target === ANALYTICS_COLLAPSED;
 
+    // Same spring for open and close: smooth, symmetric, no velocity (predictable)
     animate(analyticsHeight, target, {
       type: 'spring',
-      stiffness: isCollapsing ? 200 : 300,
-      damping: isCollapsing ? 30 : 35,
-      mass: 1,
-      velocity: velocity
+      stiffness: 280,
+      damping: 32,
+      mass: 1
     });
   };
 
