@@ -21,15 +21,16 @@ const AppContent: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState(!isOnboarded);
   const [activeTab, setActiveTab] = useState<Tab>('home');
 
+  // TEMPORARY: Skip onboarding during dashboard development
   // Show welcome screen for first-time users
-  if (showWelcome && !isOnboarded) {
-    return <WelcomeScreen onStart={() => setShowWelcome(false)} />;
-  }
+  // if (showWelcome && !isOnboarded) {
+  //   return <WelcomeScreen onStart={() => setShowWelcome(false)} />;
+  // }
 
   // Show onboarding for users who haven't completed it
-  if (!isOnboarded) {
-    return <Onboarding />;
-  }
+  // if (!isOnboarded) {
+  //   return <Onboarding />;
+  // }
 
   return (
     <div className="h-screen bg-background overflow-hidden flex flex-col">
