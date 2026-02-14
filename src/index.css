@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    /* Dark teal theme */
-    --background: 180 40% 13%; /* #0D3B3B - deep teal */
-    --foreground: 0 0% 100%; /* White text */
+    /* Light theme: white background */
+    --background: 0 0% 100%; /* White */
+    --foreground: 180 40% 13%; /* #0D3B3B - dark teal for text on white */
 
     --card: 180 35% 17%; /* #1A4D4D - slightly lighter teal for cards */
     --card-foreground: 0 0% 100%;
