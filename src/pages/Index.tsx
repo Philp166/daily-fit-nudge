@@ -34,7 +34,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="h-screen bg-background overflow-hidden flex flex-col">
-      <div className="flex-1 overflow-hidden pb-36 pb-safe-bottom flex flex-col">
+      <div className="flex-1 overflow-hidden pb-28 pb-safe-bottom flex flex-col">
         {activeTab === 'home' && (
           <DashboardView />
         )}

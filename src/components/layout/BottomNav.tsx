@@ -22,7 +22,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.5 }}
-        className="bg-[hsl(180,30%,18%)] backdrop-blur-lg rounded-full px-3 py-2.5 mb-10 mx-4 flex items-center gap-1 shadow-2xl border border-white/5"
+        className="bg-[hsl(180,30%,18%)] backdrop-blur-lg rounded-full px-3 py-2.5 mb-4 mx-4 flex items-center gap-1 shadow-2xl border border-white/5"
       >
         {tabs.map((tab) => (
           <button
