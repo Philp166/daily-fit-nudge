@@ -16,8 +16,7 @@ const MIN_HEIGHT = ANALYTICS_COLLAPSED - OVERDRAG;
 const MAX_HEIGHT = ANALYTICS_EXPANDED + OVERDRAG;
 const SNAP_THRESHOLD = (ANALYTICS_COLLAPSED + ANALYTICS_EXPANDED) / 2; // ~220
 
-const SPRING_EXPAND = { type: 'spring' as const, stiffness: 260, damping: 30, mass: 1 };
-const SPRING_COLLAPSE = { type: 'spring' as const, stiffness: 180, damping: 26, mass: 1 };
+const SPRING = { type: 'spring' as const, stiffness: 260, damping: 30, mass: 1 };
 
 const DashboardView: React.FC = () => {
   const { todayCalories, profile } = useUser();
@@ -53,19 +52,16 @@ const DashboardView: React.FC = () => {
   const handleDragEnd = () => {
     const current = panelHeight.get();
     const target = current < SNAP_THRESHOLD ? ANALYTICS_COLLAPSED : ANALYTICS_EXPANDED;
-    const spring = target === ANALYTICS_COLLAPSED ? SPRING_COLLAPSE : SPRING_EXPAND;
-    animate(panelHeight, target, spring);
+    animate(panelHeight, target, SPRING);
   };
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Top gap so collapsed widget + handle don't conflict with iOS swipe-down gesture */}
-      <div className="shrink-0 mt-8 flex flex-col">
-        {/* Analytics content — height animates; no handle inside */}
-        <motion.div
-          style={{ height: panelHeight, backgroundColor: '#006776' }}
-          className="shrink-0 overflow-hidden relative pt-safe-top"
-        >
+      {/* Analytics content — height animates; no handle inside */}
+      <motion.div
+        style={{ height: panelHeight, backgroundColor: '#006776' }}
+        className="shrink-0 overflow-hidden relative pt-safe-top"
+      >
         <div className="h-full px-5 pb-3 flex flex-col overflow-y-auto min-h-0 hide-scrollbar">
           <motion.div
             style={{ opacity: headerOpacity }}
@@ -155,19 +151,18 @@ const DashboardView: React.FC = () => {
             </div>
           </motion.div>
         </div>
-        </motion.div>
+      </motion.div>
 
-        {/* Handle strip — fixed height, never on card text; overdrag feels like stretch */}
-        <motion.div
-          onPanStart={handleDragStart}
-          onPan={handleDrag}
-          onPanEnd={handleDragEnd}
-          className="shrink-0 rounded-b-3xl bg-[#006776] flex justify-center items-center cursor-grab active:cursor-grabbing touch-none select-none"
-          style={{ height: HANDLE_STRIP_HEIGHT, touchAction: 'none' }}
-        >
-          <div className="w-12 h-1.5 bg-white/35 rounded-full pointer-events-none" />
-        </motion.div>
-      </div>
+      {/* Handle strip — fixed height, never on card text; overdrag feels like stretch */}
+      <motion.div
+        onPanStart={handleDragStart}
+        onPan={handleDrag}
+        onPanEnd={handleDragEnd}
+        className="shrink-0 rounded-b-3xl bg-[#006776] flex justify-center items-center cursor-grab active:cursor-grabbing touch-none select-none"
+        style={{ height: HANDLE_STRIP_HEIGHT, touchAction: 'none' }}
+      >
+        <div className="w-12 h-1.5 bg-white/35 rounded-full pointer-events-none" />
+      </motion.div>
 
       {/* Cards — clear gap below handle strip */}
       <div className="flex flex-col flex-1 min-h-0 gap-3 px-4 pt-6 pb-4 bg-background">
