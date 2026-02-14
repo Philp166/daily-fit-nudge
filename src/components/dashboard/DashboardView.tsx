@@ -20,16 +20,16 @@ const DashboardView: React.FC = () => {
 
   const analyticsHeight = useMotionValue(ANALYTICS_EXPANDED);
 
-  // Smooth opacity transitions
+  // Smooth symmetrical opacity transitions
   const headerOpacity = useTransform(
     analyticsHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 60, ANALYTICS_EXPANDED],
-    [0, 0, 1]
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 100, ANALYTICS_EXPANDED],
+    [0, 0.3, 1]
   );
   const contentOpacity = useTransform(
     analyticsHeight,
-    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 100, ANALYTICS_EXPANDED - 40, ANALYTICS_EXPANDED],
-    [0, 0, 0.7, 1]
+    [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 90, ANALYTICS_EXPANDED - 60, ANALYTICS_EXPANDED],
+    [0, 0.2, 0.85, 1]
   );
 
   const dragStartY = useRef(0);
@@ -50,20 +50,20 @@ const DashboardView: React.FC = () => {
     const currentHeight = analyticsHeight.get();
     const velocity = info.velocity.y;
 
-    // Smooth, responsive snapping with better physics
+    // Smooth snapping with consistent physics
     if (velocity < -400 || (velocity < 200 && currentHeight < SNAP_THRESHOLD)) {
       animate(analyticsHeight, ANALYTICS_COLLAPSED, {
         type: 'spring',
-        stiffness: 450,
-        damping: 32,
-        mass: 0.8
+        stiffness: 350,
+        damping: 35,
+        mass: 1
       });
     } else {
       animate(analyticsHeight, ANALYTICS_EXPANDED, {
         type: 'spring',
-        stiffness: 450,
-        damping: 32,
-        mass: 0.8
+        stiffness: 350,
+        damping: 35,
+        mass: 1
       });
     }
   };
