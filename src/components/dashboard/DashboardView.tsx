@@ -57,11 +57,12 @@ const DashboardView: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Analytics content — height animates; no handle inside */}
-      <motion.div
-        style={{ height: panelHeight, backgroundColor: '#006776' }}
-        className="shrink-0 overflow-hidden relative pt-safe-top"
-      >
+      {/* Top gap so collapsed block + handle sit lower, away from notch */}
+      <div className="shrink-0 mt-6 flex flex-col">
+        <motion.div
+          style={{ height: panelHeight, backgroundColor: '#006776' }}
+          className="shrink-0 overflow-hidden relative pt-safe-top"
+        >
         <div className="h-full px-5 pb-3 flex flex-col overflow-y-auto min-h-0 hide-scrollbar">
           <motion.div
             style={{ opacity: headerOpacity }}
@@ -151,18 +152,18 @@ const DashboardView: React.FC = () => {
             </div>
           </motion.div>
         </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Handle strip — fixed height, never on card text; overdrag feels like stretch */}
-      <motion.div
-        onPanStart={handleDragStart}
-        onPan={handleDrag}
-        onPanEnd={handleDragEnd}
-        className="shrink-0 rounded-b-3xl bg-[#006776] flex justify-center items-center cursor-grab active:cursor-grabbing touch-none select-none"
-        style={{ height: HANDLE_STRIP_HEIGHT, touchAction: 'none' }}
-      >
-        <div className="w-12 h-1.5 bg-white/35 rounded-full pointer-events-none" />
-      </motion.div>
+        <motion.div
+          onPanStart={handleDragStart}
+          onPan={handleDrag}
+          onPanEnd={handleDragEnd}
+          className="shrink-0 rounded-b-3xl bg-[#006776] flex justify-center items-center cursor-grab active:cursor-grabbing touch-none select-none"
+          style={{ height: HANDLE_STRIP_HEIGHT, touchAction: 'none' }}
+        >
+          <div className="w-12 h-1.5 bg-white/35 rounded-full pointer-events-none" />
+        </motion.div>
+      </div>
 
       {/* Cards — clear gap below handle strip */}
       <div className="flex flex-col flex-1 min-h-0 gap-3 px-4 pt-6 pb-4 bg-background">
