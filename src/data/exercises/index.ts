@@ -7,6 +7,12 @@ import { ActivityType, MuscleGroup, SportDiscipline } from '@/types/exercise';
 
 // Спортзал
 import { chestExercises } from './gym/chest';
+import { backExercises } from './gym/back';
+import { legsExercises } from './gym/legs';
+import { shouldersExercises } from './gym/shoulders';
+import { bicepsExercises } from './gym/biceps';
+import { tricepsExercises } from './gym/triceps';
+import { coreExercises } from './gym/core';
 import { cardioExercises } from './gym/cardio';
 
 // Единоборства
@@ -25,6 +31,12 @@ import { sprintExercises } from './athletics/sprint';
 export const ALL_EXERCISES: Exercise[] = [
   // Спортзал
   ...chestExercises,
+  ...backExercises,
+  ...legsExercises,
+  ...shouldersExercises,
+  ...bicepsExercises,
+  ...tricepsExercises,
+  ...coreExercises,
   ...cardioExercises,
 
   // Единоборства
