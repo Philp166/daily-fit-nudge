@@ -13,7 +13,8 @@ const HANDLE_STRIP_HEIGHT = 36;
 const ANALYTICS_EXPANDED = 420 - HANDLE_STRIP_HEIGHT; // half-expanded: calories + stats
 const ANALYTICS_COLLAPSED = 76 - HANDLE_STRIP_HEIGHT;
 const OVERDRAG = 24;
-const BOTTOM_RESERVED_PX = 112 + 16; // content pb-28 (112) + 16px gap above nav
+const BOTTOM_RESERVED_PX = 112; // content pb-28 (112) for nav area
+const GAP_ABOVE_NAV_PX = 16; // gap between expanded analytics and navbar
 const DRAG_SENSITIVITY = 1.3;
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 30, mass: 1 };
@@ -81,7 +82,7 @@ const DashboardView: React.FC = () => {
 
   useEffect(() => {
     const updateFull = () => {
-      const reserved = BOTTOM_RESERVED_PX + HANDLE_STRIP_HEIGHT;
+      const reserved = BOTTOM_RESERVED_PX + HANDLE_STRIP_HEIGHT + GAP_ABOVE_NAV_PX;
       setAnalyticsFull(Math.max(420, window.innerHeight - reserved));
     };
     updateFull();
