@@ -1,6 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { useUser } from '@/contexts/UserContext';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
+import { useUser, type DayStats } from '@/contexts/UserContext';
 import CircularProgress from '@/components/dashboard/CircularProgress';
 import logoSvg from '@/assets/logo.svg';
 import constructorImg from '@/assets/constructor-img.png';
@@ -8,22 +9,70 @@ import workoutsImg from '@/assets/workouts-img.png';
 
 type Period = 'day' | 'week' | 'month';
 
-const HANDLE_STRIP_HEIGHT = 36; // Taller = easier to grab, more sensitive feel
-const ANALYTICS_EXPANDED = 420 - HANDLE_STRIP_HEIGHT; // 392 — content only, stats row always visible
-const ANALYTICS_COLLAPSED = 76 - HANDLE_STRIP_HEIGHT;  // 48 — content only
+const HANDLE_STRIP_HEIGHT = 36;
+const ANALYTICS_EXPANDED = 420 - HANDLE_STRIP_HEIGHT; // half-expanded: calories + stats
+const ANALYTICS_COLLAPSED = 76 - HANDLE_STRIP_HEIGHT;
 const OVERDRAG = 24;
-const MIN_HEIGHT = ANALYTICS_COLLAPSED - OVERDRAG;
-const MAX_HEIGHT = ANALYTICS_EXPANDED + OVERDRAG;
-const SNAP_THRESHOLD = (ANALYTICS_COLLAPSED + ANALYTICS_EXPANDED) / 2; // ~220
+const BOTTOM_RESERVED_PX = 112 + 16; // content pb-28 (112) + 16px gap above nav
 const DRAG_SENSITIVITY = 1.3;
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 30, mass: 1 };
 
+function getSnapTarget(
+  current: number,
+  collapsed: number,
+  expanded: number,
+  full: number
+): number {
+  const t1 = (collapsed + expanded) / 2;
+  const t2 = (expanded + full) / 2;
+  if (current < t1) return collapsed;
+  if (current < t2) return expanded;
+  return full;
+}
+
 const DashboardView: React.FC = () => {
-  const { todayCalories, profile } = useUser();
+  const {
+    todayCalories,
+    profile,
+    getLast7Days,
+    getLast4Weeks,
+    getLast4WeeksForMonth,
+  } = useUser();
   const goal = profile?.dailyCalorieGoal || 800;
-  const progress = Math.min(Math.round((todayCalories / goal) * 100), 100);
+
   const [period, setPeriod] = useState<Period>('day');
+  const [selectedChartIndex, setSelectedChartIndex] = useState(0);
+  const [analyticsFull, setAnalyticsFull] = useState(600);
+
+  useEffect(() => {
+    const updateFull = () => {
+      const reserved = BOTTOM_RESERVED_PX + HANDLE_STRIP_HEIGHT;
+      setAnalyticsFull(Math.max(420, window.innerHeight - reserved));
+    };
+    updateFull();
+    window.addEventListener('resize', updateFull);
+    return () => window.removeEventListener('resize', updateFull);
+  }, []);
+
+  const ANALYTICS_FULL = analyticsFull;
+  const MIN_HEIGHT = ANALYTICS_COLLAPSED - OVERDRAG;
+  const MAX_HEIGHT = ANALYTICS_FULL + OVERDRAG;
+
+  const chartData: DayStats[] =
+    period === 'day'
+      ? getLast7Days()
+      : period === 'week'
+        ? getLast4Weeks()
+        : getLast4WeeksForMonth();
+
+  useEffect(() => {
+    setSelectedChartIndex((prev) => (prev >= chartData.length ? Math.max(0, chartData.length - 1) : prev));
+  }, [period, chartData.length]);
+
+  const selectedStats = chartData[selectedChartIndex] ?? chartData[0];
+  const displayCalories = period === 'day' ? selectedStats?.calories ?? todayCalories : selectedStats?.calories ?? 0;
+  const displayProgress = goal ? Math.min(Math.round((displayCalories / goal) * 100), 100) : 0;
 
   const panelHeight = useMotionValue(ANALYTICS_EXPANDED);
 
@@ -36,6 +85,11 @@ const DashboardView: React.FC = () => {
     panelHeight,
     [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 56, 220, ANALYTICS_EXPANDED],
     [0, 0.3, 1, 1]
+  );
+  const chartOpacity = useTransform(
+    panelHeight,
+    [ANALYTICS_EXPANDED - 20, ANALYTICS_EXPANDED + 80, ANALYTICS_FULL],
+    [0, 0.5, 1]
   );
 
   const handleRef = useRef<HTMLDivElement>(null);
@@ -50,7 +104,7 @@ const DashboardView: React.FC = () => {
       const clamped = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, raw));
       panelHeight.set(clamped);
     },
-    [panelHeight]
+    [panelHeight, MIN_HEIGHT, MAX_HEIGHT]
   );
 
   const onPointerUp = useCallback(
@@ -60,7 +114,7 @@ const DashboardView: React.FC = () => {
         try {
           el.releasePointerCapture(e.pointerId);
         } catch {
-          // ignore if already released
+          // ignore
         }
         el.removeEventListener('pointermove', onPointerMove);
         el.removeEventListener('pointerup', onPointerUp);
@@ -68,10 +122,10 @@ const DashboardView: React.FC = () => {
       }
       dragStateRef.current = null;
       const current = panelHeight.get();
-      const target = current < SNAP_THRESHOLD ? ANALYTICS_COLLAPSED : ANALYTICS_EXPANDED;
+      const target = getSnapTarget(current, ANALYTICS_COLLAPSED, ANALYTICS_EXPANDED, ANALYTICS_FULL);
       animate(panelHeight, target, SPRING);
     },
-    [panelHeight, onPointerMove]
+    [panelHeight, onPointerMove, ANALYTICS_COLLAPSED, ANALYTICS_EXPANDED, ANALYTICS_FULL]
   );
 
   const handlePointerDown = useCallback(
@@ -138,13 +192,13 @@ const DashboardView: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-8xl font-bold text-white leading-none tracking-tight">
-                  {todayCalories}
+                  {displayCalories}
                 </div>
                 <p className="text-white/70 text-lg mt-2">ккал из {goal}</p>
               </div>
               <div className="relative shrink-0">
                 <CircularProgress
-                  value={progress}
+                  value={displayProgress}
                   size={90}
                   strokeWidth={9}
                   delay={0.4}
@@ -153,7 +207,7 @@ const DashboardView: React.FC = () => {
                   trackColor="rgba(255,255,255,0.15)"
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-white text-lg font-semibold">{progress}%</span>
+                  <span className="text-white text-lg font-semibold">{displayProgress}%</span>
                 </div>
               </div>
             </div>
@@ -165,25 +219,56 @@ const DashboardView: React.FC = () => {
           >
             <div className="flex-1">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-white">0</span>
+                <span className="text-4xl font-bold text-white">{selectedStats?.workouts ?? 0}</span>
                 <span className="text-xl text-white/80">трен.</span>
               </div>
               <p className="text-white/50 text-sm mt-1">физ.нагрузка</p>
             </div>
             <div className="flex-1 text-center">
               <div className="flex items-baseline gap-1 justify-center">
-                <span className="text-4xl font-bold text-white">0</span>
+                <span className="text-4xl font-bold text-white">{selectedStats?.minutes ?? 0}</span>
                 <span className="text-xl text-white/80">мин.</span>
               </div>
               <p className="text-white/50 text-sm mt-1">время активности</p>
             </div>
             <div className="flex-1 text-right">
               <div className="flex items-baseline gap-1 justify-end">
-                <span className="text-4xl font-bold text-white">0</span>
+                <span className="text-4xl font-bold text-white">{selectedStats?.exercises ?? 0}</span>
                 <span className="text-xl text-white/80">упр.</span>
               </div>
               <p className="text-white/50 text-sm mt-1">зоны роста</p>
             </div>
+          </motion.div>
+
+          <motion.div style={{ opacity: chartOpacity }} className="mt-2 h-[200px] w-full px-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData.map((d, i) => ({ ...d, index: i }))}
+                margin={{ top: 8, right: 8, left: 8, bottom: 4 }}
+              >
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
+                />
+                <YAxis hide domain={[0, (max: number) => Math.max(max, goal)]} />
+                <Bar
+                  dataKey="calories"
+                  radius={[6, 6, 0, 0]}
+                  cursor="pointer"
+                  isAnimationActive={true}
+                  onClick={(_: unknown, index: number) => setSelectedChartIndex(index)}
+                >
+                  {chartData.map((_, index) => (
+                    <Cell
+                      key={index}
+                      fill={index === selectedChartIndex ? '#FF8A00' : 'rgba(255,255,255,0.35)'}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </motion.div>
         </div>
         </motion.div>

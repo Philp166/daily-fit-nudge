@@ -11,12 +11,25 @@ export interface UserProfile {
   dailyCalorieGoal: number;
 }
 
+export interface DayStats {
+  date: string; // YYYY-MM-DD
+  label: string; // e.g. "Пн" or "12 фев"
+  calories: number;
+  workouts?: number;
+  minutes?: number;
+  exercises?: number;
+}
+
 interface UserContextType {
   profile: UserProfile | null;
   setProfile: (profile: UserProfile) => void;
   isOnboarded: boolean;
   todayCalories: number;
+  setTodayCalories: (value: number | ((prev: number) => number)) => void;
   getWeekProgress: () => { current: number; goal: number };
+  getLast7Days: () => DayStats[];
+  getLast4Weeks: () => DayStats[];
+  getLast4WeeksForMonth: () => DayStats[];
   logout: () => void;
 }
 
@@ -63,6 +76,19 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [profile, setProfileState] = useState<UserProfile | null>(null);
   const [todayCalories, setTodayCalories] = useState(0);
 
+  const DAILY_HISTORY_KEY = 'interfit_daily_history';
+  const getHistory = (): Record<string, { calories: number }> => {
+    try {
+      const raw = localStorage.getItem(DAILY_HISTORY_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  };
+  const setHistory = (h: Record<string, { calories: number }>) => {
+    localStorage.setItem(DAILY_HISTORY_KEY, JSON.stringify(h));
+  };
+
   // Load data from localStorage on mount
   useEffect(() => {
     const savedProfile = localStorage.getItem('interfit_profile');
@@ -73,7 +99,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setProfileState(JSON.parse(savedProfile));
     }
 
-    // Reset calories if it's a new day
     const today = new Date().toDateString();
     if (savedCalories && savedDate === today) {
       setTodayCalories(parseInt(savedCalories, 10));
@@ -83,7 +108,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
-  // Save to localStorage whenever data changes
   useEffect(() => {
     if (profile) {
       localStorage.setItem('interfit_profile', JSON.stringify(profile));
@@ -92,7 +116,64 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     localStorage.setItem('interfit_today_calories', todayCalories.toString());
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const h = getHistory();
+    h[todayKey] = { calories: todayCalories };
+    setHistory(h);
   }, [todayCalories]);
+
+  const setTodayCaloriesState = (value: number | ((prev: number) => number)) => {
+    setTodayCalories(typeof value === 'function' ? value(todayCalories) : value);
+  };
+
+  const dayLabelsShort = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  const getLast7Days = (): DayStats[] => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const h = getHistory();
+    const result: DayStats[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      const dayOfWeek = d.getDay();
+      const calories = key === todayKey ? todayCalories : (h[key]?.calories ?? 0);
+      result.push({
+        date: key,
+        label: dayLabelsShort[dayOfWeek],
+        calories,
+      });
+    }
+    return result;
+  };
+
+  const getLast4Weeks = (): DayStats[] => {
+    const h = getHistory();
+    const result: DayStats[] = [];
+    const now = new Date();
+    for (let w = 3; w >= 0; w--) {
+      const start = new Date(now);
+      start.setDate(start.getDate() - start.getDay() - 7 * w);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      let weekCal = 0;
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(start);
+        day.setDate(day.getDate() + d);
+        const key = day.toISOString().slice(0, 10);
+        weekCal += h[key]?.calories ?? 0;
+      }
+      result.push({
+        date: start.toISOString().slice(0, 10),
+        label: `Н${4 - w}`,
+        calories: weekCal,
+      });
+    }
+    return result;
+  };
+
+  const getLast4WeeksForMonth = (): DayStats[] => {
+    return getLast4Weeks();
+  };
 
   const setProfile = (newProfile: UserProfile) => {
     const dailyCalorieGoal = calculateDailyBurnGoal(
@@ -130,7 +211,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setProfile,
         isOnboarded: !!profile,
         todayCalories,
+        setTodayCalories: setTodayCaloriesState,
         getWeekProgress,
+        getLast7Days,
+        getLast4Weeks,
+        getLast4WeeksForMonth,
         logout,
       }}
     >
