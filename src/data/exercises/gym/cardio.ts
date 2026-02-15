@@ -367,4 +367,23 @@ export const cardioExercises: Exercise[] = [
     description: 'Ягодицы + кардио',
     tags: ['cardio', 'glutes', 'legs'],
   },
+
+  // ===== ASSAULT BIKE =====
+  {
+    id: 'assault-bike',
+    name: 'Assault Bike (Air Bike)',
+    nameEn: 'Assault Bike',
+    emoji: '🚴',
+    activityType: ActivityType.GYM,
+    muscleGroup: MuscleGroup.CARDIO,
+    difficulty: Difficulty.HARD,
+    equipment: Equipment.BIKE,
+    baseMET: 12.0,
+    parameterType: ParameterType.DISTANCE_TIME,
+    defaults: {
+      duration: 600,
+    },
+    description: 'Все тело, максимальная интенсивность',
+    tags: ['cardio', 'hiit', 'full-body', 'intense'],
+  },
 ];
