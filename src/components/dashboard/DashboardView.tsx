@@ -263,9 +263,12 @@ const DashboardView: React.FC = () => {
             </ResponsiveContainer>
           </motion.div>
 
+          {/* Spacer: pushes calories + metrics to the bottom when fully expanded */}
+          <div className="flex-1 min-h-0" aria-hidden />
+
           <motion.div
             style={{ opacity: contentOpacity }}
-            className="bg-[#004D5C] rounded-2xl p-5 mb-4"
+            className="bg-[#004D5C] rounded-2xl p-5 mb-4 shrink-0"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -293,7 +296,7 @@ const DashboardView: React.FC = () => {
 
           <motion.div
             style={{ opacity: contentOpacity }}
-            className="flex items-start justify-between px-2"
+            className="flex items-start justify-between px-2 shrink-0"
           >
             <div className="flex-1">
               <div className="flex items-baseline gap-1">
