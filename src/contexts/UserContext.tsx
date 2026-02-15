@@ -28,8 +28,11 @@ interface UserContextType {
   setTodayCalories: (value: number | ((prev: number) => number)) => void;
   getWeekProgress: () => { current: number; goal: number };
   getLast7Days: () => DayStats[];
-  getLast4Weeks: () => DayStats[];
-  getLast4WeeksForMonth: () => DayStats[];
+  getDaysOfWeek: (weekOffset: number) => DayStats[];
+  getDaysOfMonth: (monthOffset: number) => DayStats[];
+  getDaysOfMonthSampled: (monthOffset: number) => DayStats[];
+  getWeekLabel: (weekOffset: number) => string;
+  getMonthLabel: (monthOffset: number) => string;
   logout: () => void;
 }
 
@@ -146,33 +149,98 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return result;
   };
 
-  const getLast4Weeks = (): DayStats[] => {
+  // Monday = first day of week (ISO). weekOffset 0 = current week, -1 = previous, etc.
+  const getMondayOfWeek = (weekOffset: number): Date => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    const day = d.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diff + weekOffset * 7);
+    return d;
+  };
+
+  const getISOWeekNumber = (date: Date): number => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+    const yearStart = new Date(d.getFullYear(), 0, 1);
+    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7));
+  };
+
+  const monthNamesShort: Record<number, string> = {
+    0: 'Янв.', 1: 'Февр.', 2: 'Март', 3: 'Апр.', 4: 'Май', 5: 'Июнь',
+    6: 'Июль', 7: 'Авг.', 8: 'Сент.', 9: 'Окт.', 10: 'Нояб.', 11: 'Дек.',
+  };
+
+  const getDaysOfWeek = (weekOffset: number): DayStats[] => {
+    const todayKey = new Date().toISOString().slice(0, 10);
     const h = getHistory();
+    const monday = getMondayOfWeek(weekOffset);
     const result: DayStats[] = [];
-    const now = new Date();
-    for (let w = 3; w >= 0; w--) {
-      const start = new Date(now);
-      start.setDate(start.getDate() - start.getDay() - 7 * w);
-      const end = new Date(start);
-      end.setDate(end.getDate() + 6);
-      let weekCal = 0;
-      for (let d = 0; d < 7; d++) {
-        const day = new Date(start);
-        day.setDate(day.getDate() + d);
-        const key = day.toISOString().slice(0, 10);
-        weekCal += h[key]?.calories ?? 0;
-      }
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const key = d.toISOString().slice(0, 10);
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const calories = key === todayKey ? todayCalories : (h[key]?.calories ?? 0);
       result.push({
-        date: start.toISOString().slice(0, 10),
-        label: `Н${4 - w}`,
-        calories: weekCal,
+        date: key,
+        label: `${dd}/${mm}`,
+        calories,
       });
     }
     return result;
   };
 
-  const getLast4WeeksForMonth = (): DayStats[] => {
-    return getLast4Weeks();
+  const getWeekLabel = (weekOffset: number): string => {
+    const monday = getMondayOfWeek(weekOffset);
+    const weekNum = getISOWeekNumber(monday);
+    return `Н${weekNum}`;
+  };
+
+  const getDaysOfMonth = (monthOffset: number): DayStats[] => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const h = getHistory();
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + monthOffset;
+    const normalizedYear = year + Math.floor(month / 12);
+    const normalizedMonth = ((month % 12) + 12) % 12;
+    const daysInMonth = new Date(normalizedYear, normalizedMonth + 1, 0).getDate();
+    const result: DayStats[] = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(normalizedYear, normalizedMonth, day);
+      const key = d.toISOString().slice(0, 10);
+      const calories = key === todayKey ? todayCalories : (h[key]?.calories ?? 0);
+      result.push({
+        date: key,
+        label: String(day).padStart(2, '0'),
+        calories,
+      });
+    }
+    return result;
+  };
+
+  const getDaysOfMonthSampled = (monthOffset: number): DayStats[] => {
+    const all = getDaysOfMonth(monthOffset);
+    if (all.length <= 10) return all;
+    const step = Math.ceil(all.length / 8);
+    const indices = [0];
+    for (let i = step; i < all.length; i += step) indices.push(i);
+    if (indices[indices.length - 1] !== all.length - 1) indices.push(all.length - 1);
+    return indices.map((i) => all[i]);
+  };
+
+  const getMonthLabel = (monthOffset: number): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + monthOffset;
+    const normalizedYear = year + Math.floor(month / 12);
+    const normalizedMonth = ((month % 12) + 12) % 12;
+    const name = monthNamesShort[normalizedMonth];
+    const shortYear = String(normalizedYear).slice(-2);
+    return `${name} '${shortYear}`;
   };
 
   const setProfile = (newProfile: UserProfile) => {
@@ -214,8 +282,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setTodayCalories: setTodayCaloriesState,
         getWeekProgress,
         getLast7Days,
-        getLast4Weeks,
-        getLast4WeeksForMonth,
+        getDaysOfWeek,
+        getDaysOfMonth,
+        getDaysOfMonthSampled,
+        getWeekLabel,
+        getMonthLabel,
         logout,
       }}
     >

@@ -71,14 +71,21 @@ const DashboardView: React.FC = () => {
     todayCalories,
     profile,
     getLast7Days,
-    getLast4Weeks,
-    getLast4WeeksForMonth,
+    getDaysOfWeek,
+    getDaysOfMonth,
+    getDaysOfMonthSampled,
+    getWeekLabel,
+    getMonthLabel,
   } = useUser();
   const goal = profile?.dailyCalorieGoal || 800;
 
   const [period, setPeriod] = useState<Period>('day');
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [monthOffset, setMonthOffset] = useState(0);
   const [selectedChartIndex, setSelectedChartIndex] = useState(0);
   const [analyticsFull, setAnalyticsFull] = useState(600);
+
+  const todayKey = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     const updateFull = () => {
@@ -98,16 +105,40 @@ const DashboardView: React.FC = () => {
     period === 'day'
       ? getLast7Days()
       : period === 'week'
-        ? getLast4Weeks()
-        : getLast4WeeksForMonth();
+        ? getDaysOfWeek(weekOffset)
+        : getDaysOfMonthSampled(monthOffset);
+  const monthFullData = period === 'month' ? getDaysOfMonth(monthOffset) : [];
 
   useEffect(() => {
     setSelectedChartIndex((prev) => (prev >= chartData.length ? Math.max(0, chartData.length - 1) : prev));
-  }, [period, chartData.length]);
+  }, [period, chartData.length, weekOffset, monthOffset]);
 
   const selectedStats = chartData[selectedChartIndex] ?? chartData[0];
-  const displayCalories = period === 'day' ? selectedStats?.calories ?? todayCalories : selectedStats?.calories ?? 0;
-  const displayProgress = goal ? Math.min(Math.round((displayCalories / goal) * 100), 100) : 0;
+  const displayCalories =
+    period === 'day'
+      ? (selectedStats?.calories ?? todayCalories)
+      : period === 'week'
+        ? chartData.reduce((sum, d) => sum + (d.calories ?? 0), 0)
+        : monthFullData.reduce((sum, d) => sum + (d.calories ?? 0), 0);
+  const periodGoal =
+    period === 'day' ? goal : period === 'week' ? goal * 7 : goal * (monthFullData.length || 1);
+  const displayProgress =
+    periodGoal ? Math.min(Math.round((displayCalories / periodGoal) * 100), 100) : 0;
+
+  const periodSubtitle =
+    period === 'day'
+      ? selectedStats?.date === todayKey
+        ? 'Сегодня'
+        : (() => {
+            const d = selectedStats?.date;
+            if (!d) return 'ккал';
+            const [y, m, day] = d.split('-').map(Number);
+            const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+            return `${day} ${months[(m ?? 1) - 1]}`;
+          })()
+      : period === 'week'
+        ? getWeekLabel(weekOffset)
+        : getMonthLabel(monthOffset);
 
   const panelHeight = useMotionValue(ANALYTICS_EXPANDED);
 
@@ -197,31 +228,82 @@ const DashboardView: React.FC = () => {
             className="flex items-center justify-between mb-4 pt-3"
           >
             <img src={logoSvg} alt="Interfit" className="h-7 opacity-95" />
-            <div className="flex items-center bg-[#005563] rounded-full p-1">
-              {(['day', 'week', 'month'] as Period[]).map((p) => {
-                const label = p === 'day' ? 'Д' : p === 'week' ? 'Н' : 'М';
-                const isActive = period === p;
-                return (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPeriod(p)}
-                    className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                      isActive ? 'text-white' : 'text-white/40'
-                    }`}
-                    style={{ touchAction: 'manipulation' }}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="periodSelector"
-                        className="absolute inset-0 bg-[#00677A] rounded-full"
-                        transition={{ type: 'spring' as const, stiffness: 400, damping: 30 }}
-                      />
-                    )}
-                    <span className="relative z-10">{label}</span>
-                  </button>
-                );
-              })}
+            <div className="flex items-center gap-1">
+              {period === 'week' && (
+                <button
+                  type="button"
+                  onClick={() => setWeekOffset((o) => o + 1)}
+                  className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  style={{ touchAction: 'manipulation' }}
+                  aria-label="Предыдущая неделя"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
+                </button>
+              )}
+              {period === 'month' && (
+                <button
+                  type="button"
+                  onClick={() => setMonthOffset((o) => o + 1)}
+                  className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  style={{ touchAction: 'manipulation' }}
+                  aria-label="Предыдущий месяц"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
+                </button>
+              )}
+              <div className="flex items-center bg-[#005563] rounded-full p-1">
+                {(['day', 'week', 'month'] as Period[]).map((p) => {
+                  const label = p === 'day' ? 'Д' : p === 'week' ? 'Н' : 'М';
+                  const isActive = period === p;
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => {
+                      setPeriod(p);
+                      if (p === 'day') setSelectedChartIndex(6);
+                      if (p === 'week') setWeekOffset(0);
+                      if (p === 'month') setMonthOffset(0);
+                    }}
+                      className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                        isActive ? 'text-white' : 'text-white/40'
+                      }`}
+                      style={{ touchAction: 'manipulation' }}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="periodSelector"
+                          className="absolute inset-0 bg-[#00677A] rounded-full"
+                          transition={{ type: 'spring' as const, stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                      <span className="relative z-10">{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {period === 'week' && (
+                <button
+                  type="button"
+                  onClick={() => setWeekOffset((o) => Math.max(-3, o - 1))}
+                  className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  style={{ touchAction: 'manipulation' }}
+                  aria-label="Следующая неделя"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+                </button>
+              )}
+              {period === 'month' && (
+                <button
+                  type="button"
+                  onClick={() => setMonthOffset((o) => Math.max(-11, o - 1))}
+                  className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  style={{ touchAction: 'manipulation' }}
+                  aria-label="Следующий месяц"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+                </button>
+              )}
             </div>
           </motion.div>
 
@@ -276,7 +358,9 @@ const DashboardView: React.FC = () => {
                 <div className="text-8xl font-bold text-white leading-none tracking-tight">
                   {displayCalories}
                 </div>
-                <p className="text-white/70 text-lg mt-2">ккал из {goal}</p>
+                <p className="text-white/70 text-lg mt-2">
+                  {period === 'day' ? `ккал из ${goal} • ${periodSubtitle}` : `ккал • ${periodSubtitle}`}
+                </p>
               </div>
               <div className="relative shrink-0">
                 <CircularProgress
