@@ -185,6 +185,38 @@ const DashboardView: React.FC = () => {
             </div>
           </motion.div>
 
+          <motion.div style={{ opacity: chartOpacity }} className="mb-4 h-[180px] w-full min-h-[140px] px-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData.map((d, i) => ({ ...d, index: i, barValue: Math.max(d.calories, 1) }))}
+                margin={{ top: 8, right: 8, left: 8, bottom: 4 }}
+              >
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
+                />
+                <YAxis hide domain={[0, (max: number) => Math.max(max, goal, 50)]} />
+                <Bar
+                  dataKey="barValue"
+                  radius={[6, 6, 0, 0]}
+                  cursor="pointer"
+                  isAnimationActive={true}
+                  minPointSize={8}
+                  onClick={(_: unknown, index: number) => setSelectedChartIndex(index)}
+                >
+                  {chartData.map((_, index) => (
+                    <Cell
+                      key={index}
+                      fill={index === selectedChartIndex ? '#FF8A00' : 'rgba(255,255,255,0.35)'}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </motion.div>
+
           <motion.div
             style={{ opacity: contentOpacity }}
             className="bg-[#004D5C] rounded-2xl p-5 mb-4"
@@ -238,37 +270,6 @@ const DashboardView: React.FC = () => {
               </div>
               <p className="text-white/50 text-sm mt-1">зоны роста</p>
             </div>
-          </motion.div>
-
-          <motion.div style={{ opacity: chartOpacity }} className="mt-2 h-[200px] w-full px-1">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData.map((d, i) => ({ ...d, index: i }))}
-                margin={{ top: 8, right: 8, left: 8, bottom: 4 }}
-              >
-                <XAxis
-                  dataKey="label"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
-                />
-                <YAxis hide domain={[0, (max: number) => Math.max(max, goal)]} />
-                <Bar
-                  dataKey="calories"
-                  radius={[6, 6, 0, 0]}
-                  cursor="pointer"
-                  isAnimationActive={true}
-                  onClick={(_: unknown, index: number) => setSelectedChartIndex(index)}
-                >
-                  {chartData.map((_, index) => (
-                    <Cell
-                      key={index}
-                      fill={index === selectedChartIndex ? '#FF8A00' : 'rgba(255,255,255,0.35)'}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
           </motion.div>
         </div>
         </motion.div>
