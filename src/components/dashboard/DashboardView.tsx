@@ -18,6 +18,40 @@ const DRAG_SENSITIVITY = 1.3;
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 30, mass: 1 };
 
+type BarShapeProps = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill?: string;
+  index: number;
+};
+function AnimatedBarShape(props: BarShapeProps & { selected: boolean }) {
+  const { x, y, width, height, fill = 'rgba(255,255,255,0.35)', selected } = props;
+  const rx = Math.min(6, width / 2, height / 2);
+  return (
+    <motion.g
+      style={{ transformOrigin: `${x + width / 2}px ${y + height}px` }}
+      initial={{ scaleY: 0 }}
+      animate={{ scaleY: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+    >
+      <motion.rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        rx={rx}
+        ry={rx}
+        fill={fill}
+        style={{ transformOrigin: `${width / 2}px ${height / 2}px` }}
+        animate={{ scale: selected ? 1.05 : 1 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+      />
+    </motion.g>
+  );
+}
+
 function getSnapTarget(
   current: number,
   collapsed: number,
@@ -192,12 +226,13 @@ const DashboardView: React.FC = () => {
 
           <motion.div
             style={{ height: chartContainerHeight, opacity: chartOpacity }}
-            className="mb-4 w-full overflow-hidden shrink-0 px-1"
+            className="mb-4 w-full overflow-hidden shrink-0 px-1 flex flex-col justify-end"
           >
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" className="min-h-0">
               <BarChart
                 data={chartData.map((d, i) => ({ ...d, index: i, barValue: Math.max(d.calories, 1) }))}
                 margin={{ top: 8, right: 8, left: 8, bottom: 4 }}
+                barCategoryGap="12%"
               >
                 <XAxis
                   dataKey="label"
@@ -208,19 +243,22 @@ const DashboardView: React.FC = () => {
                 <YAxis hide domain={[0, (max: number) => Math.max(max, goal, 50)]} />
                 <Bar
                   dataKey="barValue"
-                  radius={[6, 6, 0, 0]}
                   cursor="pointer"
-                  isAnimationActive={true}
+                  isAnimationActive={false}
                   minPointSize={8}
                   onClick={(_: unknown, index: number) => setSelectedChartIndex(index)}
-                >
-                  {chartData.map((_, index) => (
-                    <Cell
-                      key={index}
-                      fill={index === selectedChartIndex ? '#FF8A00' : 'rgba(255,255,255,0.35)'}
+                  shape={(shapeProps: BarShapeProps) => (
+                    <AnimatedBarShape
+                      {...shapeProps}
+                      selected={shapeProps.index === selectedChartIndex}
+                      fill={
+                        shapeProps.index === selectedChartIndex
+                          ? '#FF8A00'
+                          : 'rgba(255,255,255,0.35)'
+                      }
                     />
-                  ))}
-                </Bar>
+                  )}
+                />
               </BarChart>
             </ResponsiveContainer>
           </motion.div>
