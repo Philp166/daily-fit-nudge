@@ -224,6 +224,9 @@ const DashboardView: React.FC = () => {
             </div>
           </motion.div>
 
+          {/* Spacer above chart: pushes chart + calories + metrics to the bottom when fully expanded */}
+          <div className="flex-1 min-h-0" aria-hidden />
+
           <motion.div
             style={{ height: chartContainerHeight, opacity: chartOpacity }}
             className="mb-1 w-full overflow-hidden shrink-0 px-1 flex flex-col justify-end"
@@ -262,9 +265,6 @@ const DashboardView: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
           </motion.div>
-
-          {/* Spacer: pushes calories + metrics to the bottom when fully expanded */}
-          <div className="flex-1 min-h-0" aria-hidden />
 
           <motion.div
             style={{ opacity: contentOpacity }}
