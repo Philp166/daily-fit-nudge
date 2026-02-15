@@ -226,7 +226,7 @@ const DashboardView: React.FC = () => {
 
           <motion.div
             style={{ height: chartContainerHeight, opacity: chartOpacity }}
-            className="mb-4 w-full overflow-hidden shrink-0 px-1 flex flex-col justify-end"
+            className="mb-1 w-full overflow-hidden shrink-0 px-1 flex flex-col justify-end"
           >
             <ResponsiveContainer width="100%" height="100%" className="min-h-0">
               <BarChart
