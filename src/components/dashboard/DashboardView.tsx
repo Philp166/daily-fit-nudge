@@ -86,10 +86,15 @@ const DashboardView: React.FC = () => {
     [ANALYTICS_COLLAPSED, ANALYTICS_COLLAPSED + 56, 220, ANALYTICS_EXPANDED],
     [0, 0.3, 1, 1]
   );
+  const chartContainerHeight = useTransform(
+    panelHeight,
+    [ANALYTICS_EXPANDED, ANALYTICS_FULL],
+    [0, 180]
+  );
   const chartOpacity = useTransform(
     panelHeight,
-    [ANALYTICS_EXPANDED - 20, ANALYTICS_EXPANDED + 80, ANALYTICS_FULL],
-    [0, 0.5, 1]
+    [ANALYTICS_EXPANDED, ANALYTICS_EXPANDED + 60, ANALYTICS_FULL],
+    [0, 0, 1]
   );
 
   const handleRef = useRef<HTMLDivElement>(null);
@@ -185,7 +190,10 @@ const DashboardView: React.FC = () => {
             </div>
           </motion.div>
 
-          <motion.div style={{ opacity: chartOpacity }} className="mb-4 h-[180px] w-full min-h-[140px] px-1">
+          <motion.div
+            style={{ height: chartContainerHeight, opacity: chartOpacity }}
+            className="mb-4 w-full overflow-hidden shrink-0 px-1"
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData.map((d, i) => ({ ...d, index: i, barValue: Math.max(d.calories, 1) }))}
