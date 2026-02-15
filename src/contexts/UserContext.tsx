@@ -38,6 +38,13 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+export const getLocalDateKey = (d: Date): string => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
 // Calculate daily BURN goal (calories to burn through exercise)
 // Uses Mifflin-St Jeor equation for BMR, then adjusts based on goal
 const calculateDailyBurnGoal = (
@@ -119,7 +126,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     localStorage.setItem('interfit_today_calories', todayCalories.toString());
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = getLocalDateKey(new Date());
     const h = getHistory();
     h[todayKey] = { calories: todayCalories };
     setHistory(h);
@@ -131,13 +138,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const dayLabelsShort = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
   const getLast7Days = (): DayStats[] => {
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = getLocalDateKey(new Date());
     const h = getHistory();
     const result: DayStats[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
+      const key = getLocalDateKey(d);
       const dayOfWeek = d.getDay();
       const calories = key === todayKey ? todayCalories : (h[key]?.calories ?? 0);
       result.push({
@@ -149,13 +156,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return result;
   };
 
-  // Monday = first day of week (ISO). weekOffset 0 = current week, -1 = previous, etc.
+  // Monday = first day of week (ISO). weekOffset 0 = current week, 1 = previous week, etc.
   const getMondayOfWeek = (weekOffset: number): Date => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     const day = d.getDay();
     const diff = day === 0 ? -6 : 1 - day;
-    d.setDate(d.getDate() + diff + weekOffset * 7);
+    d.setDate(d.getDate() + diff - weekOffset * 7);
     return d;
   };
 
@@ -173,14 +180,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const getDaysOfWeek = (weekOffset: number): DayStats[] => {
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = getLocalDateKey(new Date());
     const h = getHistory();
     const monday = getMondayOfWeek(weekOffset);
     const result: DayStats[] = [];
     for (let i = 0; i < 7; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      const key = d.toISOString().slice(0, 10);
+      const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+      const key = getLocalDateKey(d);
       const dd = String(d.getDate()).padStart(2, '0');
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const calories = key === todayKey ? todayCalories : (h[key]?.calories ?? 0);
@@ -200,18 +206,18 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const getDaysOfMonth = (monthOffset: number): DayStats[] => {
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = getLocalDateKey(new Date());
     const h = getHistory();
     const now = new Date();
     const year = now.getFullYear();
-    const month = now.getMonth() + monthOffset;
+    const month = now.getMonth() - monthOffset;
     const normalizedYear = year + Math.floor(month / 12);
     const normalizedMonth = ((month % 12) + 12) % 12;
     const daysInMonth = new Date(normalizedYear, normalizedMonth + 1, 0).getDate();
     const result: DayStats[] = [];
     for (let day = 1; day <= daysInMonth; day++) {
       const d = new Date(normalizedYear, normalizedMonth, day);
-      const key = d.toISOString().slice(0, 10);
+      const key = getLocalDateKey(d);
       const calories = key === todayKey ? todayCalories : (h[key]?.calories ?? 0);
       result.push({
         date: key,
@@ -235,7 +241,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const getMonthLabel = (monthOffset: number): string => {
     const now = new Date();
     const year = now.getFullYear();
-    const month = now.getMonth() + monthOffset;
+    const month = now.getMonth() - monthOffset;
     const normalizedYear = year + Math.floor(month / 12);
     const normalizedMonth = ((month % 12) + 12) % 12;
     const name = monthNamesShort[normalizedMonth];

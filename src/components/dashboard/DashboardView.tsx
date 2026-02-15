@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
-import { useUser, type DayStats } from '@/contexts/UserContext';
+import { useUser, getLocalDateKey, type DayStats } from '@/contexts/UserContext';
 import CircularProgress from '@/components/dashboard/CircularProgress';
 import logoSvg from '@/assets/logo.svg';
 import constructorImg from '@/assets/constructor-img.png';
@@ -85,7 +85,7 @@ const DashboardView: React.FC = () => {
   const [selectedChartIndex, setSelectedChartIndex] = useState(0);
   const [analyticsFull, setAnalyticsFull] = useState(600);
 
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = getLocalDateKey(new Date());
 
   useEffect(() => {
     const updateFull = () => {
