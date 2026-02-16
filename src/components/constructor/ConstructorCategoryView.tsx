@@ -2,7 +2,7 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { ActivityType } from '@/types/exercise';
 import { ACTIVITY_TYPE_DISPLAY } from '@/data/exercises';
-import gymIcon from '@/assets/constructor-categories/gym.jpg';
+import gymIcon from '@/assets/constructor-categories/gym.png';
 import fightIcon from '@/assets/constructor-categories/fight.png';
 import legatlIcon from '@/assets/constructor-categories/legatl.png';
 import swimIcon from '@/assets/constructor-categories/swim.png';
@@ -45,9 +45,9 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
   onClose,
 }) => {
   return (
-    <div className="bg-white min-h-screen min-w-[390px] w-full relative flex flex-col pt-safe-top">
+    <div className="bg-white min-h-screen min-w-[390px] w-full flex flex-col pt-safe-top">
       {/* Шапка: название слева, закрыть справа */}
-      <div className="flex items-center justify-between px-4 pt-6 pb-2">
+      <div className="flex items-center justify-between px-4 pt-6 pb-2 shrink-0">
         <h1 className="text-xl font-semibold text-[#030032]">
           Тип тренировки
         </h1>
@@ -62,38 +62,42 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
       </div>
 
       {/* Список карточек категорий */}
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pt-4 pb-28">
-        {CATEGORY_ORDER.map((type) => {
-          const meta = ACTIVITY_TYPE_DISPLAY[type];
-          const iconSrc = ICON_MAP[type];
-          return (
-            <button
-              key={type}
-              type="button"
-              onClick={() => onSelectType(type)}
-              className="relative flex items-center h-[143px] rounded-[32px] overflow-hidden active:opacity-90 transition-opacity"
-              style={{
-                backgroundColor: meta.color,
-              }}
-            >
-              {/* Текст слева */}
-              <div className="flex-1 px-6 flex items-center">
-                <h2 className="text-[32px] font-bold text-white leading-tight" style={{ fontFamily: 'Ubuntu, sans-serif' }}>
-                  {meta.name}
-                </h2>
-              </div>
+      <div className="flex-1 min-h-0 overflow-y-auto px-2 pt-4 pb-28">
+        <div className="flex flex-col gap-4 max-w-[374px] mx-auto">
+          {CATEGORY_ORDER.map((type) => {
+            const meta = ACTIVITY_TYPE_DISPLAY[type];
+            const iconSrc = ICON_MAP[type];
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => onSelectType(type)}
+                className="relative flex items-center h-[170px] rounded-[32px] overflow-hidden active:opacity-90 transition-opacity w-full"
+                style={{
+                  backgroundColor: meta.color,
+                }}
+              >
+                {/* Текст слева - четкий отступ 24px */}
+                <div className="flex-1 min-w-0 pl-6 flex items-center">
+                  <h2 className="text-[32px] font-bold text-white leading-tight" style={{ fontFamily: 'Ubuntu, sans-serif' }}>
+                    {meta.name}
+                  </h2>
+                </div>
 
-              {/* Иконка справа */}
-              <div className="flex items-center justify-center pr-6">
-                <img
-                  src={iconSrc}
-                  alt={meta.name}
-                  className="max-h-[125px] max-w-[154px] object-contain"
-                />
-              </div>
-            </button>
-          );
-        })}
+                {/* Иконка справа - фиксированная колонка для визуального выравнивания */}
+                <div className="w-[150px] shrink-0 pr-6 flex items-center justify-end">
+                  <div className="h-[125px] w-[140px] flex items-center justify-center">
+                    <img
+                      src={iconSrc}
+                      alt={meta.name}
+                      className="max-h-full max-w-full object-contain object-right"
+                    />
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
