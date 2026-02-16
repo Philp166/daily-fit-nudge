@@ -300,6 +300,57 @@ export const MUSCLE_GROUP_META: Record<
 };
 
 /**
+ * Метаданные для типов активности (для экрана выбора категории)
+ * Иконки импортируются в компоненте ConstructorCategoryView
+ */
+export const ACTIVITY_TYPE_DISPLAY: Record<
+  ActivityType,
+  { name: string; color: string }
+> = {
+  [ActivityType.GYM]: {
+    name: 'Спортзал',
+    color: '#fc7a18', // Оранжевый для первой карточки
+  },
+  [ActivityType.COMBAT]: {
+    name: 'Единоборства',
+    color: '#26c9ce', // Teal для остальных
+  },
+  [ActivityType.ATHLETICS]: {
+    name: 'Легкая атлетика',
+    color: '#26c9ce',
+  },
+  [ActivityType.AQUATIC]: {
+    name: 'Водные виды',
+    color: '#26c9ce',
+  },
+  [ActivityType.CYCLING]: {
+    name: 'Велоспорт',
+    color: '#26c9ce',
+  },
+  [ActivityType.ROWING]: {
+    name: 'Гребля',
+    color: '#26c9ce',
+  },
+  [ActivityType.FUNCTIONAL]: {
+    name: 'Функциональный',
+    color: '#26c9ce',
+  },
+  // Остальные типы (не используются в экране выбора, но нужны для типа)
+  [ActivityType.GYMNASTICS]: {
+    name: 'Гимнастика',
+    color: '#26c9ce',
+  },
+  [ActivityType.TEAM_SPORTS]: {
+    name: 'Командные игры',
+    color: '#26c9ce',
+  },
+  [ActivityType.TRIATHLON]: {
+    name: 'Триатлон',
+    color: '#26c9ce',
+  },
+};
+
+/**
  * Получить количество упражнений по категориям
  */
 export function getExerciseStats() {

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { X, Plus, Search } from 'lucide-react';
+import { X, Plus, Search, ArrowLeft } from 'lucide-react';
 import type { Exercise } from '@/types/exercise';
-import { MuscleGroup } from '@/types/exercise';
+import { MuscleGroup, ActivityType } from '@/types/exercise';
 import { MUSCLE_GROUP_META } from '@/data/exercises';
 
 const ALL_CHIP_EMOJI = '✨';
@@ -20,17 +20,28 @@ interface ConstructorCatalogViewProps {
   exercises: Exercise[];
   onClose: () => void;
   onAddExercise?: (exercise: Exercise) => void;
+  initialActivityType?: ActivityType;
+  onBack?: () => void;
 }
 
 const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
   exercises,
   onClose,
   onAddExercise,
+  initialActivityType,
+  onBack,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<MuscleGroup | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const categoryChips = useMemo(() => getCategoryChips(), []);
+  // Для спортзала показываем чипы по группам мышц, для остальных - только "Все"
+  const showMuscleGroupChips = initialActivityType === ActivityType.GYM;
+  const categoryChips = useMemo(() => {
+    if (!showMuscleGroupChips) {
+      return [{ id: 'all' as const, label: 'Все', emoji: ALL_CHIP_EMOJI }];
+    }
+    return getCategoryChips();
+  }, [showMuscleGroupChips]);
 
   const displayList = useMemo(() => {
     let list = selectedCategory === 'all' ? exercises : exercises.filter((ex) => ex.muscleGroup === selectedCategory);
@@ -48,15 +59,27 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
 
   return (
     <div className="exsizes bg-white min-h-screen min-w-[390px] w-full relative flex flex-col pt-safe-top">
-      {/* Шапка: название слева, закрыть справа */}
+      {/* Шапка: назад (если есть), название слева, закрыть справа */}
       <div className="flex items-center justify-between px-4 pt-6 pb-2">
-        <h1 className="text-xl font-semibold text-[#030032]">
-          Собери свою тренировку
-        </h1>
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80"
+              aria-label="Назад к типам"
+            >
+              <ArrowLeft className="h-4 w-4" strokeWidth={2} />
+            </button>
+          )}
+          <h1 className="text-xl font-semibold text-[#030032] truncate">
+            Собери свою тренировку
+          </h1>
+        </div>
         <button
           type="button"
           onClick={onClose}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 ml-2"
           aria-label="Закрыть"
         >
           <X className="h-4 w-4" strokeWidth={2} />

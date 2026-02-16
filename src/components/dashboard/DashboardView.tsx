@@ -7,7 +7,10 @@ import logoSvg from '@/assets/logo.svg';
 import constructorImg from '@/assets/constructor-img.png';
 import workoutsImg from '@/assets/workouts-img.png';
 import ConstructorCatalogView from '@/components/constructor/ConstructorCatalogView';
+import ConstructorCategoryView from '@/components/constructor/ConstructorCategoryView';
 import { ALL_EXERCISES } from '@/data/exercises';
+import { ActivityType } from '@/types/exercise';
+import type { Exercise } from '@/types/exercise';
 
 type Period = 'day' | 'week' | 'month';
 
@@ -86,7 +89,9 @@ const DashboardView: React.FC = () => {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedChartIndex, setSelectedChartIndex] = useState(0);
   const [analyticsFull, setAnalyticsFull] = useState(600);
-  const [showConstructorCatalog, setShowConstructorCatalog] = useState(false);
+  const [constructorScreen, setConstructorScreen] = useState<'categories' | 'catalog' | null>(null);
+  const [selectedActivityType, setSelectedActivityType] = useState<ActivityType | null>(null);
+  const [selectedExercises, setSelectedExercises] = useState<Exercise[]>([]);
 
   const todayKey = getLocalDateKey(new Date());
 
@@ -225,11 +230,45 @@ const DashboardView: React.FC = () => {
     [panelHeight, onPointerMove, onPointerUp]
   );
 
-  if (showConstructorCatalog) {
+  // Экран выбора категории
+  if (constructorScreen === 'categories') {
+    return (
+      <ConstructorCategoryView
+        onSelectType={(type) => {
+          setSelectedActivityType(type);
+          setConstructorScreen('catalog');
+        }}
+        onClose={() => {
+          setConstructorScreen(null);
+          setSelectedActivityType(null);
+          setSelectedExercises([]);
+        }}
+      />
+    );
+  }
+
+  // Экран каталога упражнений
+  if (constructorScreen === 'catalog') {
+    const filteredExercises = selectedActivityType
+      ? ALL_EXERCISES.filter((ex) => ex.activityType === selectedActivityType)
+      : ALL_EXERCISES;
+
     return (
       <ConstructorCatalogView
-        exercises={ALL_EXERCISES}
-        onClose={() => setShowConstructorCatalog(false)}
+        exercises={filteredExercises}
+        initialActivityType={selectedActivityType || undefined}
+        onBack={() => {
+          setConstructorScreen('categories');
+          setSelectedActivityType(null);
+        }}
+        onClose={() => {
+          setConstructorScreen(null);
+          setSelectedActivityType(null);
+          setSelectedExercises([]);
+        }}
+        onAddExercise={(exercise) => {
+          setSelectedExercises((prev) => [...prev, exercise]);
+        }}
       />
     );
   }
@@ -464,8 +503,8 @@ const DashboardView: React.FC = () => {
         <motion.div
           role="button"
           tabIndex={0}
-          onClick={() => setShowConstructorCatalog(true)}
-          onKeyDown={(e) => e.key === 'Enter' && setShowConstructorCatalog(true)}
+          onClick={() => setConstructorScreen('categories')}
+          onKeyDown={(e) => e.key === 'Enter' && setConstructorScreen('categories')}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring' as const, stiffness: 300, damping: 30, delay: 0.15 }}
