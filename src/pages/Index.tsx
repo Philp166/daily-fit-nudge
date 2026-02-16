@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserProvider, useUser } from '@/contexts/UserContext';
+import { WorkoutProvider } from '@/contexts/WorkoutContext';
 import BottomNav, { type Tab } from '@/components/layout/BottomNav';
 import DashboardView from '@/components/dashboard/DashboardView';
 import ProfileView from '@/components/profile/ProfileView';
@@ -67,7 +68,9 @@ const AppContent: React.FC = () => {
 
 const Index: React.FC = () => (
   <UserProvider>
-    <AppContent />
+    <WorkoutProvider>
+      <AppContent />
+    </WorkoutProvider>
   </UserProvider>
 );
 

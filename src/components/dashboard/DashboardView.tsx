@@ -2,12 +2,16 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { useUser, getLocalDateKey, type DayStats } from '@/contexts/UserContext';
+import { useWorkout, type CompletedWorkout } from '@/contexts/WorkoutContext';
 import CircularProgress from '@/components/dashboard/CircularProgress';
 import logoSvg from '@/assets/logo.svg';
 import constructorImg from '@/assets/constructor-img.png';
 import workoutsImg from '@/assets/workouts-img.png';
 import ConstructorCatalogView from '@/components/constructor/ConstructorCatalogView';
 import ConstructorCategoryView from '@/components/constructor/ConstructorCategoryView';
+import ConstructorBuilderView from '@/components/constructor/ConstructorBuilderView';
+import WorkoutExecutionView from '@/components/constructor/WorkoutExecutionView';
+import WorkoutResultView from '@/components/constructor/WorkoutResultView';
 import { ALL_EXERCISES } from '@/data/exercises';
 import { ActivityType } from '@/types/exercise';
 import type { Exercise } from '@/types/exercise';
@@ -93,9 +97,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onConstructorScreenChange
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedChartIndex, setSelectedChartIndex] = useState(0);
   const [analyticsFull, setAnalyticsFull] = useState(600);
-  const [constructorScreen, setConstructorScreen] = useState<'categories' | 'catalog' | null>(null);
+  const [constructorScreen, setConstructorScreen] = useState<'categories' | 'catalog' | 'builder' | 'execution' | 'result' | null>(null);
   const [selectedActivityType, setSelectedActivityType] = useState<ActivityType | null>(null);
-  const [selectedExercises, setSelectedExercises] = useState<Exercise[]>([]);
+  const [workoutResult, setWorkoutResult] = useState<CompletedWorkout | null>(null);
+
+  const { addToBuilder, startSession, finishSession, cancelSession } = useWorkout();
 
   const todayKey = getLocalDateKey(new Date());
 
@@ -270,12 +276,59 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onConstructorScreenChange
           setSelectedActivityType(null);
         }}
         onClose={() => {
-          setConstructorScreen(null);
+          setConstructorScreen('builder');
           setSelectedActivityType(null);
-          setSelectedExercises([]);
         }}
         onAddExercise={(exercise) => {
-          setSelectedExercises((prev) => [...prev, exercise]);
+          addToBuilder(exercise);
+        }}
+      />
+    );
+  }
+
+  // Экран сборки тренировки
+  if (constructorScreen === 'builder') {
+    return (
+      <ConstructorBuilderView
+        onClose={() => {
+          setConstructorScreen(null);
+        }}
+        onStartWorkout={() => {
+          startSession('Моя тренировка');
+          setConstructorScreen('execution');
+        }}
+        onOpenCatalog={() => {
+          setConstructorScreen('categories');
+        }}
+      />
+    );
+  }
+
+  // Экран выполнения тренировки
+  if (constructorScreen === 'execution') {
+    return (
+      <WorkoutExecutionView
+        onFinish={() => {
+          const result = finishSession();
+          setWorkoutResult(result);
+          setConstructorScreen('result');
+        }}
+        onCancel={() => {
+          cancelSession();
+          setConstructorScreen(null);
+        }}
+      />
+    );
+  }
+
+  // Экран результата
+  if (constructorScreen === 'result' && workoutResult) {
+    return (
+      <WorkoutResultView
+        result={workoutResult}
+        onClose={() => {
+          setWorkoutResult(null);
+          setConstructorScreen(null);
         }}
       />
     );
