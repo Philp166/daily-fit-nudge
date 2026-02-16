@@ -333,14 +333,27 @@ const DashboardView: React.FC = () => {
 
           <motion.div
             style={{ height: chartContainerHeight, opacity: chartOpacity }}
-            className="mb-1 w-full overflow-x-auto shrink-0 px-1 flex flex-col justify-end"
+            className="mb-1 w-full overflow-hidden shrink-0 px-1 flex flex-col justify-end touch-none"
+            onPanEnd={(_, info) => {
+              const { offset, velocity } = info;
+              if (Math.abs(offset.x) < Math.abs(offset.y)) return;
+              const v = velocity.x;
+              if (period === 'week') {
+                if (v < -200) setWeekOffset((o) => Math.max(0, o - 1));
+                else if (v > 200) setWeekOffset((o) => o + 1);
+              } else if (period === 'month') {
+                if (v < -200) setMonthOffset((o) => Math.max(0, o - 1));
+                else if (v > 200) setMonthOffset((o) => o + 1);
+              }
+            }}
           >
-            <div style={{ minWidth: `${chartData.length * 60}px` }}>
-              <ResponsiveContainer width="100%" height="100%" className="min-h-0">
+            <div className="w-full h-full min-h-[140px]">
+              <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={chartData.map((d, i) => ({ ...d, index: i, barValue: Math.max(d.calories, 1) }))}
                   margin={{ top: 8, right: 8, left: 8, bottom: 4 }}
                   barCategoryGap={12}
+                  barSize={24}
                 >
                   <XAxis
                     dataKey="label"
@@ -354,7 +367,6 @@ const DashboardView: React.FC = () => {
                     cursor="pointer"
                     isAnimationActive={false}
                     minPointSize={8}
-                    barSize={24}
                     onClick={(_: unknown, index: number) => setSelectedChartIndex(index)}
                     shape={(shapeProps: BarShapeProps) => (
                       <AnimatedBarShape
