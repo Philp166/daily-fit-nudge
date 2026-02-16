@@ -6,6 +6,8 @@ import CircularProgress from '@/components/dashboard/CircularProgress';
 import logoSvg from '@/assets/logo.svg';
 import constructorImg from '@/assets/constructor-img.png';
 import workoutsImg from '@/assets/workouts-img.png';
+import ConstructorCatalogView from '@/components/constructor/ConstructorCatalogView';
+import { ALL_EXERCISES } from '@/data/exercises';
 
 type Period = 'day' | 'week' | 'month';
 
@@ -84,6 +86,7 @@ const DashboardView: React.FC = () => {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedChartIndex, setSelectedChartIndex] = useState(0);
   const [analyticsFull, setAnalyticsFull] = useState(600);
+  const [showConstructorCatalog, setShowConstructorCatalog] = useState(false);
 
   const todayKey = getLocalDateKey(new Date());
 
@@ -214,6 +217,15 @@ const DashboardView: React.FC = () => {
     },
     [panelHeight, onPointerMove, onPointerUp]
   );
+
+  if (showConstructorCatalog) {
+    return (
+      <ConstructorCatalogView
+        exercises={ALL_EXERCISES}
+        onClose={() => setShowConstructorCatalog(false)}
+      />
+    );
+  }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -421,10 +433,14 @@ const DashboardView: React.FC = () => {
       {/* Cards — clear gap below handle strip */}
       <div className="flex flex-col flex-1 min-h-0 gap-3 px-4 pt-6 pb-4 bg-background">
         <motion.div
+          role="button"
+          tabIndex={0}
+          onClick={() => setShowConstructorCatalog(true)}
+          onKeyDown={(e) => e.key === 'Enter' && setShowConstructorCatalog(true)}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring' as const, stiffness: 300, damping: 30, delay: 0.15 }}
-          className="rounded-3xl overflow-hidden relative flex-1"
+          className="rounded-3xl overflow-hidden relative flex-1 cursor-pointer"
           style={{ backgroundColor: '#F5941D' }}
           whileTap={{ scale: 0.985 }}
         >
