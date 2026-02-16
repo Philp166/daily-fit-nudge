@@ -17,9 +17,25 @@ import { cardioExercises } from './gym/cardio';
 
 // Единоборства
 import { boxingExercises } from './combat/boxing';
+import { wrestlingExercises } from './combat/wrestling';
 
 // Легкая атлетика
 import { sprintExercises } from './athletics/sprint';
+import { middleDistanceExercises } from './athletics/middle-distance';
+import { longDistanceExercises } from './athletics/long-distance';
+
+// Водные виды
+import { swimmingExercises } from './aquatic/swimming';
+
+// Велоспорт
+import { roadCyclingExercises } from './cycling/road';
+import { trackCyclingExercises } from './cycling/track';
+
+// Гребля
+import { rowingExercises } from './rowing/rowing';
+
+// Функциональный
+import { hiitExercises } from './functional/hiit';
 
 // ============================================
 // ОБЪЕДИНЕННАЯ БАЗА УПРАЖНЕНИЙ
@@ -41,9 +57,25 @@ export const ALL_EXERCISES: Exercise[] = [
 
   // Единоборства
   ...boxingExercises,
+  ...wrestlingExercises,
 
   // Легкая атлетика
   ...sprintExercises,
+  ...middleDistanceExercises,
+  ...longDistanceExercises,
+
+  // Водные виды
+  ...swimmingExercises,
+
+  // Велоспорт
+  ...roadCyclingExercises,
+  ...trackCyclingExercises,
+
+  // Гребля
+  ...rowingExercises,
+
+  // Функциональный
+  ...hiitExercises,
 ];
 
 // ============================================

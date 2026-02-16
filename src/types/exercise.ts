@@ -123,6 +123,8 @@ export enum Equipment {
   SLED = 'sled',
   BATTLE_ROPE = 'battle_rope',
   TRX = 'trx',
+  POOL = 'pool',
+  WRESTLING_DUMMY = 'wrestling_dummy',
   NONE = 'none',
 }
 
