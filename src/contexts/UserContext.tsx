@@ -201,8 +201,16 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const getWeekLabel = (weekOffset: number): string => {
     const monday = getMondayOfWeek(weekOffset);
-    const weekNum = getISOWeekNumber(monday);
-    return `Н${weekNum}`;
+    const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+    const monthsShort = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+    const d1 = monday.getDate();
+    const d2 = sunday.getDate();
+    const m1 = monthsShort[monday.getMonth()];
+    const m2 = monthsShort[sunday.getMonth()];
+    if (monday.getMonth() === sunday.getMonth()) {
+      return `${d1}–${d2} ${m2}`;
+    }
+    return `${d1} ${m1} – ${d2} ${m2}`;
   };
 
   const getDaysOfMonth = (monthOffset: number): DayStats[] => {
