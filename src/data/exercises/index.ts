@@ -332,7 +332,7 @@ export const ACTIVITY_TYPE_DISPLAY: Record<
     color: '#26c9ce',
   },
   [ActivityType.FUNCTIONAL]: {
-    name: 'функционал',
+    name: 'Функционал',
     color: '#26c9ce',
   },
   // Остальные типы (не используются в экране выбора, но нужны для типа)
