@@ -136,8 +136,8 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
         </div>
       </div>
 
-      {/* Список упражнений — по макету: gap 8px, карточки 99px, rounded 32px */}
-      <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-2 pb-28">
+      {/* Список упражнений — стили как на главном экране */}
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pt-6 pb-28">
         {displayList.length === 0 ? (
           <p className="py-8 text-center text-[#030032]/60">
             {searchQuery.trim() ? 'Ничего не найдено' : 'Нет упражнений в этой категории. Загрузите базу в каталог.'}
@@ -146,7 +146,7 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
           displayList.map((exercise) => (
             <div
               key={exercise.id}
-              className="flex items-center gap-2.5 rounded-[32px] bg-[#efefef] p-4 min-h-[99px]"
+              className="flex items-center gap-2.5 rounded-3xl bg-[#efefef] p-4 min-h-[99px]"
             >
               {/* Иконка — 67x67, белый фон, emoji чуть крупнее */}
               <div className="flex h-[67px] w-[67px] shrink-0 items-center justify-center rounded-[33.5px] bg-white text-[28px] leading-none">
