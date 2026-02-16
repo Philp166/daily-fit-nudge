@@ -4,13 +4,16 @@ import type { Exercise } from '@/types/exercise';
 import { MuscleGroup } from '@/types/exercise';
 import { MUSCLE_GROUP_META } from '@/data/exercises';
 
-function getCategoryChips(): { id: MuscleGroup | 'all'; label: string }[] {
+const ALL_CHIP_EMOJI = '✨';
+
+function getCategoryChips(): { id: MuscleGroup | 'all'; label: string; emoji: string }[] {
   const groups = (Object.keys(MUSCLE_GROUP_META) as MuscleGroup[]).map((id) => ({
     id,
     label: MUSCLE_GROUP_META[id].name,
+    emoji: MUSCLE_GROUP_META[id].emoji,
   }));
   groups.sort((a, b) => a.label.localeCompare(b.label, 'ru'));
-  return [{ id: 'all', label: 'Все' }, ...groups];
+  return [{ id: 'all', label: 'Все', emoji: ALL_CHIP_EMOJI }, ...groups];
 }
 
 interface ConstructorCatalogViewProps {
@@ -62,13 +65,21 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
               key={chip.id}
               type="button"
               onClick={() => setSelectedCategory(chip.id)}
-              className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-base font-medium transition-colors ${
+              className={`inline-flex shrink-0 items-center gap-2 rounded-full pl-2 pr-4 py-2 text-base font-medium transition-colors ${
                 isActive
                   ? 'bg-[#fc7a18] text-white'
                   : 'bg-[#efefef] text-[#030032]'
               }`}
               style={{ touchAction: 'manipulation' }}
             >
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-lg ${
+                  isActive ? 'bg-white/25' : 'bg-white'
+                }`}
+                aria-hidden
+              >
+                {chip.emoji}
+              </span>
               {chip.label}
             </button>
           );
