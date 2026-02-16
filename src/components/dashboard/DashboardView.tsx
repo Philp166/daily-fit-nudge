@@ -347,8 +347,12 @@ const DashboardView: React.FC = () => {
               }
             }}
           >
-            <div className="w-full h-full min-h-[140px]">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className={`h-full min-h-[140px] flex ${chartData.length === 1 ? 'w-full justify-start' : 'w-full'}`}>
+              <ResponsiveContainer
+                width={chartData.length === 1 ? 60 : '100%'}
+                height="100%"
+                className={chartData.length === 1 ? '!min-w-0 shrink-0' : ''}
+              >
                 <BarChart
                   data={chartData.map((d, i) => ({ ...d, index: i, barValue: Math.max(d.calories, 1) }))}
                   margin={{ top: 8, right: 8, left: 8, bottom: 4 }}
@@ -360,6 +364,7 @@ const DashboardView: React.FC = () => {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
+                    padding={chartData.length === 1 ? { left: 0, right: 0 } : undefined}
                   />
                   <YAxis hide domain={[0, (max: number) => Math.max(max, goal, 50)]} />
                   <Bar
