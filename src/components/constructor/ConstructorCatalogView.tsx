@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus, Search, ArrowLeft } from 'lucide-react';
 import type { Exercise } from '@/types/exercise';
@@ -72,31 +72,26 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="flex items-center justify-between px-4 pt-6 pb-2"
+          className="flex items-center justify-between px-4 pt-6 pb-2 relative"
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {onBack && (
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onBack();
-                }}
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); onBack(); }}
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                 }}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                }}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 relative z-40"
+                onTouchStart={(e) => { e.stopPropagation(); e.preventDefault(); }} onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); onBack(); }}
+                className="absolute left-4 top-6 flex h-8 w-8 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 z-50"
                 style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                 aria-label="Назад к типам"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={2} />
               </button>
             )}
-            <h1 className="text-xl font-semibold text-[#030032] truncate">
+            <h1 className="text-xl font-semibold text-[#030032] truncate pl-11">
               Собери свою тренировку
             </h1>
           </div>
