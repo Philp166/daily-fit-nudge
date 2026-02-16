@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { X, Plus, Search, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Plus, Search, ArrowLeft, Check } from 'lucide-react';
 import type { Exercise } from '@/types/exercise';
 import { MuscleGroup, ActivityType } from '@/types/exercise';
 import { MUSCLE_GROUP_META } from '@/data/exercises';
+import { useWorkout } from '@/contexts/WorkoutContext';
 
 const ALL_CHIP_EMOJI = '✨';
 
@@ -34,6 +35,10 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<MuscleGroup | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [justAdded, setJustAdded] = useState<string | null>(null);
+
+  const { builderExercises } = useWorkout();
+  const builderCount = builderExercises.length;
 
   // Для спортзала показываем чипы по группам мышц, для остальных - только "Все"
   const showMuscleGroupChips = initialActivityType === ActivityType.GYM;
@@ -58,6 +63,12 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
     return list;
   }, [exercises, selectedCategory, searchQuery]);
 
+  const handleAdd = (exercise: Exercise) => {
+    onAddExercise?.(exercise);
+    setJustAdded(exercise.id);
+    setTimeout(() => setJustAdded(null), 800);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -66,7 +77,7 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
       transition={{ duration: 0.2 }}
       className="exsizes bg-white min-h-screen min-w-[390px] w-full relative flex flex-col pt-safe-top"
     >
-      {/* Шапка: назад (если есть), название слева, закрыть справа */}
+      {/* Шапка */}
       <div className="shrink-0 relative z-30">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -90,19 +101,17 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
               Собери свою тренировку
             </h1>
           </div>
-          {!onBack && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 ml-2"
-              aria-label="Закрыть"
-            >
-              <X className="h-4 w-4" strokeWidth={2} />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 ml-2"
+            aria-label="Закрыть"
+          >
+            <X className="h-4 w-4" strokeWidth={2} />
+          </button>
         </motion.div>
 
-        {/* Чипы категорий: «Все» первый, остальные по алфавиту из MUSCLE_GROUP_META */}
+        {/* Чипы категорий */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,7 +170,7 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
         </div>
       </motion.div>
 
-      {/* Список упражнений — стили как на главном экране */}
+      {/* Список упражнений */}
       <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pt-6 pb-28">
         {displayList.length === 0 ? (
           <motion.p
@@ -170,52 +179,99 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
             transition={{ delay: 0.2 }}
             className="py-8 text-center text-[#030032]/60"
           >
-            {searchQuery.trim() ? 'Ничего не найдено' : 'Нет упражнений в этой категории. Загрузите базу в каталог.'}
+            {searchQuery.trim() ? 'Ничего не найдено' : 'Нет упражнений в этой категории.'}
           </motion.p>
         ) : (
-          displayList.map((exercise, index) => (
-            <motion.div
-              key={exercise.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 30,
-                delay: 0.2 + index * 0.03,
-              }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2.5 rounded-3xl bg-[#efefef] p-4 min-h-[99px]"
-            >
-              {/* Иконка — 67x67, белый фон, emoji чуть крупнее */}
-              <div className="flex h-[67px] w-[67px] shrink-0 items-center justify-center rounded-[33.5px] bg-white text-[28px] leading-none">
-                {exercise.emoji}
-              </div>
-              {/* Название и подпись — шрифт названия меньше */}
-              <div className="min-w-0 flex-1 flex flex-col gap-2">
-                <p className="truncate text-base leading-5 text-[#030032] font-normal">
-                  {exercise.name}
-                </p>
-                <p className="text-base leading-4 text-[#030032] opacity-60">
-                  {exercise.muscleGroup
-                    ? MUSCLE_GROUP_META[exercise.muscleGroup].name
-                    : '—'}
-                </p>
-              </div>
-              {/* Кнопка добавить — по макету: 36x36, #fc7a18, rounded 18px */}
-              <motion.button
-                type="button"
-                onClick={() => onAddExercise?.(exercise)}
-                whileTap={{ scale: 0.9 }}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[18px] bg-[#fc7a18] text-white active:opacity-90"
-                aria-label={`Добавить ${exercise.name}`}
+          displayList.map((exercise, index) => {
+            const wasJustAdded = justAdded === exercise.id;
+            return (
+              <motion.div
+                key={exercise.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 30,
+                  delay: 0.2 + index * 0.03,
+                }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-2.5 rounded-3xl bg-[#efefef] p-4 min-h-[99px]"
               >
-                <Plus className="h-4 w-4" strokeWidth={2.5} />
-              </motion.button>
-            </motion.div>
-          ))
+                {/* Иконка */}
+                <div className="flex h-[67px] w-[67px] shrink-0 items-center justify-center rounded-[33.5px] bg-white text-[28px] leading-none">
+                  {exercise.emoji}
+                </div>
+                {/* Название и подпись */}
+                <div className="min-w-0 flex-1 flex flex-col gap-2">
+                  <p className="truncate text-base leading-5 text-[#030032] font-normal">
+                    {exercise.name}
+                  </p>
+                  <p className="text-base leading-4 text-[#030032] opacity-60">
+                    {exercise.muscleGroup
+                      ? MUSCLE_GROUP_META[exercise.muscleGroup].name
+                      : '—'}
+                  </p>
+                </div>
+                {/* Кнопка добавить с feedback */}
+                <motion.button
+                  type="button"
+                  onClick={() => handleAdd(exercise)}
+                  whileTap={{ scale: 0.9 }}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[18px] text-white active:opacity-90 transition-colors ${
+                    wasJustAdded ? 'bg-green-500' : 'bg-[#fc7a18]'
+                  }`}
+                  aria-label={`Добавить ${exercise.name}`}
+                >
+                  <AnimatePresence mode="wait">
+                    {wasJustAdded ? (
+                      <motion.div
+                        key="check"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                      >
+                        <Check className="h-4 w-4" strokeWidth={2.5} />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="plus"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                      >
+                        <Plus className="h-4 w-4" strokeWidth={2.5} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+              </motion.div>
+            );
+          })
         )}
       </div>
+
+      {/* Кнопка «Готово» внизу когда есть упражнения в билдере */}
+      <AnimatePresence>
+        {builderCount > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#030032]/10 px-4 py-3 pb-safe-bottom z-50"
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full h-14 rounded-2xl bg-[#fc7a18] text-white font-semibold text-lg flex items-center justify-center gap-2 active:opacity-90"
+              style={{ touchAction: 'manipulation' }}
+            >
+              Готово ({builderCount})
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

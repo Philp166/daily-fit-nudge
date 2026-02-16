@@ -101,7 +101,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onConstructorScreenChange
   const [selectedActivityType, setSelectedActivityType] = useState<ActivityType | null>(null);
   const [workoutResult, setWorkoutResult] = useState<CompletedWorkout | null>(null);
 
-  const { addToBuilder, startSession, finishSession, cancelSession } = useWorkout();
+  const { builderExercises, addToBuilder, startSession, finishSession, cancelSession } = useWorkout();
 
   const todayKey = getLocalDateKey(new Date());
 
@@ -253,9 +253,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onConstructorScreenChange
           setConstructorScreen('catalog');
         }}
         onClose={() => {
-          setConstructorScreen(null);
+          // Если есть упражнения в билдере — возврат к билдеру, иначе на главную
+          if (builderExercises.length > 0) {
+            setConstructorScreen('builder');
+          } else {
+            setConstructorScreen(null);
+          }
           setSelectedActivityType(null);
-          setSelectedExercises([]);
         }}
       />
     );
