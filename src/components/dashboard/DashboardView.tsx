@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { useUser, getLocalDateKey, type DayStats } from '@/contexts/UserContext';
 import CircularProgress from '@/components/dashboard/CircularProgress';
@@ -115,6 +115,13 @@ const DashboardView: React.FC = () => {
   useEffect(() => {
     setSelectedChartIndex((prev) => (prev >= chartData.length ? Math.max(0, chartData.length - 1) : prev));
   }, [period, chartData.length, weekOffset, monthOffset]);
+
+  useEffect(() => {
+    if (period === 'day') {
+      const todayIndex = chartData.findIndex((d) => d.date === todayKey);
+      if (todayIndex >= 0) setSelectedChartIndex(todayIndex);
+    }
+  }, [period]);
 
   const selectedStats = chartData[selectedChartIndex] ?? chartData[0];
   const displayCalories =
@@ -297,10 +304,11 @@ const DashboardView: React.FC = () => {
               {period === 'week' && (
                 <button
                   type="button"
-                  onClick={() => setWeekOffset((o) => Math.max(-3, o - 1))}
-                  className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  onClick={() => setWeekOffset((o) => Math.max(0, o - 1))}
+                  className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-40"
                   style={{ touchAction: 'manipulation' }}
-                  aria-label="Следующая неделя"
+                  aria-label="Ближе к текущей"
+                  disabled={weekOffset <= 0}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
                 </button>
@@ -308,10 +316,11 @@ const DashboardView: React.FC = () => {
               {period === 'month' && (
                 <button
                   type="button"
-                  onClick={() => setMonthOffset((o) => Math.max(-11, o - 1))}
-                  className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  onClick={() => setMonthOffset((o) => Math.max(0, o - 1))}
+                  className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-40"
                   style={{ touchAction: 'manipulation' }}
-                  aria-label="Следующий месяц"
+                  aria-label="Ближе к текущему месяцу"
+                  disabled={monthOffset <= 0}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
                 </button>
@@ -322,6 +331,36 @@ const DashboardView: React.FC = () => {
           {/* Spacer above chart: pushes chart + calories + metrics to the bottom when fully expanded */}
           <div className="flex-1 min-h-0" aria-hidden />
 
+          <motion.div
+            className="flex flex-col flex-1 min-h-0"
+            onPanEnd={(_, info) => {
+              const { offset, velocity } = info;
+              if (Math.abs(offset.x) < Math.abs(offset.y)) return;
+              const v = velocity.x;
+              if (period === 'week') {
+                if (v < -200) setWeekOffset((o) => Math.max(0, o - 1));
+                else if (v > 200) setWeekOffset((o) => o + 1);
+              } else if (period === 'month') {
+                if (v < -200) setMonthOffset((o) => Math.max(0, o - 1));
+                else if (v > 200) setMonthOffset((o) => o + 1);
+              }
+            }}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={
+                  period === 'day'
+                    ? 'day'
+                    : period === 'week'
+                      ? `w-${weekOffset}`
+                      : `m-${monthOffset}`
+                }
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -24 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                className="flex flex-col flex-1 min-h-0"
+              >
           <motion.div
             style={{ height: chartContainerHeight, opacity: chartOpacity }}
             className="mb-1 w-full overflow-hidden shrink-0 px-1 flex flex-col justify-end"
@@ -416,6 +455,9 @@ const DashboardView: React.FC = () => {
               </div>
               <p className="text-white/50 text-sm mt-1">зоны роста</p>
             </div>
+          </motion.div>
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
         </div>
         </motion.div>

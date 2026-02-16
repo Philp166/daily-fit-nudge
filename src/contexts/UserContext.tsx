@@ -187,6 +187,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     for (let i = 0; i < 7; i++) {
       const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
       const key = getLocalDateKey(d);
+      if (weekOffset === 0 && key > todayKey) break;
       const dd = String(d.getDate()).padStart(2, '0');
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const calories = key === todayKey ? todayCalories : (h[key]?.calories ?? 0);
@@ -200,30 +201,41 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const getWeekLabel = (weekOffset: number): string => {
+    const today = new Date();
     const monday = getMondayOfWeek(weekOffset);
-    const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
     const monthsShort = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
     const d1 = monday.getDate();
-    const d2 = sunday.getDate();
     const m1 = monthsShort[monday.getMonth()];
-    const m2 = monthsShort[sunday.getMonth()];
-    if (monday.getMonth() === sunday.getMonth()) {
+    let endDate: Date;
+    if (weekOffset === 0) {
+      endDate = today;
+    } else {
+      endDate = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+    }
+    const d2 = endDate.getDate();
+    const m2 = monthsShort[endDate.getMonth()];
+    if (monday.getTime() === endDate.getTime()) {
+      return `${d1} ${m2}`;
+    }
+    if (monday.getMonth() === endDate.getMonth()) {
       return `${d1}–${d2} ${m2}`;
     }
     return `${d1} ${m1} – ${d2} ${m2}`;
   };
 
   const getDaysOfMonth = (monthOffset: number): DayStats[] => {
-    const todayKey = getLocalDateKey(new Date());
-    const h = getHistory();
     const now = new Date();
+    const todayKey = getLocalDateKey(now);
+    const h = getHistory();
     const year = now.getFullYear();
     const month = now.getMonth() - monthOffset;
     const normalizedYear = year + Math.floor(month / 12);
     const normalizedMonth = ((month % 12) + 12) % 12;
     const daysInMonth = new Date(normalizedYear, normalizedMonth + 1, 0).getDate();
+    const isCurrentMonth = monthOffset === 0;
+    const lastDay = isCurrentMonth ? Math.min(daysInMonth, now.getDate()) : daysInMonth;
     const result: DayStats[] = [];
-    for (let day = 1; day <= daysInMonth; day++) {
+    for (let day = 1; day <= lastDay; day++) {
       const d = new Date(normalizedYear, normalizedMonth, day);
       const key = getLocalDateKey(d);
       const calories = key === todayKey ? todayCalories : (h[key]?.calories ?? 0);
