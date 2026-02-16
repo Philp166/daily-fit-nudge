@@ -102,7 +102,7 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
               onClick={() => setSelectedCategory(chip.id)}
               className={`inline-flex shrink-0 items-center gap-2 rounded-full pl-2 pr-4 py-2 text-base font-medium transition-colors ${
                 isActive
-                  ? 'bg-[#fc7a18] text-white'
+                  ? 'bg-[#006776] text-white'
                   : 'bg-[#efefef] text-[#030032]'
               }`}
               style={{ touchAction: 'manipulation' }}
