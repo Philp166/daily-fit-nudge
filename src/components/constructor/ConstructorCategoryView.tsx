@@ -62,37 +62,42 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
       </div>
 
       {/* Список карточек категорий */}
-      <div className="flex flex-col flex-1 min-h-0 gap-3 px-4 pt-6 pb-4 bg-background overflow-y-auto">
-        {CATEGORY_ORDER.map((type) => {
-          const meta = ACTIVITY_TYPE_DISPLAY[type];
-          const iconSrc = ICON_MAP[type];
-          return (
-            <button
-              key={type}
-              type="button"
-              onClick={() => onSelectType(type)}
-              className="rounded-3xl overflow-hidden relative flex-1 cursor-pointer active:opacity-90 transition-opacity"
-              style={{
-                backgroundColor: meta.color,
-              }}
-            >
-              <div className="flex items-center justify-between h-full px-6 py-6">
-                <div className="flex-1 pr-4">
-                  <h2 className="text-4xl font-bold text-white leading-tight">
+      <div className="flex-1 min-h-0 overflow-y-auto px-2 pt-4 pb-28">
+        <div className="flex flex-col gap-4 max-w-[374px] mx-auto">
+          {CATEGORY_ORDER.map((type) => {
+            const meta = ACTIVITY_TYPE_DISPLAY[type];
+            const iconSrc = ICON_MAP[type];
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => onSelectType(type)}
+                className="relative flex items-center h-[170px] rounded-[32px] overflow-hidden active:opacity-90 transition-opacity w-full"
+                style={{
+                  backgroundColor: meta.color,
+                }}
+              >
+                {/* Текст слева - четкий отступ 24px */}
+                <div className="flex-1 min-w-0 pl-6 flex items-center">
+                  <h2 className="text-[32px] font-bold text-white leading-tight" style={{ fontFamily: 'Ubuntu, sans-serif' }}>
                     {meta.name}
                   </h2>
                 </div>
-                <div className="w-[42%] flex items-center justify-center min-h-[120px] shrink-0 pr-2">
-                  <img
-                    src={iconSrc}
-                    alt={meta.name}
-                    className="max-w-[100px] max-h-[120px] w-auto h-auto object-contain object-center"
-                  />
+
+                {/* Иконка справа - фиксированная колонка для визуального выравнивания */}
+                <div className="w-[150px] shrink-0 pr-2 flex items-center justify-end">
+                  <div className="h-[125px] w-[140px] flex items-center justify-center">
+                    <img
+                      src={iconSrc}
+                      alt={meta.name}
+                      className="max-h-full max-w-full object-contain object-right"
+                    />
+                  </div>
                 </div>
-              </div>
-            </button>
-          );
-        })}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
