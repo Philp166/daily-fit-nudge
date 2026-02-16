@@ -46,13 +46,7 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
   onClose,
 }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      className="bg-white min-h-screen min-w-[390px] w-full flex flex-col pt-safe-top"
-    >
+    <div className="bg-white min-h-screen min-w-[390px] w-full flex flex-col pt-safe-top">
       {/* Шапка: название слева, закрыть справа */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -93,7 +87,7 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
                   delay: index * 0.05,
                 }}
                 whileTap={{ scale: 0.985 }}
-                className="relative flex items-center flex-1 min-h-[186px] rounded-[32px] overflow-hidden transition-opacity w-full"
+                className="relative flex items-center flex-1 min-h-[186px] rounded-[32px] overflow-hidden w-full"
                 style={{
                   backgroundColor: meta.color,
                 }}
@@ -120,7 +114,7 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
           })}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
