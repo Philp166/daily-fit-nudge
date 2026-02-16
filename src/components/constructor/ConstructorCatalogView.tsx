@@ -76,14 +76,16 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
             Собери свою тренировку
           </h1>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 ml-2"
-          aria-label="Закрыть"
-        >
-          <X className="h-4 w-4" strokeWidth={2} />
-        </button>
+        {!onBack && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 ml-2"
+            aria-label="Закрыть"
+          >
+            <X className="h-4 w-4" strokeWidth={2} />
+          </button>
+        )}
       </div>
 
       {/* Чипы категорий: «Все» первый, остальные по алфавиту из MUSCLE_GROUP_META */}
