@@ -71,14 +71,16 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="flex items-center justify-between px-4 pt-6 pb-2"
+        className="flex items-center justify-between px-4 pt-6 pb-2 shrink-0 relative z-10"
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {onBack && (
             <button
               type="button"
               onClick={onBack}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80"
+              onMouseDown={(e) => e.preventDefault()}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 relative z-20"
+              style={{ touchAction: 'manipulation' }}
               aria-label="Назад к типам"
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={2} />
