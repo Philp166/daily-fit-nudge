@@ -85,7 +85,7 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
                 </div>
 
                 {/* Иконка справа - фиксированная колонка для визуального выравнивания */}
-                <div className="w-[150px] shrink-0 pr-6 flex items-center justify-end">
+                <div className="w-[150px] shrink-0 pr-2 flex items-center justify-end">
                   <div className="h-[125px] w-[140px] flex items-center justify-center">
                     <img
                       src={iconSrc}
