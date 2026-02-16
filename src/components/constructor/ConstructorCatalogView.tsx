@@ -67,85 +67,96 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
       className="exsizes bg-white min-h-screen min-w-[390px] w-full relative flex flex-col pt-safe-top"
     >
       {/* Шапка: назад (если есть), название слева, закрыть справа */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="flex items-center justify-between px-4 pt-6 pb-2 shrink-0 relative z-10"
-      >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          {onBack && (
+      <div className="shrink-0 relative z-30">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="flex items-center justify-between px-4 pt-6 pb-2"
+        >
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {onBack && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBack();
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                }}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 relative z-40"
+                style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+                aria-label="Назад к типам"
+              >
+                <ArrowLeft className="h-4 w-4" strokeWidth={2} />
+              </button>
+            )}
+            <h1 className="text-xl font-semibold text-[#030032] truncate">
+              Собери свою тренировку
+            </h1>
+          </div>
+          {!onBack && (
             <button
               type="button"
-              onClick={onBack}
-              onMouseDown={(e) => e.preventDefault()}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 relative z-20"
-              style={{ touchAction: 'manipulation' }}
-              aria-label="Назад к типам"
+              onClick={onClose}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 ml-2"
+              aria-label="Закрыть"
             >
-              <ArrowLeft className="h-4 w-4" strokeWidth={2} />
+              <X className="h-4 w-4" strokeWidth={2} />
             </button>
           )}
-          <h1 className="text-xl font-semibold text-[#030032] truncate">
-            Собери свою тренировку
-          </h1>
-        </div>
-        {!onBack && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80 ml-2"
-            aria-label="Закрыть"
-          >
-            <X className="h-4 w-4" strokeWidth={2} />
-          </button>
-        )}
-      </motion.div>
+        </motion.div>
 
-      {/* Чипы категорий: «Все» первый, остальные по алфавиту из MUSCLE_GROUP_META */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.1 }}
-        className="flex gap-2 overflow-x-auto px-4 pt-2 pb-4 hide-scrollbar"
-      >
-        {categoryChips.map((chip) => {
-          const isActive =
-            chip.id === 'all'
-              ? selectedCategory === 'all'
-              : selectedCategory === chip.id;
-          return (
-            <button
-              key={chip.id}
-              type="button"
-              onClick={() => setSelectedCategory(chip.id)}
-              className={`inline-flex shrink-0 items-center gap-2 rounded-full pl-2 pr-4 py-2 text-base font-medium transition-colors ${
-                isActive
-                  ? 'bg-[#fc7a18] text-white'
-                  : 'bg-[#efefef] text-[#030032]'
-              }`}
-              style={{ touchAction: 'manipulation' }}
-            >
-              <span
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-lg ${
-                  isActive ? 'bg-white/25' : 'bg-white'
+        {/* Чипы категорий: «Все» первый, остальные по алфавиту из MUSCLE_GROUP_META */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.1 }}
+          className="flex gap-2 overflow-x-auto px-4 pt-2 pb-4 hide-scrollbar relative z-20"
+        >
+          {categoryChips.map((chip) => {
+            const isActive =
+              chip.id === 'all'
+                ? selectedCategory === 'all'
+                : selectedCategory === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => setSelectedCategory(chip.id)}
+                className={`inline-flex shrink-0 items-center gap-2 rounded-full pl-2 pr-4 py-2 text-base font-medium transition-colors ${
+                  isActive
+                    ? 'bg-[#fc7a18] text-white'
+                    : 'bg-[#efefef] text-[#030032]'
                 }`}
-                aria-hidden
+                style={{ touchAction: 'manipulation' }}
               >
-                {chip.emoji}
-              </span>
-              {chip.label}
-            </button>
-          );
-        })}
-      </motion.div>
+                <span
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-lg ${
+                    isActive ? 'bg-white/25' : 'bg-white'
+                  }`}
+                  aria-hidden
+                >
+                  {chip.emoji}
+                </span>
+                {chip.label}
+              </button>
+            );
+          })}
+        </motion.div>
+      </div>
 
       {/* Поиск */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.15 }}
-        className="px-4 pb-3"
+        className="px-4 pb-3 shrink-0"
       >
         <div className="flex items-center gap-2 rounded-2xl bg-[#efefef] px-4 py-2.5">
           <Search className="h-5 w-5 shrink-0 text-[#030032]/50" strokeWidth={1.8} />
