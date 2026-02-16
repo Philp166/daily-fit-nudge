@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Search } from 'lucide-react';
 import type { Exercise } from '@/types/exercise';
 import { MuscleGroup } from '@/types/exercise';
 import { MUSCLE_GROUP_META } from '@/data/exercises';
@@ -28,13 +28,23 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
   onAddExercise,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<MuscleGroup | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const categoryChips = useMemo(() => getCategoryChips(), []);
 
   const displayList = useMemo(() => {
-    if (selectedCategory === 'all') return exercises;
-    return exercises.filter((ex) => ex.muscleGroup === selectedCategory);
-  }, [exercises, selectedCategory]);
+    let list = selectedCategory === 'all' ? exercises : exercises.filter((ex) => ex.muscleGroup === selectedCategory);
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter(
+        (ex) =>
+          ex.name.toLowerCase().includes(q) ||
+          (ex.nameEn?.toLowerCase().includes(q) ?? false) ||
+          (ex.tags?.some((t) => t.toLowerCase().includes(q)) ?? false)
+      );
+    }
+    return list;
+  }, [exercises, selectedCategory, searchQuery]);
 
   return (
     <div className="exsizes bg-white min-h-screen min-w-[390px] w-full relative flex flex-col pt-safe-top">
@@ -86,11 +96,26 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
         })}
       </div>
 
+      {/* Поиск */}
+      <div className="px-4 pb-3">
+        <div className="flex items-center gap-2 rounded-2xl bg-[#efefef] px-4 py-2.5">
+          <Search className="h-5 w-5 shrink-0 text-[#030032]/50" strokeWidth={1.8} />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Поиск упражнений..."
+            className="min-w-0 flex-1 bg-transparent text-[#030032] placeholder:text-[#030032]/50 text-base outline-none"
+            autoComplete="off"
+          />
+        </div>
+      </div>
+
       {/* Список упражнений — по макету: gap 8px, карточки 99px, rounded 32px */}
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-2 pb-28">
         {displayList.length === 0 ? (
           <p className="py-8 text-center text-[#030032]/60">
-            Нет упражнений в этой категории. Загрузите базу в каталог.
+            {searchQuery.trim() ? 'Ничего не найдено' : 'Нет упражнений в этой категории. Загрузите базу в каталог.'}
           </p>
         ) : (
           displayList.map((exercise) => (
@@ -102,9 +127,9 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
               <div className="flex h-[67px] w-[67px] shrink-0 items-center justify-center rounded-[33.5px] bg-white text-[28px] leading-none">
                 {exercise.emoji}
               </div>
-              {/* Название и подпись */}
+              {/* Название и подпись — шрифт названия меньше */}
               <div className="min-w-0 flex-1 flex flex-col gap-2">
-                <p className="truncate text-[24px] leading-6 text-[#030032] font-normal">
+                <p className="truncate text-base leading-5 text-[#030032] font-normal">
                   {exercise.name}
                 </p>
                 <p className="text-base leading-4 text-[#030032] opacity-60">
