@@ -1,20 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Dumbbell } from 'lucide-react';
 import type { Exercise } from '@/types/exercise';
 import { MuscleGroup } from '@/types/exercise';
 import { MUSCLE_GROUP_META } from '@/data/exercises';
 
-const CATEGORY_CHIPS: { id: MuscleGroup | 'all'; label: string }[] = [
-  { id: MuscleGroup.LEGS, label: 'Ноги' },
-  { id: MuscleGroup.BACK, label: 'Спина' },
-  { id: MuscleGroup.CHEST, label: 'Грудь' },
-  { id: MuscleGroup.SHOULDERS, label: 'Плечи' },
-  { id: MuscleGroup.BICEPS, label: 'Руки' },
-  { id: MuscleGroup.TRICEPS, label: 'Трицепс' },
-  { id: MuscleGroup.CORE, label: 'Пресс' },
-  { id: MuscleGroup.CARDIO, label: 'Кардио' },
-  { id: 'all', label: 'Все' },
-];
+function getCategoryChips(): { id: MuscleGroup | 'all'; label: string }[] {
+  const groups = (Object.keys(MUSCLE_GROUP_META) as MuscleGroup[]).map((id) => ({
+    id,
+    label: MUSCLE_GROUP_META[id].name,
+  }));
+  groups.sort((a, b) => a.label.localeCompare(b.label, 'ru'));
+  return [{ id: 'all', label: 'Все' }, ...groups];
+}
 
 interface ConstructorCatalogViewProps {
   exercises: Exercise[];
@@ -27,9 +24,9 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
   onClose,
   onAddExercise,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<MuscleGroup | 'all'>(
-    MuscleGroup.LEGS
-  );
+  const [selectedCategory, setSelectedCategory] = useState<MuscleGroup | 'all'>('all');
+
+  const categoryChips = useMemo(() => getCategoryChips(), []);
 
   const displayList = useMemo(() => {
     if (selectedCategory === 'all') return exercises;
@@ -38,19 +35,24 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
 
   return (
     <div className="exsizes bg-white min-h-screen min-w-[390px] w-full relative flex flex-col pt-safe-top">
-      {/* Кнопка закрытия — по макету: top 70px, right */}
-      <button
-        type="button"
-        onClick={onClose}
-        className="absolute right-4 top-[70px] z-10 flex h-8 w-8 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80"
-        aria-label="Закрыть"
-      >
-        <X className="h-4 w-4" strokeWidth={2} />
-      </button>
+      {/* Шапка: название слева, закрыть справа */}
+      <div className="flex items-center justify-between px-4 pt-6 pb-2">
+        <h1 className="text-xl font-semibold text-[#030032]">
+          Собери свою тренировку
+        </h1>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[#f4f4f4] text-[#030032] active:opacity-80"
+          aria-label="Закрыть"
+        >
+          <X className="h-4 w-4" strokeWidth={2} />
+        </button>
+      </div>
 
-      {/* Чипы категорий — по макету: top 118px, горизонтальный скролл */}
-      <div className="flex gap-2 overflow-x-auto px-4 pt-[118px] pb-4 hide-scrollbar">
-        {CATEGORY_CHIPS.map((chip) => {
+      {/* Чипы категорий: «Все» первый, остальные по алфавиту из MUSCLE_GROUP_META */}
+      <div className="flex gap-2 overflow-x-auto px-4 pt-2 pb-4 hide-scrollbar">
+        {categoryChips.map((chip) => {
           const isActive =
             chip.id === 'all'
               ? selectedCategory === 'all'
@@ -85,9 +87,17 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
               key={exercise.id}
               className="flex items-center gap-2.5 rounded-[32px] bg-[#efefef] p-4 min-h-[99px]"
             >
-              {/* Иконка — по макету: 67x67, белый круг */}
-              <div className="flex h-[67px] w-[67px] shrink-0 items-center justify-center rounded-[33.5px] bg-white text-2xl">
-                {exercise.emoji}
+              {/* Иконка — 67x67, цвет группы мышц, кастомная иконка */}
+              <div
+                className="flex h-[67px] w-[67px] shrink-0 items-center justify-center rounded-[33.5px] text-white"
+                style={{
+                  backgroundColor:
+                    exercise.muscleGroup != null
+                      ? MUSCLE_GROUP_META[exercise.muscleGroup].color
+                      : '#9ca3af',
+                }}
+              >
+                <Dumbbell className="h-7 w-7" strokeWidth={1.8} />
               </div>
               {/* Название и подпись */}
               <div className="min-w-0 flex-1 flex flex-col gap-2">
