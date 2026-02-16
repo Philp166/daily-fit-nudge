@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { X, Plus, Search, ArrowLeft } from 'lucide-react';
 import type { Exercise } from '@/types/exercise';
 import { MuscleGroup, ActivityType } from '@/types/exercise';
@@ -58,9 +59,20 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
   }, [exercises, selectedCategory, searchQuery]);
 
   return (
-    <div className="exsizes bg-white min-h-screen min-w-[390px] w-full relative flex flex-col pt-safe-top">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="exsizes bg-white min-h-screen min-w-[390px] w-full relative flex flex-col pt-safe-top"
+    >
       {/* Шапка: назад (если есть), название слева, закрыть справа */}
-      <div className="flex items-center justify-between px-4 pt-6 pb-2">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="flex items-center justify-between px-4 pt-6 pb-2"
+      >
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {onBack && (
             <button
@@ -86,10 +98,15 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
             <X className="h-4 w-4" strokeWidth={2} />
           </button>
         )}
-      </div>
+      </motion.div>
 
       {/* Чипы категорий: «Все» первый, остальные по алфавиту из MUSCLE_GROUP_META */}
-      <div className="flex gap-2 overflow-x-auto px-4 pt-2 pb-4 hide-scrollbar">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.1 }}
+        className="flex gap-2 overflow-x-auto px-4 pt-2 pb-4 hide-scrollbar"
+      >
         {categoryChips.map((chip) => {
           const isActive =
             chip.id === 'all'
@@ -119,10 +136,15 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
             </button>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Поиск */}
-      <div className="px-4 pb-3">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.15 }}
+        className="px-4 pb-3"
+      >
         <div className="flex items-center gap-2 rounded-2xl bg-[#efefef] px-4 py-2.5">
           <Search className="h-5 w-5 shrink-0 text-[#030032]/50" strokeWidth={1.8} />
           <input
@@ -134,18 +156,32 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
             autoComplete="off"
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Список упражнений — стили как на главном экране */}
       <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pt-6 pb-28">
         {displayList.length === 0 ? (
-          <p className="py-8 text-center text-[#030032]/60">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="py-8 text-center text-[#030032]/60"
+          >
             {searchQuery.trim() ? 'Ничего не найдено' : 'Нет упражнений в этой категории. Загрузите базу в каталог.'}
-          </p>
+          </motion.p>
         ) : (
-          displayList.map((exercise) => (
-            <div
+          displayList.map((exercise, index) => (
+            <motion.div
               key={exercise.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 30,
+                delay: 0.2 + index * 0.03,
+              }}
+              whileTap={{ scale: 0.98 }}
               className="flex items-center gap-2.5 rounded-3xl bg-[#efefef] p-4 min-h-[99px]"
             >
               {/* Иконка — 67x67, белый фон, emoji чуть крупнее */}
@@ -164,19 +200,20 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
                 </p>
               </div>
               {/* Кнопка добавить — по макету: 36x36, #fc7a18, rounded 18px */}
-              <button
+              <motion.button
                 type="button"
                 onClick={() => onAddExercise?.(exercise)}
+                whileTap={{ scale: 0.9 }}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[18px] bg-[#fc7a18] text-white active:opacity-90"
                 aria-label={`Добавить ${exercise.name}`}
               >
                 <Plus className="h-4 w-4" strokeWidth={2.5} />
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           ))
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

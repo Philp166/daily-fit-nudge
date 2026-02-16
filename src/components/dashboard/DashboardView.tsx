@@ -71,7 +71,11 @@ function getSnapTarget(
   return full;
 }
 
-const DashboardView: React.FC = () => {
+interface DashboardViewProps {
+  onConstructorScreenChange?: (isOpen: boolean) => void;
+}
+
+const DashboardView: React.FC<DashboardViewProps> = ({ onConstructorScreenChange }) => {
   const {
     todayCalories,
     profile,
@@ -104,6 +108,10 @@ const DashboardView: React.FC = () => {
     window.addEventListener('resize', updateFull);
     return () => window.removeEventListener('resize', updateFull);
   }, []);
+
+  useEffect(() => {
+    onConstructorScreenChange?.(constructorScreen !== null);
+  }, [constructorScreen, onConstructorScreenChange]);
 
   const ANALYTICS_FULL = analyticsFull;
   const MIN_HEIGHT = ANALYTICS_COLLAPSED - OVERDRAG;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { ActivityType } from '@/types/exercise';
 import { ACTIVITY_TYPE_DISPLAY } from '@/data/exercises';
@@ -45,9 +46,20 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
   onClose,
 }) => {
   return (
-    <div className="bg-white min-h-screen min-w-[390px] w-full flex flex-col pt-safe-top">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="bg-white min-h-screen min-w-[390px] w-full flex flex-col pt-safe-top"
+    >
       {/* Шапка: название слева, закрыть справа */}
-      <div className="flex items-center justify-between px-4 pt-6 pb-2 shrink-0">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="flex items-center justify-between px-4 pt-6 pb-2 shrink-0"
+      >
         <h1 className="text-xl font-semibold text-[#030032]">
           Тип тренировки
         </h1>
@@ -59,20 +71,29 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
         >
           <X className="h-4 w-4" strokeWidth={2} />
         </button>
-      </div>
+      </motion.div>
 
       {/* Список карточек категорий */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 pt-4 pb-28">
         <div className="flex flex-col gap-4">
-          {CATEGORY_ORDER.map((type) => {
+          {CATEGORY_ORDER.map((type, index) => {
             const meta = ACTIVITY_TYPE_DISPLAY[type];
             const iconSrc = ICON_MAP[type];
             return (
-              <button
+              <motion.button
                 key={type}
                 type="button"
                 onClick={() => onSelectType(type)}
-                className="relative flex items-center flex-1 min-h-[186px] rounded-[32px] overflow-hidden active:opacity-90 transition-opacity w-full"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 30,
+                  delay: index * 0.05,
+                }}
+                whileTap={{ scale: 0.985 }}
+                className="relative flex items-center flex-1 min-h-[186px] rounded-[32px] overflow-hidden transition-opacity w-full"
                 style={{
                   backgroundColor: meta.color,
                 }}
@@ -94,12 +115,12 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
                     />
                   </div>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
