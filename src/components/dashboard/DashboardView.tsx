@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { useUser, getLocalDateKey, type DayStats } from '@/contexts/UserContext';
 import CircularProgress from '@/components/dashboard/CircularProgress';
@@ -332,72 +332,45 @@ const DashboardView: React.FC = () => {
           <div className="flex-1 min-h-0" aria-hidden />
 
           <motion.div
-            className="flex flex-col flex-1 min-h-0"
-            onPanEnd={(_, info) => {
-              const { offset, velocity } = info;
-              if (Math.abs(offset.x) < Math.abs(offset.y)) return;
-              const v = velocity.x;
-              if (period === 'week') {
-                if (v < -200) setWeekOffset((o) => Math.max(0, o - 1));
-                else if (v > 200) setWeekOffset((o) => o + 1);
-              } else if (period === 'month') {
-                if (v < -200) setMonthOffset((o) => Math.max(0, o - 1));
-                else if (v > 200) setMonthOffset((o) => o + 1);
-              }
-            }}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={
-                  period === 'day'
-                    ? 'day'
-                    : period === 'week'
-                      ? `w-${weekOffset}`
-                      : `m-${monthOffset}`
-                }
-                initial={{ opacity: 0, x: 24 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -24 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                className="flex flex-col flex-1 min-h-0"
-              >
-          <motion.div
             style={{ height: chartContainerHeight, opacity: chartOpacity }}
-            className="mb-1 w-full overflow-hidden shrink-0 px-1 flex flex-col justify-end"
+            className="mb-1 w-full overflow-x-auto shrink-0 px-1 flex flex-col justify-end"
           >
-            <ResponsiveContainer width="100%" height="100%" className="min-h-0">
-              <BarChart
-                data={chartData.map((d, i) => ({ ...d, index: i, barValue: Math.max(d.calories, 1) }))}
-                margin={{ top: 8, right: 8, left: 8, bottom: 4 }}
-                barCategoryGap="12%"
-              >
-                <XAxis
-                  dataKey="label"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
-                />
-                <YAxis hide domain={[0, (max: number) => Math.max(max, goal, 50)]} />
-                <Bar
-                  dataKey="barValue"
-                  cursor="pointer"
-                  isAnimationActive={false}
-                  minPointSize={8}
-                  onClick={(_: unknown, index: number) => setSelectedChartIndex(index)}
-                  shape={(shapeProps: BarShapeProps) => (
-                    <AnimatedBarShape
-                      {...shapeProps}
-                      selected={shapeProps.index === selectedChartIndex}
-                      fill={
-                        shapeProps.index === selectedChartIndex
-                          ? '#FF8A00'
-                          : 'rgba(255,255,255,0.35)'
-                      }
-                    />
-                  )}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <div style={{ minWidth: `${chartData.length * 60}px` }}>
+              <ResponsiveContainer width="100%" height="100%" className="min-h-0">
+                <BarChart
+                  data={chartData.map((d, i) => ({ ...d, index: i, barValue: Math.max(d.calories, 1) }))}
+                  margin={{ top: 8, right: 8, left: 8, bottom: 4 }}
+                  barCategoryGap={12}
+                >
+                  <XAxis
+                    dataKey="label"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
+                  />
+                  <YAxis hide domain={[0, (max: number) => Math.max(max, goal, 50)]} />
+                  <Bar
+                    dataKey="barValue"
+                    cursor="pointer"
+                    isAnimationActive={false}
+                    minPointSize={8}
+                    barSize={24}
+                    onClick={(_: unknown, index: number) => setSelectedChartIndex(index)}
+                    shape={(shapeProps: BarShapeProps) => (
+                      <AnimatedBarShape
+                        {...shapeProps}
+                        selected={shapeProps.index === selectedChartIndex}
+                        fill={
+                          shapeProps.index === selectedChartIndex
+                            ? '#FF8A00'
+                            : 'rgba(255,255,255,0.35)'
+                        }
+                      />
+                    )}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </motion.div>
 
           <motion.div
@@ -455,9 +428,6 @@ const DashboardView: React.FC = () => {
               </div>
               <p className="text-white/50 text-sm mt-1">зоны роста</p>
             </div>
-          </motion.div>
-              </motion.div>
-            </AnimatePresence>
           </motion.div>
         </div>
         </motion.div>
