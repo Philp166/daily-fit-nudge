@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { X, Plus, Dumbbell } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import type { Exercise } from '@/types/exercise';
 import { MuscleGroup } from '@/types/exercise';
 import { MUSCLE_GROUP_META } from '@/data/exercises';
@@ -98,17 +98,9 @@ const ConstructorCatalogView: React.FC<ConstructorCatalogViewProps> = ({
               key={exercise.id}
               className="flex items-center gap-2.5 rounded-[32px] bg-[#efefef] p-4 min-h-[99px]"
             >
-              {/* Иконка — 67x67, цвет группы мышц, кастомная иконка */}
-              <div
-                className="flex h-[67px] w-[67px] shrink-0 items-center justify-center rounded-[33.5px] text-white"
-                style={{
-                  backgroundColor:
-                    exercise.muscleGroup != null
-                      ? MUSCLE_GROUP_META[exercise.muscleGroup].color
-                      : '#9ca3af',
-                }}
-              >
-                <Dumbbell className="h-7 w-7" strokeWidth={1.8} />
+              {/* Иконка — 67x67, белый фон, emoji чуть крупнее */}
+              <div className="flex h-[67px] w-[67px] shrink-0 items-center justify-center rounded-[33.5px] bg-white text-[28px] leading-none">
+                {exercise.emoji}
               </div>
               {/* Название и подпись */}
               <div className="min-w-0 flex-1 flex flex-col gap-2">
