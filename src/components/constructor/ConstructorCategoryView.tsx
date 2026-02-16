@@ -62,8 +62,8 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
       </div>
 
       {/* Список карточек категорий */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-2 pt-4 pb-28">
-        <div className="flex flex-col gap-4 max-w-[374px] mx-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 pt-4 pb-28">
+        <div className="flex flex-col gap-4 max-w-[358px] mx-auto">
           {CATEGORY_ORDER.map((type) => {
             const meta = ACTIVITY_TYPE_DISPLAY[type];
             const iconSrc = ICON_MAP[type];
@@ -72,7 +72,7 @@ const ConstructorCategoryView: React.FC<ConstructorCategoryViewProps> = ({
                 key={type}
                 type="button"
                 onClick={() => onSelectType(type)}
-                className="relative flex items-center h-[170px] rounded-[32px] overflow-hidden active:opacity-90 transition-opacity w-full"
+                className="relative flex items-center flex-1 min-h-[186px] rounded-[32px] overflow-hidden active:opacity-90 transition-opacity w-full"
                 style={{
                   backgroundColor: meta.color,
                 }}

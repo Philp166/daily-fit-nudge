@@ -309,44 +309,44 @@ export const ACTIVITY_TYPE_DISPLAY: Record<
 > = {
   [ActivityType.GYM]: {
     name: 'Спортзал',
-    color: '#fc7a18', // Оранжевый для первой карточки
+    color: '#F5941D', // Оранжевый для первой карточки
   },
   [ActivityType.COMBAT]: {
     name: 'Единоборства',
-    color: '#26c9ce', // Teal для остальных
+    color: '#4ECDC4', // Teal для остальных
   },
   [ActivityType.ATHLETICS]: {
     name: 'Легкая атлетика',
-    color: '#26c9ce',
+    color: '#4ECDC4',
   },
   [ActivityType.AQUATIC]: {
     name: 'Водные виды',
-    color: '#26c9ce',
+    color: '#4ECDC4',
   },
   [ActivityType.CYCLING]: {
     name: 'Велоспорт',
-    color: '#26c9ce',
+    color: '#4ECDC4',
   },
   [ActivityType.ROWING]: {
     name: 'Гребля',
-    color: '#26c9ce',
+    color: '#4ECDC4',
   },
   [ActivityType.FUNCTIONAL]: {
     name: 'Функционал',
-    color: '#26c9ce',
+    color: '#4ECDC4',
   },
   // Остальные типы (не используются в экране выбора, но нужны для типа)
   [ActivityType.GYMNASTICS]: {
     name: 'Гимнастика',
-    color: '#26c9ce',
+    color: '#4ECDC4',
   },
   [ActivityType.TEAM_SPORTS]: {
     name: 'Командные игры',
-    color: '#26c9ce',
+    color: '#4ECDC4',
   },
   [ActivityType.TRIATHLON]: {
     name: 'Триатлон',
-    color: '#26c9ce',
+    color: '#4ECDC4',
   },
 };
 
