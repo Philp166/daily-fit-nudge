@@ -48,6 +48,15 @@ const AppContent: React.FC = () => {
         )}
       </div>
 
+      {/* Плавное засветание: контент исчезает над навбаром */}
+      <div
+        className="fixed bottom-0 left-0 right-0 h-28 pointer-events-none z-40 safe-nav-bottom"
+        style={{
+          background: 'linear-gradient(to top, var(--background) 0%, transparent 100%)',
+        }}
+        aria-hidden
+      />
+
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
